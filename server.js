@@ -117,11 +117,21 @@ app.get('/api/options/:ticker', async (req, res) => {
     }
     
     try {
-        const headers = { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/120.0.0.0 Safari/537.36' };
+        const headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
+            'Accept': 'application/json, text/javascript, */*; q=0.01',
+            'Accept-Language': 'pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7',
+            'Accept-Encoding': 'gzip, deflate, br',
+            'Referer': 'https://opcoes.net.br/',
+            'Origin': 'https://opcoes.net.br',
+            'X-Requested-With': 'XMLHttpRequest',
+            'Connection': 'keep-alive',
+            'Cache-Control': 'no-cache'
+        };
         
         // Passo 1: Buscar lista de vencimentos disponíveis para o ticker
         const vencimentosUrl = `https://opcoes.net.br/listaopcoes/completa?idAcao=${ticker}&listarVencimentos=true&cotacoes=false`;
-        const vencResp = await axios.get(vencimentosUrl, { headers, timeout: 10000 });
+        const vencResp = await axios.get(vencimentosUrl, { headers, timeout: 15000 });
         
         if (!vencResp.data?.data?.vencimentos?.length) {
             return res.status(404).json({ error: 'Nenhum vencimento encontrado para ' + ticker });

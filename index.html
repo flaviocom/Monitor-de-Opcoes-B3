@@ -479,11 +479,11 @@
                             </div>
                         </div>
 
-                        <!-- Indicador de Tendência MM200 -->
+                        <!-- Indicador de Valorização Longo Prazo MM200 -->
                         <div class="flex items-center gap-2 mb-2 p-2 rounded bg-dark-800/50 border border-dark-700/50">
-                            <div class="w-1.5 h-1.5 rounded-full ${isAboveTrend ? 'bg-emerald-400' : 'bg-rose-400'} shadow-[0_0_8px_${isAboveTrend ? '#34d399' : '#fb7185'}]"></div>
-                            <span class="text-xs text-gray-300">Tendência Secundária (MM200)</span>
-                            <span class="ml-auto text-xs font-bold ${isAboveTrend ? 'text-emerald-400' : 'text-rose-400'}">${isAboveTrend ? 'ALTA' : 'BAIXA'}</span>
+                            <div class="w-1.5 h-1.5 rounded-full ${isAboveTrend ? 'bg-rose-400' : 'bg-emerald-400'} shadow-[0_0_8px_${isAboveTrend ? '#fb7185' : '#34d399'}]"></div>
+                            <span class="text-xs text-gray-300" title="Relação do Preço Atual contra a Média de 200 períodos">Valorização Longo Prazo (MM200)</span>
+                            <span class="ml-auto text-xs font-bold ${isAboveTrend ? 'text-rose-400' : 'text-emerald-400'}">${isAboveTrend ? 'CARO' : 'BARATO'}</span>
                         </div>
 
                         <!-- Bandas -->

@@ -324,21 +324,17 @@
                 put: null
             },
             {
-                ticker: 'BOVA11',
-                company: 'iShares Ibovespa ETF',
-                nextEarnings: '--',
-                nextDividend: null,
-                price: 130.40,
-                change: 0.85,
-                iv: 22.4, 
-                ivRank: 40,
-                sma200: 125.50,
+                ticker: 'BITH11',
+                company: 'Hashdex Nasdaq Bitcoin',
+                price: 151.30,
+                change: 2.10,
+                sma200: 110.50,
                 bands: {
-                    daily: { upper: 135.20, lower: 128.10, label: 'Curto Prazo (Diário)' },
-                    weekly: { upper: 140.00, lower: 120.50, label: 'Longo Prazo (Semanal)' }
+                    daily: { upper: 160.00, lower: 140.00, label: 'Banda Diária' },
+                    weekly: { upper: 165.00, lower: 135.00, label: 'Banda Semanal' }
                 },
-                call: null,
-                put: null
+                call: { code: 'BITHC165', strike: 165.00, premium: 3.50, expiration: '2024-05-17', delta: '0.25', theta: '-0.05', gamma: '0.02' },
+                put: { code: 'BITHO135', strike: 135.00, premium: 4.80, expiration: '2024-05-17', delta: '-0.20', theta: '-0.04', gamma: '0.02' }
             }
         ];
 

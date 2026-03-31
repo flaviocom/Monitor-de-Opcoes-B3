@@ -1,0 +1,21 @@
+{
+  "name": "monitor-de-opcoes-b3",
+  "version": "1.0.0",
+  "description": "Dashboard de Bandas de Bollinger - Opções B3 (PETR4, VALE3, BBAS3, ITUB4)",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/flaviocom/Monitor-de-Opcoes-B3.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/flaviocom/Monitor-de-Opcoes-B3/issues"
+  },
+  "homepage": "https://github.com/flaviocom/Monitor-de-Opcoes-B3#readme"
+}

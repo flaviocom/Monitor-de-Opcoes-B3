@@ -95,7 +95,7 @@
         .number-fmt { font-family: 'JetBrains Mono', monospace; font-variant-numeric: tabular-nums; }
     </style>
 </head>
-<body class="antialiased selection:bg-brand selection:text-white">
+<body class="bg-[#030712] text-gray-200 antialiased selection:bg-brand selection:text-white min-h-screen">
 
     <!-- Top Navigation -->
     <nav class="sticky top-0 z-50 glass-card border-b border-dark-700/50 px-6 py-4">
@@ -114,6 +114,9 @@
                 <div class="hidden md:flex items-center gap-4 text-sm font-medium text-gray-400">
                     <span class="flex items-center gap-1.5 hover:text-white cursor-pointer transition-colors"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg> Screener</span>
                     <span class="flex items-center gap-1.5 hover:text-white cursor-pointer transition-colors"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg> Estratégias</span>
+                </div>
+                <div class="flex items-center gap-2 px-3 py-1.5 rounded-md bg-dark-800/80 border border-brand-purple/30 shadow-inner">
+                    <span class="text-[11px] font-bold text-brand-purple tracking-widest uppercase flex items-center gap-1"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg> DTE: <span id="dte-counter" class="text-white font-mono ml-1">--</span></span>
                 </div>
                 
                 <div class="flex items-center gap-2 px-3 py-1.5 rounded-md bg-dark-800 border border-dark-700">
@@ -167,14 +170,15 @@
                 nextDividend: null,
                 price: 38.45,
                 change: 1.25,
-                iv: 34.2, // Volatilidade Implícita
+                iv: 34.2, 
+                ivRank: 82, // Percentil Histórico da Volatilidade
                 sma200: 35.15,
                 bands: {
                     daily: { upper: 40.50, lower: 36.10, label: 'Curto Prazo (Diário)' },
                     weekly: { upper: 42.20, lower: 33.90, label: 'Longo Prazo (Semanal)' }
                 },
-                call: { code: 'PETRF410', strike: 41.00, premium: 0.85, delta: 0.25, theta: -0.02 },
-                put:  { code: 'PETRR360', strike: 36.00, premium: 0.95, delta: -0.21, theta: -0.03 }
+                call: { code: 'PETRF410', strike: 41.00, premium: 0.85, delta: 0.25, theta: -0.02, gamma: 0.04, volume: '2M' },
+                put:  { code: 'PETRR360', strike: 36.00, premium: 0.95, delta: -0.21, theta: -0.03, gamma: 0.03, volume: '1.5M' }
             },
             {
                 ticker: 'VALE3',
@@ -184,13 +188,14 @@
                 price: 61.30,
                 change: -2.10,
                 iv: 29.8,
+                ivRank: 15,
                 sma200: 65.80,
                 bands: {
                     daily: { upper: 65.10, lower: 60.50, label: 'Curto Prazo (Diário)' },
                     weekly: { upper: 68.20, lower: 58.80, label: 'Longo Prazo (Semanal)' }
                 },
                 call: null,
-                put: { code: 'VALER610', strike: 61.00, premium: 1.45, delta: -0.45, theta: -0.04 }
+                put: { code: 'VALER610', strike: 61.00, premium: 1.45, delta: -0.45, theta: -0.04, gamma: 0.05, volume: '800k' }
             },
             {
                 ticker: 'BBAS3',
@@ -200,12 +205,13 @@
                 price: 28.15,
                 change: 0.45,
                 iv: 22.1,
+                ivRank: 45,
                 sma200: 25.50,
                 bands: {
                     daily: { upper: 29.50, lower: 26.80, label: 'Curto Prazo (Diário)' },
                     weekly: { upper: 30.20, lower: 24.20, label: 'Longo Prazo (Semanal)' }
                 },
-                call: { code: 'BBASF295', strike: 29.50, premium: 0.52, delta: 0.28, theta: -0.01 },
+                call: { code: 'BBASF295', strike: 29.50, premium: 0.52, delta: 0.28, theta: -0.01, gamma: 0.02, volume: '450k' },
                 put: null
             },
             {
@@ -216,13 +222,14 @@
                 price: 34.22,
                 change: -0.15,
                 iv: 20.5,
+                ivRank: 38,
                 sma200: 31.90,
                 bands: {
                     daily: { upper: 35.98, lower: 32.39, label: 'Curto Prazo (Diário)' },
                     weekly: { upper: 36.20, lower: 30.80, label: 'Longo Prazo (Semanal)' }
                 },
-                call: { code: 'ITUBF360', strike: 35.67, premium: 0.68, delta: 0.31, theta: -0.02 },
-                put: { code: 'ITUBR324', strike: 32.39, premium: 0.42, delta: -0.15, theta: -0.01 }
+                call: { code: 'ITUBF360', strike: 35.67, premium: 0.68, delta: 0.31, theta: -0.02, gamma: 0.03, volume: '1.2M' },
+                put: { code: 'ITUBR324', strike: 32.39, premium: 0.42, delta: -0.15, theta: -0.01, gamma: 0.02, volume: '900k' }
             }
         ];
 
@@ -249,30 +256,38 @@
                 }
 
                 const fetchPromises = assetsData.map(async (asset) => {
-                    const url = `https://brapi.dev/api/quote/${asset.ticker}?token=${BRAPI_TOKEN}&fundamental=true&dividends=true`;
+                    // API 1: Brapi para Preço de Mercado (Delay 15m)
+                    const urlBrapi = `https://brapi.dev/api/quote/${asset.ticker}?token=${BRAPI_TOKEN}`;
+                    // API 2: Nosso Backend Nativo para Data Scraping do Investidor10
+                    const urlEventos = `http://localhost:3000/api/events/${asset.ticker}`;
+                    
                     try {
-                        const response = await fetch(url);
-                        const rawData = await response.json();
+                        // Paralelismo total para os dois endpoints
+                        const [resBrapi, resEventos] = await Promise.allSettled([
+                            fetch(urlBrapi),
+                            fetch(urlEventos)
+                        ]);
                         
-                        if (rawData && rawData.results && rawData.results.length > 0) {
-                            const quote = rawData.results[0];
-                            if (quote.regularMarketPrice) {
-                                asset.price = quote.regularMarketPrice;
-                                asset.change = quote.regularMarketChangePercent || 0;
-                            }
-                            // Extract closest/last dividend if available
-                            if (quote.dividendsData && quote.dividendsData.cashDividends && quote.dividendsData.cashDividends.length > 0) {
-                                const latestDiv = quote.dividendsData.cashDividends[0];
-                                const divDate = new Date(latestDiv.paymentDate);
-                                asset.nextDividend = {
-                                    label: latestDiv.label || 'DIV',
-                                    value: latestDiv.rate || 0,
-                                    date: divDate.toLocaleDateString('pt-BR', { timeZone: 'UTC' })
-                                };
+                        if (resBrapi.status === 'fulfilled') {
+                            const rawData = await resBrapi.value.json();
+                            if (rawData && rawData.results && rawData.results.length > 0) {
+                                const quote = rawData.results[0];
+                                if (quote.regularMarketPrice) {
+                                    asset.price = quote.regularMarketPrice;
+                                    asset.change = quote.regularMarketChangePercent || 0;
+                                }
                             }
                         }
+                        
+                        if (resEventos.status === 'fulfilled') {
+                            try {
+                                const eventData = await resEventos.value.json();
+                                if (eventData.nextEarnings) asset.nextEarnings = eventData.nextEarnings;
+                                if (eventData.nextDividend !== undefined) asset.nextDividend = eventData.nextDividend;
+                            } catch(e) { /* Servidor node off */ }
+                        }
                     } catch (e) {
-                         console.error("Erro ao buscar ticker: " + asset.ticker, e);
+                         console.error("Erro ao buscar dados do ticker: " + asset.ticker, e);
                     }
                 });
                 
@@ -307,7 +322,7 @@
                         <div class="mt-4">
                             <div class="flex justify-between items-end mb-2">
                                 <span class="text-xs font-semibold uppercase tracking-wider text-gray-400">${band.label}</span>
-                                <span class="text-xs font-mono text-gray-300">Vol ${asset.iv}%</span>
+                                <span class="text-xs font-mono text-gray-300">Vol ${asset.iv}% <span class="text-[10px] ml-1 px-1.5 py-0.5 rounded ${asset.ivRank > 50 ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-rose-500/20 text-rose-400 border border-rose-500/30'}">Rk: ${asset.ivRank}</span></span>
                             </div>
                             <div class="w-full h-2 bg-dark-700 rounded-full overflow-hidden relative">
                                 <div class="absolute top-0 left-0 h-full progress-gradient opacity-80" style="width: 100%;"></div>
@@ -347,9 +362,10 @@
                                 </div>
                             </div>
                             <div class="mt-2 pt-2 border-t border-emerald-500/10 flex justify-between text-[11px] font-mono text-gray-500">
-                                <span>Δ: ${asset.put.delta}</span>
-                                <span>θ: ${asset.put.theta}</span>
-                                <span>Retorno: ${((asset.put.premium / asset.put.strike) * 100).toFixed(1)}%</span>
+                                <span title="Delta">Δ: ${asset.put.delta}</span>
+                                <span title="Gamma" class="text-gray-400">Γ: ${asset.put.gamma}</span>
+                                <span title="Theta">θ: ${asset.put.theta}</span>
+                                <span title="Liquidez (Vol)">Liq: ${asset.put.volume}</span>
                             </div>
                         </div>
                     `;
@@ -374,6 +390,12 @@
                                     <p class="text-xs text-gray-400">Taxa Extra</p>
                                     <p class="font-mono text-base font-bold text-brand">${fmtMoney(asset.call.premium)}</p>
                                 </div>
+                            </div>
+                            <div class="mt-2 pt-2 border-t border-brand/10 flex justify-between text-[11px] font-mono text-gray-500">
+                                <span title="Delta">Δ: ${asset.call.delta}</span>
+                                <span title="Gamma" class="text-gray-400">Γ: ${asset.call.gamma}</span>
+                                <span title="Theta">θ: ${asset.call.theta}</span>
+                                <span title="Liquidez (Vol)">Liq: ${asset.call.volume}</span>
                             </div>
                         </div>
                     `;
@@ -408,15 +430,21 @@
                         </div>
 
                         <!-- Eventos Corporativos -->
-                        <div class="grid grid-cols-2 gap-2 mb-3">
-                            <div class="p-2 rounded bg-brand-purple/10 border border-brand-purple/20 flex flex-col justify-center">
-                                <span class="text-[10px] font-bold uppercase tracking-wider text-brand-purple/80 mb-0.5 flex items-center gap-1"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg> Próx. Balanço</span>
-                                <span class="text-xs font-mono font-medium text-gray-200">${asset.nextEarnings}</span>
+                        <div class="grid grid-cols-2 gap-3 mb-4">
+                            <!-- Balanço -->
+                            <div class="p-3 rounded-lg bg-dark-800 border-l-2 border-l-brand-purple border-t border-r border-b border-white/5 flex flex-col justify-center relative overflow-hidden group">
+                                <div class="absolute -right-4 -top-4 w-12 h-12 bg-brand-purple/5 rounded-full group-hover:scale-150 transition-transform duration-500"></div>
+                                <span class="text-[10px] font-bold uppercase tracking-wider text-brand-purple/90 mb-1 flex items-center gap-1"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg> Próx. Balanço</span>
+                                <span class="text-sm font-mono font-medium text-gray-200">${asset.nextEarnings}</span>
                             </div>
-                            <div class="p-2 rounded bg-emerald-500/10 border border-emerald-500/20 flex flex-col justify-center relative overflow-hidden group hover:bg-emerald-500/20 transition-colors">
-                                <span class="text-[10px] font-bold uppercase tracking-wider text-emerald-400 mb-0.5 flex items-center gap-1"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg> ${asset.nextDividend ? asset.nextDividend.label : 'DIVIDENDOS'}</span>
-                                <span class="text-xs font-mono font-medium text-emerald-300">
-                                    ${asset.nextDividend ? `${fmtMoney(asset.nextDividend.value)} <span class="text-[10px] text-gray-400">(${asset.nextDividend.date})</span>` : 'Aguardando API...'}
+                            
+                            <!-- Dividendos (Data-Com via Investidor10) -->
+                            <div class="p-3 rounded-lg bg-dark-800 border-l-2 border-l-emerald-500 border-t border-r border-b border-white/5 flex flex-col justify-center relative overflow-hidden group hover:bg-emerald-500/5 transition-colors">
+                                <div class="absolute -right-4 -top-4 w-12 h-12 bg-emerald-500/5 rounded-full group-hover:scale-150 transition-transform duration-500"></div>
+                                <span class="text-[10px] font-bold uppercase tracking-wider text-emerald-400 mb-1 flex items-center gap-1"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg> ${asset.nextDividend ? asset.nextDividend.label : 'DIVIDENDOS'}</span>
+                                <span class="flex flex-col">
+                                    <span class="text-sm font-mono font-bold text-emerald-400">${asset.nextDividend ? fmtMoney(asset.nextDividend.value) : 'Consultando...'}</span>
+                                    ${asset.nextDividend && asset.nextDividend.datacom ? `<span class="text-[9px] text-gray-400 uppercase tracking-widest mt-0.5">Com: ${asset.nextDividend.datacom}</span>` : ''}
                                 </span>
                             </div>
                         </div>
@@ -443,7 +471,32 @@
         // Relógio Real-time simulando terminal quantitativo
         function updateClock() {
             const now = new Date();
-            document.getElementById('clock').textContent = now.toLocaleTimeString('pt-BR');
+            const clockEl = document.getElementById('clock');
+            if (clockEl) clockEl.textContent = now.toLocaleTimeString('pt-BR');
+            
+            // Calculador Automático de DTE (3ª Sexta-feira do Mês Atual ou Próxima)
+            const dteCounter = document.getElementById('dte-counter');
+            if (dteCounter) {
+                let dteDate = new Date(now.getFullYear(), now.getMonth(), 1);
+                let fridays = 0;
+                while(fridays < 3) {
+                    if (dteDate.getDay() === 5) fridays++;
+                    if (fridays < 3) dteDate.setDate(dteDate.getDate() + 1);
+                }
+                
+                // Opções vencem às 16:00, adicionamos um atraso de segurança no cálculo prático
+                if (now.getDate() >= dteDate.getDate()) {
+                    dteDate = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+                    fridays = 0;
+                    while(fridays < 3) {
+                        if (dteDate.getDay() === 5) fridays++;
+                        if (fridays < 3) dteDate.setDate(dteDate.getDate() + 1);
+                    }
+                }
+                const diffTime = Math.abs(dteDate - now);
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                dteCounter.textContent = diffDays;
+            }
         }
 
         renderAssets();

@@ -163,6 +163,8 @@
             {
                 ticker: 'PETR4',
                 company: 'Petrobras',
+                nextEarnings: '15 Mai 2026',
+                nextDividend: null,
                 price: 38.45,
                 change: 1.25,
                 iv: 34.2, // Volatilidade Implícita
@@ -177,6 +179,8 @@
             {
                 ticker: 'VALE3',
                 company: 'Vale S.A.',
+                nextEarnings: '25 Jul 2026',
+                nextDividend: null,
                 price: 61.30,
                 change: -2.10,
                 iv: 29.8,
@@ -191,6 +195,8 @@
             {
                 ticker: 'BBAS3',
                 company: 'Banco do Brasil',
+                nextEarnings: '04 Ago 2026',
+                nextDividend: null,
                 price: 28.15,
                 change: 0.45,
                 iv: 22.1,
@@ -205,6 +211,8 @@
             {
                 ticker: 'ITUB4',
                 company: 'Itaú Unibanco',
+                nextEarnings: '08 Ago 2026',
+                nextDividend: null,
                 price: 34.22,
                 change: -0.15,
                 iv: 20.5,
@@ -241,7 +249,7 @@
                 }
 
                 const fetchPromises = assetsData.map(async (asset) => {
-                    const url = `https://brapi.dev/api/quote/${asset.ticker}?token=${BRAPI_TOKEN}`;
+                    const url = `https://brapi.dev/api/quote/${asset.ticker}?token=${BRAPI_TOKEN}&fundamental=true&dividends=true`;
                     try {
                         const response = await fetch(url);
                         const rawData = await response.json();
@@ -251,6 +259,16 @@
                             if (quote.regularMarketPrice) {
                                 asset.price = quote.regularMarketPrice;
                                 asset.change = quote.regularMarketChangePercent || 0;
+                            }
+                            // Extract closest/last dividend if available
+                            if (quote.dividendsData && quote.dividendsData.cashDividends && quote.dividendsData.cashDividends.length > 0) {
+                                const latestDiv = quote.dividendsData.cashDividends[0];
+                                const divDate = new Date(latestDiv.paymentDate);
+                                asset.nextDividend = {
+                                    label: latestDiv.label || 'DIV',
+                                    value: latestDiv.rate || 0,
+                                    date: divDate.toLocaleDateString('pt-BR', { timeZone: 'UTC' })
+                                };
                             }
                         }
                     } catch (e) {
@@ -389,6 +407,20 @@
                             </div>
                         </div>
 
+                        <!-- Eventos Corporativos -->
+                        <div class="grid grid-cols-2 gap-2 mb-3">
+                            <div class="p-2 rounded bg-brand-purple/10 border border-brand-purple/20 flex flex-col justify-center">
+                                <span class="text-[10px] font-bold uppercase tracking-wider text-brand-purple/80 mb-0.5 flex items-center gap-1"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg> Próx. Balanço</span>
+                                <span class="text-xs font-mono font-medium text-gray-200">${asset.nextEarnings}</span>
+                            </div>
+                            <div class="p-2 rounded bg-emerald-500/10 border border-emerald-500/20 flex flex-col justify-center relative overflow-hidden group hover:bg-emerald-500/20 transition-colors">
+                                <span class="text-[10px] font-bold uppercase tracking-wider text-emerald-400 mb-0.5 flex items-center gap-1"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg> ${asset.nextDividend ? asset.nextDividend.label : 'DIVIDENDOS'}</span>
+                                <span class="text-xs font-mono font-medium text-emerald-300">
+                                    ${asset.nextDividend ? `${fmtMoney(asset.nextDividend.value)} <span class="text-[10px] text-gray-400">(${asset.nextDividend.date})</span>` : 'Aguardando API...'}
+                                </span>
+                            </div>
+                        </div>
+
                         <!-- Indicador de Tendência MM200 -->
                         <div class="flex items-center gap-2 mb-2 p-2 rounded bg-dark-800/50 border border-dark-700/50">
                             <div class="w-1.5 h-1.5 rounded-full ${isAboveTrend ? 'bg-emerald-400' : 'bg-rose-400'} shadow-[0_0_8px_${isAboveTrend ? '#34d399' : '#fb7185'}]"></div>
@@ -418,9 +450,9 @@
         setInterval(updateClock, 1000);
         updateClock();
 
-        // Dispara a busca inicial de preços e agenda para auto-atualizar (15 em 15 segundos)
+        // Dispara a busca inicial de preços e agenda para auto-atualizar (5 em 5 segundos)
         fetchRealTimePrices();
-        setInterval(fetchRealTimePrices, 15000);
+        setInterval(fetchRealTimePrices, 5000);
     </script>
 </body>
 </html>

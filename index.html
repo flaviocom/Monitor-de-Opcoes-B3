@@ -212,25 +212,25 @@
     <div id="chart-modal" onclick="if(event.target===this)closeChart()">
         <div id="chart-modal-box">
             <!-- Header do Modal -->
-            <div class="flex items-center justify-between px-5 py-4 border-b border-dark-700/60">
-                <div class="flex items-center gap-3">
+            <div class="flex flex-wrap items-center justify-between px-5 py-4 border-b border-dark-700/60 relative gap-y-3">
+                <div class="flex items-center flex-wrap gap-2 sm:gap-3 w-[calc(100%-40px)] sm:w-auto pr-2">
                     <span class="text-white font-bold font-mono text-lg" id="modal-ticker">PETR4</span>
-                    <span class="text-gray-400 text-sm" id="modal-company">Petrobras</span>
+                    <span class="text-gray-400 text-sm hidden sm:inline" id="modal-company">Petrobras</span>
                     <span id="modal-price" class="text-sm font-mono font-bold text-emerald-400"></span>
                     <span id="modal-change" class="text-xs font-mono"></span>
                 </div>
-                <div class="flex items-center gap-2">
-                    <!-- Seletor de Período -->
-                    <div class="flex gap-1 mr-3" id="period-buttons">
-                        <button class="period-btn" data-range="1mo" onclick="loadChart(currentChartTicker,'1mo')">1M</button>
-                        <button class="period-btn active" data-range="3mo" onclick="loadChart(currentChartTicker,'3mo')">3M</button>
-                        <button class="period-btn" data-range="6mo" onclick="loadChart(currentChartTicker,'6mo')">6M</button>
-                        <button class="period-btn" data-range="1y" onclick="loadChart(currentChartTicker,'1y')">1A</button>
-                    </div>
-                    <button onclick="closeChart()" class="text-gray-400 hover:text-white transition-colors p-1.5 rounded-lg hover:bg-dark-700/50">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                    </button>
+                
+                <!-- Seletor de Período -->
+                <div class="flex gap-1 w-full sm:w-auto overflow-x-auto pb-1 sm:pb-0" id="period-buttons">
+                    <button class="period-btn" data-range="1mo" onclick="loadChart(currentChartTicker,'1mo')">1M</button>
+                    <button class="period-btn active" data-range="3mo" onclick="loadChart(currentChartTicker,'3mo')">3M</button>
+                    <button class="period-btn" data-range="6mo" onclick="loadChart(currentChartTicker,'6mo')">6M</button>
+                    <button class="period-btn" data-range="1y" onclick="loadChart(currentChartTicker,'1y')">1A</button>
                 </div>
+                
+                <button onclick="closeChart()" class="absolute top-4 right-4 text-gray-400 hover:text-white transition-colors p-1.5 rounded-lg hover:bg-dark-700/50 bg-dark-800 sm:bg-transparent">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
             </div>
             <!-- Legenda de Indicadores -->
             <div class="flex items-center gap-4 px-5 py-2 bg-dark-800/40 border-b border-dark-700/30 text-[11px] font-mono">
@@ -684,14 +684,14 @@
                     const callIsReal = asset.call.volume === 'Real';
                     strategyHTML += `
                         <div class="rounded-lg p-3 border border-brand/20 bg-brand/5 hover:bg-brand/10 transition-colors">
-                            <div class="flex items-center justify-between mb-2">
-                                <span class="text-xs font-bold text-brand uppercase tracking-widest flex items-center gap-1">
-                                    <div class="w-1.5 h-1.5 rounded-full bg-brand"></div> Venda Coberta (Call)
+                            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-2 gap-y-2">
+                                <span class="text-[11px] sm:text-xs font-bold text-brand uppercase tracking-widest flex items-center gap-1 w-full sm:w-auto">
+                                    <div class="w-1.5 h-1.5 rounded-full bg-brand shrink-0"></div> Venda Coberta (Call)
                                 </span>
-                                <div class="flex items-center gap-2">
+                                <div class="flex flex-wrap items-center gap-1.5 sm:gap-2">
                                     ${bandContextBadge('CALL')}
                                     ${callDTELabel}
-                                    <span class="text-xs font-mono text-gray-400">${asset.call.code}</span>
+                                    <span class="text-[10px] sm:text-xs font-mono text-gray-400">${asset.call.code}</span>
                                 </div>
                             </div>
                             <div class="flex justify-between items-end">
@@ -747,14 +747,14 @@
                     const putIsReal = asset.put.volume === 'Real';
                     strategyHTML += `
                         <div class="rounded-lg p-3 border border-emerald-500/20 bg-emerald-500/5 hover:bg-emerald-500/10 transition-colors">
-                            <div class="flex items-center justify-between mb-2">
-                                <span class="text-xs font-bold text-emerald-400 uppercase tracking-widest flex items-center gap-1">
-                                    <div class="w-1.5 h-1.5 rounded-full bg-emerald-400"></div> Venda de PUT
+                            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-2 gap-y-2">
+                                <span class="text-[11px] sm:text-xs font-bold text-emerald-400 uppercase tracking-widest flex items-center gap-1 w-full sm:w-auto">
+                                    <div class="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0"></div> Venda de PUT
                                 </span>
-                                <div class="flex items-center gap-2">
+                                <div class="flex flex-wrap items-center gap-1.5 sm:gap-2">
                                     ${bandContextBadge('PUT')}
                                     ${putDTELabel}
-                                    <span class="text-xs font-mono text-gray-400">${asset.put.code}</span>
+                                    <span class="text-[10px] sm:text-xs font-mono text-gray-400">${asset.put.code}</span>
                                 </div>
                             </div>
                             <div class="flex justify-between items-end">

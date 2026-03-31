@@ -253,7 +253,15 @@
         const BRAPI_TOKEN = 'ip1K3nN5Z9vhEgZ8jbiyHT';
         let eventsLoaded = false;
         let initialLoad = true; // Impede flash dos dados mockados no topo
-        
+
+        // ========================================================
+        // CONFIG DO BACKEND — Ajuste a URL após deploy no Render!
+        // ========================================================
+        const RENDER_API_URL = 'https://monitor-de-opcoes-b3.onrender.com'; // ← será atualizada após deploy
+        const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+        const API_BASE_URL = isLocal ? 'http://localhost:3000' : RENDER_API_URL;
+        const API_AVAILABLE = true; // Sempre tenta buscar (localhost OU Render)
+
         async function fetchRealTimePrices() {
             try {
                 const clockStatus = document.getElementById('clock');
@@ -302,9 +310,9 @@
                     // ============================================
                     // INTEGRAÇÃO ROBÔ QUANTITATIVO OPCOES.NET.BR
                     // ============================================
-                    if (isLocal) {
+                    if (API_AVAILABLE) {
                         try {
-                            const resOpt = await fetch(`http://localhost:3000/api/options/${asset.ticker}`);
+                            const resOpt = await fetch(`${API_BASE_URL}/api/options/${asset.ticker}`);
                             if (resOpt.ok) {
                                 const optData = await resOpt.json();
                                 if (optData.options && optData.options.length > 0) {
@@ -336,10 +344,10 @@
                 }
 
                 // Fetch Corporate Events (Earnings/Dividends) ONLY ONCE, preventing Infinite Lock & IP Ban
-                if (isLocal && !eventsLoaded) {
+                if (API_AVAILABLE && !eventsLoaded) {
                     const eventPromises = assetsData.map(async (asset) => {
                         try {
-                            const resEvents = await fetch(`http://localhost:3000/api/events/${asset.ticker}`);
+                            const resEvents = await fetch(`${API_BASE_URL}/api/events/${asset.ticker}`);
                             if (resEvents.ok) {
                                 const eventData = await resEvents.json();
                                 if (eventData.nextEarnings) asset.nextEarnings = eventData.nextEarnings;

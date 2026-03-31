@@ -2,9 +2,13 @@
   "name": "monitor-de-opcoes-b3",
   "version": "1.0.0",
   "description": "Dashboard de Bandas de Bollinger - Opções B3 (PETR4, VALE3, BBAS3, ITUB4)",
-  "main": "index.js",
+  "main": "server.js",
   "scripts": {
+    "start": "node server.js",
     "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "engines": {
+    "node": ">=18.0.0"
   },
   "repository": {
     "type": "git",

@@ -3,7 +3,23 @@ const cors = require('cors');
 const axios = require('axios');
 
 const app = express();
-app.use(cors());
+
+// CORS: permite requisições do GitHub Pages e localhost
+app.use(cors({
+    origin: [
+        'https://flaviocom.github.io',
+        'http://localhost:3000',
+        'http://127.0.0.1:5500',
+        'null' // para arquivo local aberto direto no browser
+    ],
+    methods: ['GET'],
+    optionsSuccessStatus: 200
+}));
+
+// Health check — Render usa isso pra saber que o servidor tá vivo
+app.get('/', (req, res) => {
+    res.json({ status: 'ok', service: 'ThetaLens PRO API', version: '1.0.0' });
+});
 
 const CACHE = {}; // Cache básico em memória para não martelarmos o investidor10
 const CACHE_TTL = 1000 * 60 * 60; // 1 Hora
@@ -172,8 +188,11 @@ app.get('/api/options/:ticker', async (req, res) => {
     }
 });
 
-const PORT = 3000;
+// Render injeta PORT via variável de ambiente — localmente usa 3000
+const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-    console.log(`[Elite Quant] Servidor de Scraping rodando na porta ${PORT}`);
-    console.log(`Endpoint: http://localhost:${PORT}/api/events/:ticker`);
+    console.log(`[ThetaLens PRO] Servidor rodando na porta ${PORT}`);
+    console.log(`Health: http://localhost:${PORT}/`);
+    console.log(`Options: http://localhost:${PORT}/api/options/:ticker`);
+    console.log(`Events:  http://localhost:${PORT}/api/events/:ticker`);
 });

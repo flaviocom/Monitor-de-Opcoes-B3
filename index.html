@@ -118,11 +118,6 @@
                 <div class="flex items-center gap-2 px-3 py-1.5 rounded-md bg-dark-800/80 border border-brand-purple/30 shadow-inner">
                     <span class="text-[11px] font-bold text-brand-purple tracking-widest uppercase flex items-center gap-1"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg> DTE: <span id="dte-counter" class="text-white font-mono ml-1">--</span></span>
                 </div>
-                
-                <div class="flex items-center gap-2 px-3 py-1.5 rounded-md bg-dark-800 border border-dark-700">
-                    <div class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse-slow"></div>
-                    <span class="text-xs font-mono text-emerald-400" id="clock">00:00:00</span>
-                </div>
             </div>
         </div>
     </nav>
@@ -230,6 +225,23 @@
                 },
                 call: { code: 'ITUBF360', strike: 35.67, premium: 0.68, delta: 0.31, theta: -0.02, gamma: 0.03, volume: '1.2M' },
                 put: { code: 'ITUBR324', strike: 32.39, premium: 0.42, delta: -0.15, theta: -0.01, gamma: 0.02, volume: '900k' }
+            },
+            {
+                ticker: 'BITH11',
+                company: 'Hashdex Bitcoin',
+                nextEarnings: '--',
+                nextDividend: null,
+                price: 135.40,
+                change: 2.15,
+                iv: 65.4, 
+                ivRank: 92,
+                sma200: 105.50,
+                bands: {
+                    daily: { upper: 145.20, lower: 125.10, label: 'Curto Prazo (Diário)' },
+                    weekly: { upper: 155.00, lower: 110.50, label: 'Longo Prazo (Semanal)' }
+                },
+                call: { code: 'BITHF145', strike: 145.00, premium: 4.20, delta: 0.35, theta: -0.05, gamma: 0.08, volume: '85k' },
+                put:  { code: 'BITHR120', strike: 120.00, premium: 3.80, delta: -0.28, theta: -0.06, gamma: 0.07, volume: '60k' }
             }
         ];
 
@@ -240,10 +252,10 @@
         // Crie sua conta grátis em https://brapi.dev/ e cole seu token abaixo:
         const BRAPI_TOKEN = 'ip1K3nN5Z9vhEgZ8jbiyHT';
 
-        // Sistema de Cotações em Tempo Real/Delay B3 via Brapi (Profissional)
+        let eventsLoaded = false;
+
         async function fetchRealTimePrices() {
             try {
-                // Indicador de atualização visual
                 const clockStatus = document.getElementById('clock');
                 if (clockStatus) {
                     clockStatus.classList.remove('text-emerald-400');
@@ -251,58 +263,73 @@
                 }
                 
                 if (BRAPI_TOKEN === 'SUA_CHAVE_AQUI') {
-                    console.warn("⚠️ Token do Brapi ausente. Mantendo os dados simulados parciais para visualização.");
-                    return; // Cancela silenciosamente se o usuário ainda não colocou o token
+                    console.warn("⚠️ Token do Brapi ausente. Mantendo visualização base.");
+                    setTimeout(fetchRealTimePrices, 5000);
+                    return;
                 }
 
-                const fetchPromises = assetsData.map(async (asset) => {
-                    // API 1: Brapi para Preço de Mercado (Delay 15m)
-                    const urlBrapi = `https://brapi.dev/api/quote/${asset.ticker}?token=${BRAPI_TOKEN}`;
-                    // API 2: Nosso Backend Nativo para Data Scraping do Investidor10
-                    const urlEventos = `http://localhost:3000/api/events/${asset.ticker}`;
-                    
-                    try {
-                        // Paralelismo total para os dois endpoints
-                        const [resBrapi, resEventos] = await Promise.allSettled([
-                            fetch(urlBrapi),
-                            fetch(urlEventos)
-                        ]);
-                        
-                        if (resBrapi.status === 'fulfilled') {
-                            const rawData = await resBrapi.value.json();
-                            if (rawData && rawData.results && rawData.results.length > 0) {
-                                const quote = rawData.results[0];
-                                if (quote.regularMarketPrice) {
+                // Batch Fetch for all tickers in ONE single request to save rate limits
+                const allTickers = assetsData.map(a => a.ticker).join(',');
+                const urlBrapi = `https://brapi.dev/api/quote/${allTickers}?token=${BRAPI_TOKEN}`;
+                
+                // Only try to fetch local APIs if running locally to avoid Mixed Content error
+                const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+                
+                try {
+                    const resBrapi = await fetch(urlBrapi);
+                    if (resBrapi.ok) {
+                        const rawData = await resBrapi.json();
+                        if (rawData && rawData.results) {
+                            rawData.results.forEach(quote => {
+                                const asset = assetsData.find(a => a.ticker === quote.symbol);
+                                if (asset && quote.regularMarketPrice) {
+                                    const offset = quote.regularMarketPrice - asset.price;
                                     asset.price = quote.regularMarketPrice;
                                     asset.change = quote.regularMarketChangePercent || 0;
+                                    
+                                    // Mantém a distorção visual dinâmica das bandas caso o Mock fique ultrapassado
+                                    if (asset.bands && offset !== 0) {
+                                        asset.sma200 += offset;
+                                        asset.bands.daily.upper += offset;
+                                        asset.bands.daily.lower += offset;
+                                        asset.bands.weekly.upper += offset;
+                                        asset.bands.weekly.lower += offset;
+                                        if (asset.call) asset.call.strike += offset;
+                                        if (asset.put) asset.put.strike += offset;
+                                    }
                                 }
-                            }
+                            });
                         }
-                        
-                        if (resEventos.status === 'fulfilled') {
-                            try {
-                                const eventData = await resEventos.value.json();
+                    }
+                } catch(e) { console.error("Erro Brapi", e); }
+
+                // Fetch Corporate Events (Earnings/Dividends) ONLY ONCE, preventing Infinite Lock & IP Ban
+                if (isLocal && !eventsLoaded) {
+                    const eventPromises = assetsData.map(async (asset) => {
+                        try {
+                            const resEvents = await fetch(`http://localhost:3000/api/events/${asset.ticker}`);
+                            if (resEvents.ok) {
+                                const eventData = await resEvents.json();
                                 if (eventData.nextEarnings) asset.nextEarnings = eventData.nextEarnings;
                                 if (eventData.nextDividend !== undefined) asset.nextDividend = eventData.nextDividend;
-                            } catch(e) { /* Servidor node off */ }
-                        }
-                    } catch (e) {
-                         console.error("Erro ao buscar dados do ticker: " + asset.ticker, e);
-                    }
-                });
+                            }
+                        } catch (e) { /* Servidor node off, let it fail silently */ }
+                    });
+                    await Promise.allSettled(eventPromises);
+                    eventsLoaded = true; // Never query scraping again in this session
+                }
                 
-                // Aguarda todas as chamadas individuais finalizarem (executando em paralelo)
-                await Promise.all(fetchPromises);
+                renderAssets(); // Atualiza a grade com novos preços e eventos
                 
-                renderAssets(); // Atualiza a grade com novos preços
-                
-                // Volta o indicador para verde
                 if (clockStatus) {
                     clockStatus.classList.remove('text-brand');
                     clockStatus.classList.add('text-emerald-400');
                 }
             } catch (error) {
-                console.error("Erro ao sincronizar cotações B3 através do Brapi:", error);
+                console.error("Erro no Sync B3:", error);
+            } finally {
+                // Schedule next call AFTER this one finishes (prevents interval pile-up and freezes)
+                setTimeout(fetchRealTimePrices, 5000);
             }
         }
 
@@ -443,7 +470,7 @@
                                 <div class="absolute -right-4 -top-4 w-12 h-12 bg-emerald-500/5 rounded-full group-hover:scale-150 transition-transform duration-500"></div>
                                 <span class="text-[10px] font-bold uppercase tracking-wider text-emerald-400 mb-1 flex items-center gap-1"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg> ${asset.nextDividend ? asset.nextDividend.label : 'DIVIDENDOS'}</span>
                                 <span class="flex flex-col">
-                                    <span class="text-sm font-mono font-bold text-emerald-400">${asset.nextDividend ? fmtMoney(asset.nextDividend.value) : 'Consultando...'}</span>
+                                    <span class="text-sm font-mono font-bold text-emerald-400">${asset.nextDividend ? fmtMoney(asset.nextDividend.value) : 'R$ --'}</span>
                                     ${asset.nextDividend && asset.nextDividend.datacom ? `<span class="text-[9px] text-gray-400 uppercase tracking-widest mt-0.5">Com: ${asset.nextDividend.datacom}</span>` : ''}
                                 </span>
                             </div>
@@ -503,9 +530,8 @@
         setInterval(updateClock, 1000);
         updateClock();
 
-        // Dispara a busca inicial de preços e agenda para auto-atualizar (5 em 5 segundos)
+        // Dispara a busca inicial de preços com recursividade inteligente (evita travamentos)
         fetchRealTimePrices();
-        setInterval(fetchRealTimePrices, 5000);
     </script>
 </body>
 </html>

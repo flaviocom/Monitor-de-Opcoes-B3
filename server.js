@@ -137,20 +137,24 @@ app.get('/api/options/:ticker', async (req, res) => {
             return res.status(404).json({ error: 'Nenhum vencimento encontrado para ' + ticker });
         }
 
-        // Passo 2: Escolher o vencimento ideal
-        // Prioridade: vencimento mensal (geralmente a 3ª sexta) com DU entre 10 e 45 dias
+        // Passo 2: Escolher o vencimento ideal (Alvo: ~45 Dias Úteis, equivalente a 2 meses)
         const hoje = new Date();
         const vencimentos = vencResp.data.data.vencimentos;
         
-        // Filtra vencimentos com DU (dias úteis) entre 10 e 45 - o "sweet spot" para Venda Coberta/Put
+        // Objetivo: Vencimento mais próximo de 45 dias úteis. Filtramos uma base mais ampla (ex: 20 a 70 DU)
         const candidatos = vencimentos
             .filter(v => {
                 const du = parseInt(v.dataAttributes?.du || '0');
-                return du >= 10 && du <= 45;
+                return du >= 20 && du <= 75; // Janela um pouco mais larga para garantir que encontre opções boas de liquidez
             })
-            .sort((a, b) => parseInt(a.dataAttributes?.du || '0') - parseInt(b.dataAttributes?.du || '0'));
+            // Ordenando pela distância absoluta do alvo ideal (45 dias úteis)
+            .sort((a, b) => {
+                const diffA = Math.abs(parseInt(a.dataAttributes?.du || '0') - 45);
+                const diffB = Math.abs(parseInt(b.dataAttributes?.du || '0') - 45);
+                return diffA - diffB;
+            });
         
-        const vencimentoEscolhido = candidatos[0] || vencimentos[0]; // Primeiro elegível ou o próximo
+        const vencimentoEscolhido = candidatos.length > 0 ? candidatos[0] : vencimentos[0]; // Melhor candidato ou o próximo disponível
         const vencDate = vencimentoEscolhido.value; // Formato YYYY-MM-DD
         const du = parseInt(vencimentoEscolhido.dataAttributes?.du || '0');
 

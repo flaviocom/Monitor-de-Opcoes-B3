@@ -359,6 +359,76 @@
         const API_BASE_URL = isLocal ? 'http://localhost:3000' : RENDER_API_URL;
         const API_AVAILABLE = true; // Sempre tenta buscar (localhost OU Render)
 
+        // ==========================================
+        // CÁLCULO DE VOLATILIDADE HISTÓRICA (VH)
+        // ==========================================
+        let hvLoaded = false;
+        
+        async function fetchHistoricalVolatility() {
+            if (hvLoaded || BRAPI_TOKEN === 'SUA_CHAVE_AQUI') return;
+            
+            try {
+                const tickers = assetsData.map(a => a.ticker).join(',');
+                const url = `https://brapi.dev/api/quote/${tickers}?range=1y&interval=1d&token=${BRAPI_TOKEN}`;
+                const res = await fetch(url);
+                if (!res.ok) return;
+                
+                const data = await res.json();
+                if (!data.results) return;
+                
+                // Processando cada ticker para extrair a Volatilidade Histórica (VH) do Fechamento
+                data.results.forEach(result => {
+                    const asset = assetsData.find(a => a.ticker === result.symbol);
+                    if (!asset || !result.historicalDataPrice || result.historicalDataPrice.length < 30) return;
+                    
+                    const prices = result.historicalDataPrice.map(day => day.close).filter(p => typeof p === 'number' && p > 0);
+                    if (prices.length < 30) return;
+                    
+                    const logReturns = [];
+                    for(let i = 1; i < prices.length; i++) {
+                       logReturns.push(Math.log(prices[i] / prices[i-1]));
+                    }
+                    
+                    // Janela de volatilidade atual = últimos 21 pregões (aproximadamente 1 mês útil)
+                    const WINDOW_SIZE = 21; 
+                    
+                    const calcStdDev = (arr) => {
+                        const mean = arr.reduce((a, b) => a + b, 0) / arr.length;
+                        const variance = arr.reduce((a, b) => a + Math.pow(b - mean, 2), 0) / (arr.length - 1);
+                        return Math.sqrt(variance);
+                    };
+                    
+                    const SQRT_252 = Math.sqrt(252); // Constante de anualização
+                    
+                    // Volatilidade Histórica Atual
+                    const currentReturns = logReturns.slice(-WINDOW_SIZE);
+                    const currentVol = calcStdDev(currentReturns) * SQRT_252;
+                    asset.hv = (currentVol * 100).toFixed(1);
+                    
+                    // VH max e min do último ano inteiro (janelas móveis de 21 dias) para encontrar o Rank
+                    let hvs = [];
+                    for (let i = 0; i <= logReturns.length - WINDOW_SIZE; i++) {
+                        const frame = logReturns.slice(i, i + WINDOW_SIZE);
+                        const vol = calcStdDev(frame) * SQRT_252;
+                        hvs.push(vol);
+                    }
+                    
+                    const minHv = Math.min(...hvs);
+                    const maxHv = Math.max(...hvs);
+                    
+                    // Percentil Histórico (Rank)
+                    let rank = ((currentVol - minHv) / (maxHv - minHv)) * 100;
+                    if (rank < 0) rank = 0;
+                    if (rank > 100) rank = 100;
+                    asset.hvRank = Math.round(rank);
+                });
+                
+                hvLoaded = true;
+            } catch (e) {
+                console.error("Erro calcular VH:", e);
+            }
+        }
+
         async function fetchRealTimePrices() {
             try {
                 const clockStatus = document.getElementById('clock');
@@ -456,6 +526,11 @@
                     eventsLoaded = true; // Never query scraping again in this session
                 }
                 
+                // Fetch Historical Volatility para substituir os mocks antigos (calculado via client-side quantitative engine)
+                if (!hvLoaded) {
+                    await fetchHistoricalVolatility();
+                }
+
                 initialLoad = false; // Tudo carregado pela 1a vez
                 renderAssets(); // Atualiza a grade com novos preços e eventos
                 
@@ -483,11 +558,17 @@
                 // Helper para renderizar a barra de progresso (Banda de Bollinger)
                 const renderBand = (band) => {
                     const pos = Math.max(0, Math.min(100, ((asset.price - band.lower) / (band.upper - band.lower)) * 100));
+                    
+                    // Volatilidade Real Calculada ou fallback
+                    const volStr = asset.hv ? asset.hv + '%' : '--';
+                    const rankStr = asset.hvRank !== undefined ? asset.hvRank : '--';
+                    const rankColor = asset.hvRank > 50 ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-rose-500/20 text-rose-400 border border-rose-500/30';
+
                     return `
                         <div class="mt-4">
                             <div class="flex justify-between items-end mb-2">
                                 <span class="text-xs font-semibold uppercase tracking-wider text-gray-400">${band.label}</span>
-                                <span class="text-xs font-mono text-gray-300">Vol ${asset.iv}% <span class="text-[10px] ml-1 px-1.5 py-0.5 rounded ${asset.ivRank > 50 ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-rose-500/20 text-rose-400 border border-rose-500/30'}">Rk: ${asset.ivRank}</span></span>
+                                <span class="text-xs font-mono text-gray-300" title="Volatilidade Histórica Diária (Brapi)">Vol ${volStr} <span class="text-[10px] ml-1 px-1.5 py-0.5 rounded ${rankColor}" title="VH Rank: ${rankStr}%">Rk: ${rankStr}</span></span>
                             </div>
                             <div class="w-full h-2 bg-dark-700 rounded-full overflow-hidden relative">
                                 <div class="absolute top-0 left-0 h-full progress-gradient opacity-80" style="width: 100%;"></div>
@@ -876,6 +957,19 @@
                         lineStyle: LightweightCharts.LineStyle.Dotted,
                         axisLabelVisible: true,
                         title: 'Atual',
+                    });
+                }
+
+                // Cálculo de Suporte Recente (Mínima do período exibido)
+                if (candles.length > 0) {
+                    const minPrice = Math.min(...candles.map(c => c.low));
+                    candleSeries.createPriceLine({
+                        price: minPrice,
+                        color: '#10b981', // Emerald
+                        lineWidth: 1,
+                        lineStyle: LightweightCharts.LineStyle.Solid,
+                        axisLabelVisible: true,
+                        title: 'Suporte',
                     });
                 }
 

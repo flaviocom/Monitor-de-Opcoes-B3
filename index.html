@@ -77,6 +77,7 @@
         .badge-pro {
             background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
             -webkit-background-clip: text;
+            background-clip: text;
             -webkit-text-fill-color: transparent;
             font-weight: 700;
         }
@@ -128,6 +129,14 @@
     <!-- Main Content -->
     <main class="max-w-7xl mx-auto px-6 py-8">
         
+        <!-- Aviso Educacional (Exigido CVM/Regulamentação) -->
+        <div class="mb-6 p-4 rounded-xl border border-rose-500/30 bg-rose-500/10 flex items-center gap-4 shadow-lg shadow-rose-500/5">
+            <span class="text-2xl">⚠️</span>
+            <p class="text-sm text-gray-300 font-medium">
+                <strong class="text-rose-400">AVISO:</strong> Este painel é uma ferramenta de apoio educacional e acompanhamento quantitativo. Não constitui recomendação de investimento. Decisões financeiras devem ser baseadas em avaliações próprias e profissionais.
+            </p>
+        </div>
+
         <!-- Header Info Banner -->
         <div class="mb-8 glass-card rounded-xl p-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border-l-4 border-l-brand-purple">
             <div>
@@ -214,6 +223,45 @@
         // Formatadores
         const fmtMoney = (val) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(val);
         const fmtPct = (val) => new Intl.NumberFormat('pt-BR', { style: 'percent', minimumFractionDigits: 1, maximumFractionDigits: 1 }).format(val / 100);
+
+        // Sistema de Cotações em Tempo Real/Delay B3 via Yahoo Finance + AllOrigins Proxy
+        async function fetchRealTimePrices() {
+            try {
+                // Indicador de atualização visual
+                const clockStatus = document.getElementById('clock');
+                if (clockStatus) {
+                    clockStatus.classList.remove('text-emerald-400');
+                    clockStatus.classList.add('text-brand');
+                }
+                
+                const tickers = assetsData.map(a => a.ticker + '.SA').join(',');
+                const url = encodeURIComponent(`https://query1.finance.yahoo.com/v7/finance/quote?symbols=${tickers}`);
+                
+                const response = await fetch(`https://api.allorigins.win/get?url=${url}`);
+                const proxyData = await response.json();
+                const data = JSON.parse(proxyData.contents);
+                
+                if (data && data.quoteResponse && data.quoteResponse.result) {
+                    data.quoteResponse.result.forEach(quote => {
+                        const ticker = quote.symbol.replace('.SA', '');
+                        const asset = assetsData.find(a => a.ticker === ticker);
+                        if (asset) {
+                            asset.price = quote.regularMarketPrice;
+                            asset.change = quote.regularMarketChangePercent;
+                        }
+                    });
+                    renderAssets(); // Atualiza a grade com novos preços
+                }
+                
+                // Volta o indicador para verde
+                if (clockStatus) {
+                    clockStatus.classList.remove('text-brand');
+                    clockStatus.classList.add('text-emerald-400');
+                }
+            } catch (error) {
+                console.error("Erro ao sincronizar cotações B3:", error);
+            }
+        }
 
         function renderAssets() {
             const grid = document.getElementById('assets-grid');
@@ -359,6 +407,10 @@
         renderAssets();
         setInterval(updateClock, 1000);
         updateClock();
+
+        // Dispara a busca inicial de preços e agenda para auto-atualizar (15 em 15 segundos)
+        fetchRealTimePrices();
+        setInterval(fetchRealTimePrices, 15000);
     </script>
 </body>
 </html>

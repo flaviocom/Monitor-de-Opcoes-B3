@@ -242,22 +242,28 @@
                     return; // Cancela silenciosamente se o usuário ainda não colocou o token
                 }
 
-                const tickers = assetsData.map(a => a.ticker).join(',');
-                const url = `https://brapi.dev/api/quote/${tickers}?token=${BRAPI_TOKEN}`;
-                
-                const response = await fetch(url);
-                const data = await response.json();
-                
-                if (data && data.results) {
-                    data.results.forEach(quote => {
-                        const asset = assetsData.find(a => a.ticker === quote.symbol);
-                        if (asset && quote.regularMarketPrice) {
-                            asset.price = quote.regularMarketPrice;
-                            asset.change = quote.regularMarketChangePercent || 0;
+                const fetchPromises = assetsData.map(async (asset) => {
+                    const url = `https://brapi.dev/api/quote/${asset.ticker}?token=${BRAPI_TOKEN}`;
+                    try {
+                        const response = await fetch(url);
+                        const rawData = await response.json();
+                        
+                        if (rawData && rawData.results && rawData.results.length > 0) {
+                            const quote = rawData.results[0];
+                            if (quote.regularMarketPrice) {
+                                asset.price = quote.regularMarketPrice;
+                                asset.change = quote.regularMarketChangePercent || 0;
+                            }
                         }
-                    });
-                    renderAssets(); // Atualiza a grade com novos preços
-                }
+                    } catch (e) {
+                         console.error("Erro ao buscar ticker: " + asset.ticker, e);
+                    }
+                });
+                
+                // Aguarda todas as chamadas individuais finalizarem (executando em paralelo)
+                await Promise.all(fetchPromises);
+                
+                renderAssets(); // Atualiza a grade com novos preços
                 
                 // Volta o indicador para verde
                 if (clockStatus) {

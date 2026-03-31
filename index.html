@@ -162,7 +162,7 @@
                 ticker: 'PETR4',
                 company: 'Petrobras',
                 nextEarnings: '15 Mai 2026',
-                nextDividend: null,
+                nextDividend: { label: 'DIVIDENDO', value: 1.15, datacom: '28 Fev 2026' },
                 price: 38.45,
                 change: 1.25,
                 iv: 34.2, 
@@ -179,7 +179,7 @@
                 ticker: 'VALE3',
                 company: 'Vale S.A.',
                 nextEarnings: '25 Jul 2026',
-                nextDividend: null,
+                nextDividend: { label: 'DIVIDENDO', value: 2.73, datacom: '15 Mar 2026' },
                 price: 61.30,
                 change: -2.10,
                 iv: 29.8,
@@ -196,7 +196,7 @@
                 ticker: 'BBAS3',
                 company: 'Banco do Brasil',
                 nextEarnings: '04 Ago 2026',
-                nextDividend: null,
+                nextDividend: { label: 'JCP', value: 0.45, datacom: '03 Mar 2026' },
                 price: 28.15,
                 change: 0.45,
                 iv: 22.1,
@@ -213,7 +213,7 @@
                 ticker: 'ITUB4',
                 company: 'Itaú Unibanco',
                 nextEarnings: '08 Ago 2026',
-                nextDividend: null,
+                nextDividend: { label: 'JCP', value: 0.017, datacom: '29 Fev 2026' },
                 price: 34.22,
                 change: -0.15,
                 iv: 20.5,
@@ -268,21 +268,20 @@
                     return;
                 }
 
-                // Batch Fetch for all tickers in ONE single request to save rate limits
-                const allTickers = assetsData.map(a => a.ticker).join(',');
-                const urlBrapi = `https://brapi.dev/api/quote/${allTickers}?token=${BRAPI_TOKEN}`;
-                
-                // Only try to fetch local APIs if running locally to avoid Mixed Content error
+                // O plano grátis do Brapi só permite consultar 1 ativo por vez
+                // Entao faremos um loop sequencial rápido
                 const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
                 
-                try {
-                    const resBrapi = await fetch(urlBrapi);
-                    if (resBrapi.ok) {
-                        const rawData = await resBrapi.json();
-                        if (rawData && rawData.results) {
-                            rawData.results.forEach(quote => {
-                                const asset = assetsData.find(a => a.ticker === quote.symbol);
-                                if (asset && quote.regularMarketPrice) {
+                for (const asset of assetsData) {
+                    try {
+                        const urlBrapi = `https://brapi.dev/api/quote/${asset.ticker}?token=${BRAPI_TOKEN}`;
+                        const resBrapi = await fetch(urlBrapi);
+                        
+                        if (resBrapi.ok) {
+                            const rawData = await resBrapi.json();
+                            if (rawData && rawData.results && rawData.results.length > 0) {
+                                const quote = rawData.results[0];
+                                if (quote.regularMarketPrice) {
                                     const offset = quote.regularMarketPrice - asset.price;
                                     asset.price = quote.regularMarketPrice;
                                     asset.change = quote.regularMarketChangePercent || 0;
@@ -298,10 +297,13 @@
                                         if (asset.put) asset.put.strike += offset;
                                     }
                                 }
-                            });
+                            }
                         }
-                    }
-                } catch(e) { console.error("Erro Brapi", e); }
+                    } catch(e) { console.error("Erro Brapi no ticker: " + asset.ticker, e); }
+                    
+                    // Pequeno delay pra respeitar Rate Limits
+                    await new Promise(r => setTimeout(r, 200));
+                }
 
                 // Fetch Corporate Events (Earnings/Dividends) ONLY ONCE, preventing Infinite Lock & IP Ban
                 if (isLocal && !eventsLoaded) {

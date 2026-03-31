@@ -172,8 +172,8 @@
                     daily: { upper: 40.50, lower: 36.10, label: 'Curto Prazo (Diário)' },
                     weekly: { upper: 42.20, lower: 33.90, label: 'Longo Prazo (Semanal)' }
                 },
-                call: { code: 'PETRF410', strike: 41.00, premium: 0.85, delta: 0.25, theta: -0.02, gamma: 0.04, volume: '2M' },
-                put:  { code: 'PETRR360', strike: 36.00, premium: 0.95, delta: -0.21, theta: -0.03, gamma: 0.03, volume: '1.5M' }
+                call: null,
+                put: null
             },
             {
                 ticker: 'VALE3',
@@ -190,7 +190,7 @@
                     weekly: { upper: 68.20, lower: 58.80, label: 'Longo Prazo (Semanal)' }
                 },
                 call: null,
-                put: { code: 'VALER610', strike: 61.00, premium: 1.45, delta: -0.45, theta: -0.04, gamma: 0.05, volume: '800k' }
+                put: null
             },
             {
                 ticker: 'BBAS3',
@@ -206,7 +206,7 @@
                     daily: { upper: 29.50, lower: 26.80, label: 'Curto Prazo (Diário)' },
                     weekly: { upper: 30.20, lower: 24.20, label: 'Longo Prazo (Semanal)' }
                 },
-                call: { code: 'BBASF295', strike: 29.50, premium: 0.52, delta: 0.28, theta: -0.01, gamma: 0.02, volume: '450k' },
+                call: null,
                 put: null
             },
             {
@@ -223,8 +223,8 @@
                     daily: { upper: 35.98, lower: 32.39, label: 'Curto Prazo (Diário)' },
                     weekly: { upper: 36.20, lower: 30.80, label: 'Longo Prazo (Semanal)' }
                 },
-                call: { code: 'ITUBF360', strike: 35.67, premium: 0.68, delta: 0.31, theta: -0.02, gamma: 0.03, volume: '1.2M' },
-                put: { code: 'ITUBR324', strike: 32.39, premium: 0.42, delta: -0.15, theta: -0.01, gamma: 0.02, volume: '900k' }
+                call: null,
+                put: null
             },
             {
                 ticker: 'BITH11',
@@ -240,8 +240,8 @@
                     daily: { upper: 145.20, lower: 125.10, label: 'Curto Prazo (Diário)' },
                     weekly: { upper: 155.00, lower: 110.50, label: 'Longo Prazo (Semanal)' }
                 },
-                call: { code: 'BITHF145', strike: 145.00, premium: 4.20, delta: 0.35, theta: -0.05, gamma: 0.08, volume: '85k' },
-                put:  { code: 'BITHR120', strike: 120.00, premium: 3.80, delta: -0.28, theta: -0.06, gamma: 0.07, volume: '60k' }
+                call: null,
+                put: null
             }
         ];
 
@@ -293,13 +293,43 @@
                                         asset.bands.daily.lower += offset;
                                         asset.bands.weekly.upper += offset;
                                         asset.bands.weekly.lower += offset;
-                                        if (asset.call) asset.call.strike += offset;
-                                        if (asset.put) asset.put.strike += offset;
                                     }
                                 }
                             }
                         }
                     } catch(e) { console.error("Erro Brapi no ticker: " + asset.ticker, e); }
+
+                    // ============================================
+                    // INTEGRAÇÃO ROBÔ QUANTITATIVO OPCOES.NET.BR
+                    // ============================================
+                    if (isLocal) {
+                        try {
+                            const resOpt = await fetch(`http://localhost:3000/api/options/${asset.ticker}`);
+                            if (resOpt.ok) {
+                                const optData = await resOpt.json();
+                                if (optData.options && optData.options.length > 0) {
+                                    // Reseta ativos anteriores
+                                    asset.put = null;
+                                    asset.call = null;
+
+                                    const targetPut = asset.price * 0.95; // Busca PUT ~5% OTM
+                                    const puts = optData.options.filter(o => o.type === 'PUT' && o.strike < asset.price);
+                                    if (puts.length > 0) {
+                                        const bestPut = puts.reduce((prev, curr) => Math.abs(curr.strike - targetPut) < Math.abs(prev.strike - targetPut) ? curr : prev);
+                                        asset.put = { code: bestPut.code, strike: bestPut.strike, premium: bestPut.premium, expiration: bestPut.expiration, dte: optData.dte, delta: '~0.30', theta: '~-0.02', gamma: '~0.04', volume: 'Real' };
+                                    }
+
+                                    const targetCall = asset.price * 1.05; // Busca CALL ~5% OTM
+                                    const calls = optData.options.filter(o => o.type === 'CALL' && o.strike > asset.price);
+                                    if (calls.length > 0) {
+                                        const bestCall = calls.reduce((prev, curr) => Math.abs(curr.strike - targetCall) < Math.abs(prev.strike - targetCall) ? curr : prev);
+                                        asset.call = { code: bestCall.code, strike: bestCall.strike, premium: bestCall.premium, expiration: bestCall.expiration, dte: optData.dte, delta: '~0.30', theta: '~-0.02', gamma: '~0.04', volume: 'Real' };
+                                    }
+                                }
+                            }
+                        } catch(e) { console.warn("Motor de Opções offline ou erro de scraping: ", e.message); }
+                    }
+
                     
                     // Pequeno delay pra respeitar Rate Limits
                     await new Promise(r => setTimeout(r, 200));
@@ -368,18 +398,34 @@
                     `;
                 };
 
+                // Helper para calcular DTE (Dias Até Vencimento)
+                const calcDTE = (expirationStr) => {
+                    if (!expirationStr || expirationStr === '--') return null;
+                    const exp = new Date(expirationStr);
+                    const hoje = new Date();
+                    hoje.setHours(0, 0, 0, 0);
+                    const diff = Math.round((exp - hoje) / (1000 * 60 * 60 * 24));
+                    return diff >= 0 ? diff : null;
+                };
+
                 // Helper para renderizar Cards de Estratégias (Trazendo o feeling PROFISSIONAL)
                 let strategyHTML = '<div class="mt-6 flex flex-col gap-3">';
                 
                 // Checa condição para PUT estruturada
                 if (asset.price <= asset.bands.daily.lower * 1.05 && asset.put) { // Perto ou abaixo da banda inferior
+                    const putDTE = asset.put.dte !== undefined ? asset.put.dte : calcDTE(asset.put.expiration);
+                    const putDTELabel = putDTE !== null ? `<span class="text-[10px] font-bold ${putDTE <= 7 ? 'text-rose-400' : putDTE <= 21 ? 'text-amber-400' : 'text-sky-400'}" title="${asset.put.dte !== undefined ? 'Dias úteis' : 'Dias corridos'} até o vencimento">${putDTE}du</span>` : '';
+                    const putIsReal = asset.put.volume === 'Real';
                     strategyHTML += `
                         <div class="rounded-lg p-3 border border-emerald-500/20 bg-emerald-500/5 hover:bg-emerald-500/10 transition-colors">
                             <div class="flex items-center justify-between mb-2">
                                 <span class="text-xs font-bold text-emerald-400 uppercase tracking-widest flex items-center gap-1">
                                     <div class="w-1.5 h-1.5 rounded-full bg-emerald-400"></div> Venda de PUT
                                 </span>
-                                <span class="text-xs font-mono text-gray-400">${asset.put.code}</span>
+                                <div class="flex items-center gap-2">
+                                    ${putDTELabel}
+                                    <span class="text-xs font-mono text-gray-400">${asset.put.code}</span>
+                                </div>
                             </div>
                             <div class="flex justify-between items-end">
                                 <div>
@@ -387,15 +433,15 @@
                                     <p class="font-mono text-sm text-gray-200">${fmtMoney(asset.put.strike)}</p>
                                 </div>
                                 <div class="text-right">
-                                    <p class="text-xs text-gray-400">Prêmio (Renda)</p>
+                                    <p class="text-xs text-gray-400">Prêmio (Renda) ${putIsReal ? '<span class="text-emerald-500">●</span>' : '<span class="text-amber-500" title="Estimativa">~</span>'}</p>
                                     <p class="font-mono text-base font-bold text-emerald-400">${fmtMoney(asset.put.premium)}</p>
                                 </div>
                             </div>
                             <div class="mt-2 pt-2 border-t border-emerald-500/10 flex justify-between text-[11px] font-mono text-gray-500">
-                                <span title="Delta">Δ: ${asset.put.delta}</span>
-                                <span title="Gamma" class="text-gray-400">Γ: ${asset.put.gamma}</span>
-                                <span title="Theta">θ: ${asset.put.theta}</span>
-                                <span title="Liquidez (Vol)">Liq: ${asset.put.volume}</span>
+                                <span title="Delta (estimativa)">Δ: ${asset.put.delta}</span>
+                                <span title="Gamma (estimativa)" class="text-gray-400">Γ: ${asset.put.gamma}</span>
+                                <span title="Theta (estimativa)">θ: ${asset.put.theta}</span>
+                                ${putIsReal ? `<span class="text-emerald-500/80" title="Dados reais - opcoes.net.br">● Real</span>` : `<span class="text-amber-500/80" title="Dados estimados">~ Est.</span>`}
                             </div>
                         </div>
                     `;
@@ -403,13 +449,19 @@
 
                 // Checa condição para CALL coberta
                 if (asset.price >= asset.bands.daily.upper * 0.95 && asset.call) { // Perto ou acima da banda superior
+                    const callDTE = asset.call.dte !== undefined ? asset.call.dte : calcDTE(asset.call.expiration);
+                    const callDTELabel = callDTE !== null ? `<span class="text-[10px] font-bold ${callDTE <= 7 ? 'text-rose-400' : callDTE <= 21 ? 'text-amber-400' : 'text-sky-400'}" title="${asset.call.dte !== undefined ? 'Dias úteis' : 'Dias corridos'} até o vencimento">${callDTE}du</span>` : '';
+                    const callIsReal = asset.call.volume === 'Real';
                     strategyHTML += `
                         <div class="rounded-lg p-3 border border-brand/20 bg-brand/5 hover:bg-brand/10 transition-colors">
                             <div class="flex items-center justify-between mb-2">
                                 <span class="text-xs font-bold text-brand uppercase tracking-widest flex items-center gap-1">
                                     <div class="w-1.5 h-1.5 rounded-full bg-brand"></div> Venda Coberta (Call)
                                 </span>
-                                <span class="text-xs font-mono text-gray-400">${asset.call.code}</span>
+                                <div class="flex items-center gap-2">
+                                    ${callDTELabel}
+                                    <span class="text-xs font-mono text-gray-400">${asset.call.code}</span>
+                                </div>
                             </div>
                             <div class="flex justify-between items-end">
                                 <div>
@@ -417,15 +469,15 @@
                                     <p class="font-mono text-sm text-gray-200">${fmtMoney(asset.call.strike)}</p>
                                 </div>
                                 <div class="text-right">
-                                    <p class="text-xs text-gray-400">Taxa Extra</p>
+                                    <p class="text-xs text-gray-400">Taxa Extra ${callIsReal ? '<span class="text-emerald-500">●</span>' : '<span class="text-amber-500" title="Estimativa">~</span>'}</p>
                                     <p class="font-mono text-base font-bold text-brand">${fmtMoney(asset.call.premium)}</p>
                                 </div>
                             </div>
                             <div class="mt-2 pt-2 border-t border-brand/10 flex justify-between text-[11px] font-mono text-gray-500">
-                                <span title="Delta">Δ: ${asset.call.delta}</span>
-                                <span title="Gamma" class="text-gray-400">Γ: ${asset.call.gamma}</span>
-                                <span title="Theta">θ: ${asset.call.theta}</span>
-                                <span title="Liquidez (Vol)">Liq: ${asset.call.volume}</span>
+                                <span title="Delta (estimativa)">Δ: ${asset.call.delta}</span>
+                                <span title="Gamma (estimativa)" class="text-gray-400">Γ: ${asset.call.gamma}</span>
+                                <span title="Theta (estimativa)">θ: ${asset.call.theta}</span>
+                                ${callIsReal ? `<span class="text-emerald-500/80" title="Dados reais - opcoes.net.br">● Real</span>` : `<span class="text-amber-500/80" title="Dados estimados">~ Est.</span>`}
                             </div>
                         </div>
                     `;

@@ -26,3 +26,36 @@
 
 ---
 *Dica Prática:* Tabelas SQL podem ser utilizadas para manter séries temporais de fechamento (Preços de Fechamento ou IV), permitindo a automatização desses relatórios via integrações Python nativas.
+
+---
+
+## 🏆 O "Santo Graal" das Opções no Brasil — Mapa de Fontes
+
+### 1. Grade de Opções, IV Rank e Simulações
+| Site | O que buscar |
+|------|-------------|
+| **Opções.net.br** ⭐ Ferramenta mais completa para PF no Brasil | Grade de opções, maiores taxas de Venda Coberta, simulação de estratégia (Payoff) e histórico de Volatilidade Implícita (IV) |
+| **Status Invest** | Filtro de opções por vencimento, liquidez (nº de negócios) e histórico de Dividend Yield (essencial para estratégia de taxa) |
+| **B3 - Portal de Dados** | Listagem oficial de ativos autorizados, datas de vencimento e ajustes |
+
+### 2. Plataformas Operacionais
+- **ProfitPro (Nelogica):** Módulo de Opções com Grade de Cotações e Calculadora de Black-Scholes → Gregas em tempo real (Δ, Γ, Θ, Vega)
+- **Link RTD (Excel/Google Sheets):** Puxar dados do Profit para planilhas próprias de precificação e manejo de risco
+
+### 3. Referências Internacionais (Mercado Americano — 20 anos à frente)
+| Plataforma | Especialidade |
+|------------|--------------|
+| **Tastytrade** | Maior escola de opções do mundo — foco em "Venda de Volatilidade" e Probabilidade de Lucro (POP) |
+| **Option Alpha** | Automação e backtest de estratégias de opções em 10 anos de dados |
+| **Barchart (Options)** | Monitorar fluxo de dinheiro pesado — Unusual Options Activity |
+
+### 4. Análise de Volatilidade e Gregas (Avançado)
+- **TradingView:** Plotar indicadores de volatilidade e Bandas de Bollinger em múltiplos tempos gráficos
+- **Investing.com (Calendário Econômico):** Obrigatório para decisões do FED e COPOM — eventos que explodem a volatilidade das opções
+
+### 5. 💡 Vantagem Competitiva com SQL — Portal de Dados B3 (Arquivos CSV/JSON)
+Especialistas de alto nível baixam os arquivos de fechamento **BVBG.028** para rodar queries e identificar:
+- Quais **strikes** tiveram maior aumento de **Open Interest** (Contratos Abertos)
+- Onde os **grandes players ("Tubarões")** estão montando suas defesas de carteira
+
+> **Arquitetura do Monitor:** A fonte primária para Grade de Opções é `opcoes.net.br`, acessada via proxy `server.js` (bypass de CORS). Gregas (Δ, Γ, Θ) são estimativas matemáticas — para Gregas em tempo real, o ProfitPro via RTD é o canal correto.

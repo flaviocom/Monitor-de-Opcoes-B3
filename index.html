@@ -564,7 +564,7 @@
                     return `
                         <div class="mt-4">
                             <div class="flex justify-between items-end mb-2">
-                                <span class="text-xs font-semibold uppercase tracking-wider text-gray-400 group relative cursor-help">
+                                <span class="text-[11px] font-bold uppercase tracking-widest text-gray-400 group relative cursor-help">
                                     ${band.label}
                                     <div class="absolute bottom-full left-0 mb-2 hidden group-hover:block w-[280px] p-3 bg-dark-800 border border-dark-700 rounded-lg shadow-xl text-left z-50 normal-case tracking-normal">
                                         <strong class="text-white text-xs">Bandas de Retração</strong>
@@ -575,8 +575,8 @@
                                 
                                 <div class="flex items-center gap-2">
                                     <div class="group relative cursor-help">
-                                        <span class="text-xs font-mono text-gray-300 border-b border-dashed border-gray-600 pb-0.5">Vol ${volStr}</span>
-                                        <div class="absolute bottom-full right-0 mb-2 hidden group-hover:block w-[280px] p-3 bg-dark-800 border border-dark-700 rounded-lg shadow-xl text-left z-50">
+                                        <span class="text-[10px] font-mono text-gray-300 border-b border-dashed border-gray-600 pb-0.5">Vol ${volStr}</span>
+                                        <div class="absolute bottom-full right-0 mb-2 hidden group-hover:block w-[280px] p-3 bg-dark-800 border border-dark-700 rounded-lg shadow-xl text-left z-50 normal-case tracking-normal">
                                             <strong class="text-white text-xs">Volatilidade Histórica (VH)</strong>
                                             <p class="text-[10px] text-gray-300 mt-1 leading-relaxed"><span class="text-gray-400">O que é:</span> Desvio Padrão dos retornos diários logarítmicos do último mês, anualizado para janela de 252 dias úteis.</p>
                                             <p class="text-[10px] text-white mt-1 leading-relaxed"><span class="text-gray-400">Porque importa:</span> Vol alta engorda diretamente os Prêmios das opções. Quanto maior a Vol, mais a opção paga na venda.</p>
@@ -584,8 +584,8 @@
                                     </div>
 
                                     <div class="group relative cursor-help">
-                                        <span class="text-[10px] px-1.5 py-0.5 rounded ${rankColor}">Rk: ${rankStr}</span>
-                                        <div class="absolute bottom-full right-0 mb-2 hidden group-hover:block w-[280px] p-3 bg-dark-800 border ${asset.hvRank > 50 ? 'border-emerald-500/50' : 'border-rose-500/50'} rounded-lg shadow-xl text-left z-50">
+                                        <span class="text-[10px] font-bold px-1.5 py-0.5 rounded ${rankColor}">Rk: ${rankStr}</span>
+                                        <div class="absolute bottom-full right-0 mb-2 hidden group-hover:block w-[280px] p-3 bg-dark-800 border ${asset.hvRank > 50 ? 'border-emerald-500/50' : 'border-rose-500/50'} rounded-lg shadow-xl text-left z-50 normal-case tracking-normal">
                                             <strong class="${asset.hvRank > 50 ? 'text-emerald-400' : 'text-rose-400'} text-xs">Rank de Volatilidade (1 Ano)</strong>
                                             <p class="text-[10px] text-gray-300 mt-1 leading-relaxed"><span class="text-gray-400">O que é:</span> Percentil rankeando a Volatilidade de hoje em comparação às oscilações dos últimos 12 meses.</p>
                                             <p class="text-[10px] text-white mt-1 leading-relaxed"><span class="text-gray-400">Porque importa:</span> ${asset.hvRank > 50 ? 'Um Rank alto (>50) sinaliza que as Opções estão historicamente CARAS. Excelente momento para vendê-las.' : 'Um Rank baixo (<50) sinaliza que as Opções estão historicamente BARATAS. O prêmio que irá receber pode não compensar o risco.'}</p>
@@ -593,15 +593,15 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="w-full h-2 bg-dark-700 rounded-full overflow-hidden relative">
+                            <div class="w-full h-1.5 bg-dark-700 rounded-full overflow-hidden relative">
                                 <div class="absolute top-0 left-0 h-full progress-gradient opacity-80" style="width: 100%;"></div>
                                 <!-- Marcador do Preço Atual -->
-                                <div class="absolute top-0 h-full w-1 bg-white shadow-[0_0_8px_white] z-10 transition-all duration-500 ease-out" style="left: calc(${pos}% - 2px);"></div>
+                                <div class="absolute top-0 h-full w-1.5 bg-white shadow-[0_0_8px_white] z-10 transition-all duration-300 ease-out" style="left: calc(${Math.max(0, Math.min(100, pos))}% - 3px); border-radius: 2px;"></div>
                             </div>
-                            <div class="flex justify-between mt-1 text-[11px] font-mono text-gray-500">
-                                <span>${fmtMoney(band.lower)}</span>
-                                <span class="text-gray-400">Preço em ${pos.toFixed(0)}%</span>
-                                <span>${fmtMoney(band.upper)}</span>
+                            <div class="flex justify-between items-center mt-2 text-[10px] font-mono text-gray-500">
+                                <span>Mínima: <span class="text-gray-300 font-medium">${fmtMoney(band.lower)}</span></span>
+                                <span class="font-bold text-gray-400 whitespace-nowrap">${pos.toFixed(0)}% da banda</span>
+                                <span>Máxima: <span class="text-gray-300 font-medium">${fmtMoney(band.upper)}</span></span>
                             </div>
                         </div>
                     `;
@@ -873,6 +873,25 @@
                         <!-- Bandas -->
                         ${renderBand(asset.bands.daily)}
                         ${renderBand(asset.bands.weekly)}
+                        
+                        <!-- Signal Box Inteligente -->
+                        ${(() => {
+                            const distLower = ((asset.price - asset.bands.daily.lower) / asset.price) * 100;
+                            const distUpper = ((asset.bands.daily.upper - asset.price) / asset.price) * 100;
+                            const isHighVol = asset.hvRank >= 50;
+
+                            if (asset.price <= asset.bands.daily.lower) {
+                                return `<div class="mt-5 p-3 rounded-lg border border-emerald-500/40 bg-emerald-500/10 text-center text-sm font-medium text-emerald-400 shadow-[0_0_15px_rgba(16,185,129,0.15)]">Sinal de Entrada ATIVO:<br/> ${isHighVol ? 'Venda de PUT (Prêmio Gordo)' : 'Compra Lotação (Ação Barata)'}</div>`;
+                            } else if (asset.price >= asset.bands.daily.upper) {
+                                return `<div class="mt-5 p-3 rounded-lg border border-brand/40 bg-brand/10 text-center text-sm font-medium text-brand shadow-[0_0_15px_rgba(59,130,246,0.15)]">Sinal de Entrada ATIVO:<br/> ${isHighVol ? 'Venda de CALL (Prêmio Gordo)' : 'Desova de Ações (Sobrecompra)'}</div>`;
+                            } else {
+                                if (posInDaily < 50) {
+                                    return `<div class="mt-5 p-3 rounded-lg border border-dark-600 bg-dark-800/80 text-center text-[12px] font-medium text-sky-400">Aguardando queda de ${distLower.toFixed(1)}% para sinal de entrada da <strong>PUT</strong>.</div>`;
+                                } else {
+                                    return `<div class="mt-5 p-3 rounded-lg border border-dark-600 bg-dark-800/80 text-center text-[12px] font-medium text-sky-400">Aguardando alta de ${distUpper.toFixed(1)}% para sinal de entrada da <strong>CALL</strong>.</div>`;
+                                }
+                            }
+                        })()}
                         
                         <!-- Estratégias Recomendadas -->
                         ${strategyHTML}

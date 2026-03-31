@@ -222,9 +222,12 @@
 
         // Formatadores
         const fmtMoney = (val) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(val);
-        const fmtPct = (val) => new Intl.NumberFormat('pt-BR', { style: 'percent', minimumFractionDigits: 1, maximumFractionDigits: 1 }).format(val / 100);
+        // 🔑 TOKEN GRATUITO BRAPI.DEV
+        // Para ambientes profissionais/comerciais proxy público falha (CORS/500).
+        // Crie sua conta grátis em https://brapi.dev/ e cole seu token abaixo:
+        const BRAPI_TOKEN = 'SUA_CHAVE_AQUI';
 
-        // Sistema de Cotações em Tempo Real/Delay B3 via Yahoo Finance + AllOrigins Proxy
+        // Sistema de Cotações em Tempo Real/Delay B3 via Brapi (Profissional)
         async function fetchRealTimePrices() {
             try {
                 // Indicador de atualização visual
@@ -234,20 +237,23 @@
                     clockStatus.classList.add('text-brand');
                 }
                 
-                const tickers = assetsData.map(a => a.ticker + '.SA').join(',');
-                const url = encodeURIComponent(`https://query1.finance.yahoo.com/v7/finance/quote?symbols=${tickers}`);
+                if (BRAPI_TOKEN === 'SUA_CHAVE_AQUI') {
+                    console.warn("⚠️ Token do Brapi ausente. Mantendo os dados simulados parciais para visualização.");
+                    return; // Cancela silenciosamente se o usuário ainda não colocou o token
+                }
+
+                const tickers = assetsData.map(a => a.ticker).join(',');
+                const url = `https://brapi.dev/api/quote/${tickers}?token=${BRAPI_TOKEN}`;
                 
-                const response = await fetch(`https://api.allorigins.win/get?url=${url}`);
-                const proxyData = await response.json();
-                const data = JSON.parse(proxyData.contents);
+                const response = await fetch(url);
+                const data = await response.json();
                 
-                if (data && data.quoteResponse && data.quoteResponse.result) {
-                    data.quoteResponse.result.forEach(quote => {
-                        const ticker = quote.symbol.replace('.SA', '');
-                        const asset = assetsData.find(a => a.ticker === ticker);
-                        if (asset) {
+                if (data && data.results) {
+                    data.results.forEach(quote => {
+                        const asset = assetsData.find(a => a.ticker === quote.symbol);
+                        if (asset && quote.regularMarketPrice) {
                             asset.price = quote.regularMarketPrice;
-                            asset.change = quote.regularMarketChangePercent;
+                            asset.change = quote.regularMarketChangePercent || 0;
                         }
                     });
                     renderAssets(); // Atualiza a grade com novos preços
@@ -259,7 +265,7 @@
                     clockStatus.classList.add('text-emerald-400');
                 }
             } catch (error) {
-                console.error("Erro ao sincronizar cotações B3:", error);
+                console.error("Erro ao sincronizar cotações B3 através do Brapi:", error);
             }
         }
 

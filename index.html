@@ -12,6 +12,8 @@
     
     <!-- Tailwind CSS (via CDN para prototipagem rápida e visual premium) -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lightweight Charts - TradingView (open-source, gratuito) -->
+    <script src="https://unpkg.com/lightweight-charts@4.1.3/dist/lightweight-charts.standalone.production.js"></script>
     <script>
         tailwind.config = {
             darkMode: 'class',
@@ -93,6 +95,57 @@
         ::-webkit-scrollbar-thumb:hover { background: theme('colors.dark.600'); }
         
         .number-fmt { font-family: 'JetBrains Mono', monospace; font-variant-numeric: tabular-nums; }
+
+        /* ===== MODAL DO GRÁFICO ===== */
+        #chart-modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 999;
+            background: rgba(3, 7, 18, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+        }
+        #chart-modal.open { display: flex; }
+        #chart-modal-box {
+            background: rgba(17, 24, 39, 0.95);
+            border: 1px solid rgba(59, 130, 246, 0.25);
+            border-radius: 1rem;
+            box-shadow: 0 0 60px rgba(59, 130, 246, 0.12), 0 30px 80px rgba(0,0,0,0.6);
+            width: 100%;
+            max-width: 900px;
+            overflow: hidden;
+        }
+        #chart-container {
+            width: 100%;
+            height: 340px;
+            background: transparent;
+        }
+        #volume-container {
+            width: 100%;
+            height: 90px;
+            background: transparent;
+        }
+        .period-btn {
+            padding: 3px 10px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 600;
+            font-family: 'JetBrains Mono', monospace;
+            cursor: pointer;
+            border: 1px solid rgba(255,255,255,0.1);
+            background: transparent;
+            color: #9ca3af;
+            transition: all 0.15s ease;
+        }
+        .period-btn:hover, .period-btn.active {
+            background: rgba(59, 130, 246, 0.2);
+            border-color: rgba(59, 130, 246, 0.5);
+            color: #60a5fa;
+        }
     </style>
 </head>
 <body class="bg-[#030712] text-gray-200 antialiased selection:bg-brand selection:text-white min-h-screen">
@@ -116,7 +169,7 @@
                     <span class="flex items-center gap-1.5 hover:text-white cursor-pointer transition-colors"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg> Estratégias</span>
                 </div>
                 <div class="flex items-center gap-2 px-3 py-1.5 rounded-md bg-dark-800/80 border border-brand-purple/30 shadow-inner">
-                    <button id="radar-toggle" onclick="radarActive = !radarActive; this.classList.toggle('text-rose-400'); this.classList.toggle('text-emerald-400'); if(radarActive) Notification.requestPermission();" class="text-[11px] font-bold text-emerald-400 tracking-widest uppercase flex items-center gap-1 cursor-pointer hover:bg-white/5 px-2 py-0.5 rounded transition"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg> RADAR</button>
+                    <button id="radar-toggle" onclick="radarActive=!radarActive;this.classList.toggle('text-rose-400');this.classList.toggle('text-emerald-400');if(radarActive)Notification.requestPermission();" class="text-[11px] font-bold text-emerald-400 tracking-widest uppercase flex items-center gap-1 cursor-pointer hover:bg-white/5 px-2 py-0.5 rounded transition"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg> RADAR</button>
                     <div class="border-l border-dark-700/50 h-4 mx-1"></div>
                     <span class="text-[11px] font-bold text-brand-purple tracking-widest uppercase flex items-center gap-1"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg> DTE: <span id="dte-counter" class="text-white font-mono ml-1">--</span></span>
                 </div>
@@ -157,6 +210,50 @@
         </div>
     </main>
 
+    <!-- MODAL DO GRÁFICO DE CANDLES -->
+    <div id="chart-modal" onclick="if(event.target===this)closeChart()">
+        <div id="chart-modal-box">
+            <!-- Header do Modal -->
+            <div class="flex items-center justify-between px-5 py-4 border-b border-dark-700/60">
+                <div class="flex items-center gap-3">
+                    <span class="text-white font-bold font-mono text-lg" id="modal-ticker">PETR4</span>
+                    <span class="text-gray-400 text-sm" id="modal-company">Petrobras</span>
+                    <span id="modal-price" class="text-sm font-mono font-bold text-emerald-400"></span>
+                    <span id="modal-change" class="text-xs font-mono"></span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <!-- Seletor de Período -->
+                    <div class="flex gap-1 mr-3" id="period-buttons">
+                        <button class="period-btn" data-range="1mo" onclick="loadChart(currentChartTicker,'1mo')">1M</button>
+                        <button class="period-btn active" data-range="3mo" onclick="loadChart(currentChartTicker,'3mo')">3M</button>
+                        <button class="period-btn" data-range="6mo" onclick="loadChart(currentChartTicker,'6mo')">6M</button>
+                        <button class="period-btn" data-range="1y" onclick="loadChart(currentChartTicker,'1y')">1A</button>
+                    </div>
+                    <button onclick="closeChart()" class="text-gray-400 hover:text-white transition-colors p-1.5 rounded-lg hover:bg-dark-700/50">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    </button>
+                </div>
+            </div>
+            <!-- Legenda de Indicadores -->
+            <div class="flex items-center gap-4 px-5 py-2 bg-dark-800/40 border-b border-dark-700/30 text-[11px] font-mono">
+                <span class="flex items-center gap-1"><span class="w-3 h-0.5 bg-sky-400 inline-block"></span><span class="text-sky-400">SMA 20</span></span>
+                <span class="flex items-center gap-1"><span class="w-3 h-0.5 bg-amber-400 inline-block"></span><span class="text-amber-400">SMA 200</span></span>
+                <span class="flex items-center gap-1"><span class="w-2 h-2 bg-emerald-500 rounded-sm inline-block"></span><span class="text-emerald-400">Alta</span></span>
+                <span class="flex items-center gap-1"><span class="w-2 h-2 bg-rose-500 rounded-sm inline-block"></span><span class="text-rose-400">Baixa</span></span>
+                <span id="modal-loading" class="ml-auto text-brand animate-pulse hidden">Carregando...</span>
+            </div>
+            <!-- Gráfico de Candles -->
+            <div id="chart-container"></div>
+            <!-- Volume -->
+            <div id="volume-container"></div>
+            <!-- Rodapé com fonte -->
+            <div class="px-5 py-2 border-t border-dark-700/30 flex justify-between items-center">
+                <span class="text-[10px] text-gray-500">Fonte: Brapi.dev • Dados com delay de 15min • Apenas último pregão</span>
+                <span class="text-[10px] text-gray-500" id="modal-last-update"></span>
+            </div>
+        </div>
+    </div>
+
     <script>
         // Dados Mockados de Alta Fidelidade com "Greeks" e IV (Implied Volatility)
         const assetsData = [
@@ -167,15 +264,15 @@
                 nextDividend: { label: 'DIVIDENDO', value: 1.15, datacom: '28 Fev 2026' },
                 price: 38.45,
                 change: 1.25,
-                iv: 34.2, 
-                ivRank: 82, // Percentil Histórico da Volatilidade
+                iv: 34.2,
+                ivRank: 82,
                 sma200: 35.15,
                 bands: {
                     daily: { upper: 40.50, lower: 36.10, label: 'Curto Prazo (Diário)' },
                     weekly: { upper: 42.20, lower: 33.90, label: 'Longo Prazo (Semanal)' }
                 },
-                call: { code: 'PETRF410', strike: 41.00, premium: 0.85, delta: 0.25, theta: -0.02, gamma: 0.04, volume: '2M' },
-                put:  { code: 'PETRR360', strike: 36.00, premium: 0.95, delta: -0.21, theta: -0.03, gamma: 0.03, volume: '1.5M' }
+                call: { code: 'PETRF410', strike: 41.00, premium: 3.06, delta: -0.30, theta: -0.04, gamma: -0.02, volume: 'Est.' },
+                put:  { code: 'PETRR450', strike: 45.00, premium: 2.10, delta: -0.30, theta: -0.04, gamma: -0.02, volume: 'Est.' }
             },
             {
                 ticker: 'VALE3',
@@ -191,25 +288,25 @@
                     daily: { upper: 65.10, lower: 60.50, label: 'Curto Prazo (Diário)' },
                     weekly: { upper: 68.20, lower: 58.80, label: 'Longo Prazo (Semanal)' }
                 },
-                call: null,
-                put: { code: 'VALER610', strike: 61.00, premium: 1.45, delta: -0.45, theta: -0.04, gamma: 0.05, volume: '800k' }
+                call: { code: 'VALEF860', strike: 86.00, premium: 1.15, delta: -0.30, theta: -0.04, gamma: -0.02, volume: 'Est.' },
+                put:  { code: 'VALER700', strike: 70.00, premium: 1.02, delta: -0.30, theta: -0.04, gamma: -0.02, volume: 'Est.' }
             },
             {
                 ticker: 'BBAS3',
                 company: 'Banco do Brasil',
                 nextEarnings: '04 Ago 2026',
                 nextDividend: { label: 'JCP', value: 0.45, datacom: '03 Mar 2026' },
-                price: 28.15,
-                change: 0.45,
+                price: 23.00,
+                change: 2.68,
                 iv: 22.1,
                 ivRank: 45,
                 sma200: 25.50,
                 bands: {
-                    daily: { upper: 29.50, lower: 26.80, label: 'Curto Prazo (Diário)' },
-                    weekly: { upper: 30.20, lower: 24.20, label: 'Longo Prazo (Semanal)' }
+                    daily: { upper: 24.35, lower: 21.65, label: 'Curto Prazo (Diário)' },
+                    weekly: { upper: 25.85, lower: 19.85, label: 'Longo Prazo (Semanal)' }
                 },
-                call: { code: 'BBASF295', strike: 29.50, premium: 0.52, delta: 0.28, theta: -0.01, gamma: 0.02, volume: '450k' },
-                put: null
+                call: { code: 'BBASF242', strike: 24.26, premium: 0.95, delta: -0.30, theta: -0.04, gamma: -0.02, volume: 'Est.' },
+                put:  null
             },
             {
                 ticker: 'ITUB4',
@@ -225,8 +322,8 @@
                     daily: { upper: 35.98, lower: 32.39, label: 'Curto Prazo (Diário)' },
                     weekly: { upper: 36.20, lower: 30.80, label: 'Longo Prazo (Semanal)' }
                 },
-                call: { code: 'ITUBF360', strike: 35.67, premium: 0.68, delta: 0.31, theta: -0.02, gamma: 0.03, volume: '1.2M' },
-                put: { code: 'ITUBR324', strike: 32.39, premium: 0.42, delta: -0.15, theta: -0.01, gamma: 0.02, volume: '900k' }
+                call: { code: 'ITUBF360', strike: 35.67, premium: 0.68, delta: -0.30, theta: -0.02, gamma: -0.02, volume: 'Est.' },
+                put:  { code: 'ITUBR324', strike: 32.39, premium: 0.42, delta: -0.30, theta: -0.02, gamma: -0.02, volume: 'Est.' }
             },
             {
                 ticker: 'BITH11',
@@ -235,17 +332,34 @@
                 nextDividend: null,
                 price: 135.40,
                 change: 2.15,
-                iv: 65.4, 
+                iv: 65.4,
                 ivRank: 92,
                 sma200: 105.50,
                 bands: {
                     daily: { upper: 145.20, lower: 125.10, label: 'Curto Prazo (Diário)' },
                     weekly: { upper: 155.00, lower: 110.50, label: 'Longo Prazo (Semanal)' }
                 },
-                call: { code: 'BITHF145', strike: 145.00, premium: 4.20, delta: 0.35, theta: -0.05, gamma: 0.08, volume: '85k' },
-                put:  { code: 'BITHR120', strike: 120.00, premium: 3.80, delta: -0.28, theta: -0.06, gamma: 0.07, volume: '60k' }
+                call: { code: 'BITHF145', strike: 145.00, premium: 4.20, delta: -0.30, theta: -0.05, gamma: -0.02, volume: 'Est.' },
+                put:  { code: 'BITHR120', strike: 120.00, premium: 3.80, delta: -0.30, theta: -0.06, gamma: -0.02, volume: 'Est.' }
             }
         ];
+
+        // === RADAR (Push Notifications Anti-Spam) ===
+        let radarActive = true;
+        let alertedPrices = {};
+        function checkRadarAlerts(asset, pos) {
+            if (!radarActive || Notification.permission !== 'granted') return;
+            if (!alertedPrices[asset.ticker]) alertedPrices[asset.ticker] = { call: false, put: false };
+            if (pos >= 95 && !alertedPrices[asset.ticker].call) {
+                new Notification('ThetaLens Radar 🚨', { body: `${asset.ticker} rompeu banda superior! Momento para vender CALLs.`, icon: 'logo.png' });
+                alertedPrices[asset.ticker].call = true;
+            } else if (pos <= 5 && !alertedPrices[asset.ticker].put) {
+                new Notification('ThetaLens Radar 🟢', { body: `${asset.ticker} tocou banda inferior! Bom prêmio de PUT.`, icon: 'logo.png' });
+                alertedPrices[asset.ticker].put = true;
+            } else if (pos > 10 && pos < 90) {
+                alertedPrices[asset.ticker] = { call: false, put: false };
+            }
+        }
 
         // Formatadores
         const fmtMoney = (val) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(val);
@@ -253,40 +367,17 @@
         // Para ambientes profissionais/comerciais proxy público falha (CORS/500).
         // Crie sua conta grátis em https://brapi.dev/ e cole seu token abaixo:
         const BRAPI_TOKEN = 'ip1K3nN5Z9vhEgZ8jbiyHT';
-        let radarActive = true;
-        let alertedPrices = {};
-        
-        function checkAlerts(asset, pos) {
-            if (!radarActive) return;
-            if (!alertedPrices[asset.ticker]) alertedPrices[asset.ticker] = { call: false, put: false };
-            
-            if (pos >= 95) {
-                if (!alertedPrices[asset.ticker].call) {
-                    new Notification("ThetaLens Radar: Venda Coberta Ideal \ud83d\udea8", { body: `${asset.ticker} rompeu ${asset.bands.daily.upper.toFixed(2)} (Banda Sup).\nÓtimo momento para vender CALLs.`, icon: "logo.png" });
-                    alertedPrices[asset.ticker].call = true;
-                }
-            } else if (pos <= 5) {
-                if (!alertedPrices[asset.ticker].put) {
-                    new Notification("ThetaLens Radar: Venda de Put \ud83d\udfe2", { body: `${asset.ticker} caiu a ${asset.bands.daily.lower.toFixed(2)} (Banda Inf).\nMercado em pânico, bom prêmio de PUT.`, icon: "logo.png" });
-                    alertedPrices[asset.ticker].put = true;
-                }
-            } else if (pos > 10 && pos < 90) {
-                alertedPrices[asset.ticker] = { call: false, put: false };
-            }
-        }
-        
-        function recalculateBands(asset) {
-            let mockCloses = Array(19).fill(asset.sma200); 
-            mockCloses.push(asset.price);
-            let st = mockCloses.reduce((a, b) => a + b) / 20;
-            asset.sma200 = st;
-            let s = Math.sqrt(mockCloses.map(x => Math.pow(x - st, 2)).reduce((a, b) => a + b) / 20);
-            asset.bands.daily.upper = st + (2 * s);
-            asset.bands.daily.lower = st - (2 * s);
-        }
         let eventsLoaded = false;
         let initialLoad = true; // Impede flash dos dados mockados no topo
-        
+
+        // ========================================================
+        // CONFIG DO BACKEND — Ajuste a URL após deploy no Render!
+        // ========================================================
+        const RENDER_API_URL = 'https://monitor-de-opcoes-b3.onrender.com'; // ← será atualizada após deploy
+        const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+        const API_BASE_URL = isLocal ? 'http://localhost:3000' : RENDER_API_URL;
+        const API_AVAILABLE = true; // Sempre tenta buscar (localhost OU Render)
+
         async function fetchRealTimePrices() {
             try {
                 const clockStatus = document.getElementById('clock');
@@ -319,30 +410,66 @@
                                     asset.price = quote.regularMarketPrice;
                                     asset.change = quote.regularMarketChangePercent || 0;
                                     
-                                    // Sincronização Live Bollinger Sync e Radares
+                                    // Bollinger Live Sync — 20 períodos (19 SMA + preço atual)
                                     if (asset.bands && offset !== 0) {
-                                        recalculateBands(asset);
-                                        if (asset.call) asset.call.strike += offset;
-                                        if (asset.put) asset.put.strike += offset;
-                                        checkAlerts(asset, Math.max(0, Math.min(100, ((asset.price - asset.bands.daily.lower) / (asset.bands.daily.upper - asset.bands.daily.lower)) * 100)));
+                                        const closes = Array(19).fill(asset.sma200);
+                                        closes.push(asset.price);
+                                        const mean = closes.reduce((a,b) => a+b) / 20;
+                                        asset.sma200 = mean;
+                                        const std = Math.sqrt(closes.map(x => Math.pow(x-mean,2)).reduce((a,b)=>a+b) / 20);
+                                        asset.bands.daily.upper = mean + 2*std;
+                                        asset.bands.daily.lower = mean - 2*std;
+                                        asset.bands.weekly.upper += offset;
+                                        asset.bands.weekly.lower += offset;
+                                        const pos = Math.max(0,Math.min(100,((asset.price-asset.bands.daily.lower)/(asset.bands.daily.upper-asset.bands.daily.lower))*100));
+                                        checkRadarAlerts(asset, pos);
                                     }
-                                    
-                                    // Mantém a distorção visual dinâmica das bandas caso o Mock fique ultrapassado
-                                    
                                 }
                             }
                         }
                     } catch(e) { console.error("Erro Brapi no ticker: " + asset.ticker, e); }
+
+                    // ============================================
+                    // INTEGRAÇÃO ROBÔ QUANTITATIVO OPCOES.NET.BR
+                    // ============================================
+                    if (API_AVAILABLE) {
+                        try {
+                            const resOpt = await fetch(`${API_BASE_URL}/api/options/${asset.ticker}`);
+                            if (resOpt.ok) {
+                                const optData = await resOpt.json();
+                                if (optData.options && optData.options.length > 0) {
+                                    // Reseta ativos anteriores
+                                    asset.put = null;
+                                    asset.call = null;
+
+                                    const targetPut = asset.price * 0.95; // Busca PUT ~5% OTM
+                                    const puts = optData.options.filter(o => o.type === 'PUT' && o.strike < asset.price);
+                                    if (puts.length > 0) {
+                                        const bestPut = puts.reduce((prev, curr) => Math.abs(curr.strike - targetPut) < Math.abs(prev.strike - targetPut) ? curr : prev);
+                                        asset.put = { code: bestPut.code, strike: bestPut.strike, premium: bestPut.premium, expiration: bestPut.expiration, dte: optData.dte, delta: '~0.30', theta: '~-0.02', gamma: '~0.04', volume: 'Real' };
+                                    }
+
+                                    const targetCall = asset.price * 1.05; // Busca CALL ~5% OTM
+                                    const calls = optData.options.filter(o => o.type === 'CALL' && o.strike > asset.price);
+                                    if (calls.length > 0) {
+                                        const bestCall = calls.reduce((prev, curr) => Math.abs(curr.strike - targetCall) < Math.abs(prev.strike - targetCall) ? curr : prev);
+                                        asset.call = { code: bestCall.code, strike: bestCall.strike, premium: bestCall.premium, expiration: bestCall.expiration, dte: optData.dte, delta: '~0.30', theta: '~-0.02', gamma: '~0.04', volume: 'Real' };
+                                    }
+                                }
+                            }
+                        } catch(e) { console.warn("Motor de Opções offline ou erro de scraping: ", e.message); }
+                    }
+
                     
                     // Pequeno delay pra respeitar Rate Limits
                     await new Promise(r => setTimeout(r, 200));
                 }
 
                 // Fetch Corporate Events (Earnings/Dividends) ONLY ONCE, preventing Infinite Lock & IP Ban
-                if (isLocal && !eventsLoaded) {
+                if (API_AVAILABLE && !eventsLoaded) {
                     const eventPromises = assetsData.map(async (asset) => {
                         try {
-                            const resEvents = await fetch(`http://localhost:3000/api/events/${asset.ticker}`);
+                            const resEvents = await fetch(`${API_BASE_URL}/api/events/${asset.ticker}`);
                             if (resEvents.ok) {
                                 const eventData = await resEvents.json();
                                 if (eventData.nextEarnings) asset.nextEarnings = eventData.nextEarnings;
@@ -379,8 +506,21 @@
                 const changeIcon = asset.change >= 0 ? '↑' : '↓';
                 
                 // Helper para renderizar a barra de progresso (Banda de Bollinger)
-                const renderBand = (band) => {
+                const renderBand = (band, isDaily) => {
                     const pos = Math.max(0, Math.min(100, ((asset.price - band.lower) / (band.upper - band.lower)) * 100));
+                    const fillColor = pos <= 25 ? 'bg-emerald-400' : pos >= 75 ? 'bg-rose-500' : 'bg-brand/80';
+                    const markerGlow = pos <= 25 ? 'shadow-[0_0_10px_#34d399]' : pos >= 75 ? 'shadow-[0_0_10px_#f43f5e]' : 'shadow-[0_0_8px_white]';
+
+                    // Tooltip educativo (apenas na banda diária)
+                    const tooltipBlock = isDaily ? `
+                        <div class="mt-3 p-2.5 rounded-lg bg-dark-800/70 border border-dark-600/50 text-[11px] text-gray-400 leading-relaxed">
+                            <span class="font-bold text-gray-300 block mb-1 flex items-center gap-1">
+                                <svg class="w-3 h-3 text-brand" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                Bandas de Retração
+                            </span>
+                            <span class="text-gray-500">O preço oscila entre essas faixas. Extremos indicam prováveis reversões (sobrecomprado ou sobrevendido).</span>
+                        </div>` : '';
+
                     return `
                         <div class="mt-4">
                             <div class="flex justify-between items-end mb-2">
@@ -388,61 +528,67 @@
                                 <span class="text-xs font-mono text-gray-300">Vol ${asset.iv}% <span class="text-[10px] ml-1 px-1.5 py-0.5 rounded ${asset.ivRank > 50 ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-rose-500/20 text-rose-400 border border-rose-500/30'}">Rk: ${asset.ivRank}</span></span>
                             </div>
                             <div class="w-full h-2 bg-dark-700 rounded-full overflow-hidden relative">
-                                <div class="absolute top-0 left-0 h-full ${pos < 25 ? 'bg-emerald-400' : (pos > 75 ? 'bg-rose-500' : 'bg-brand/80')} transition-all duration-300 opacity-80" style="width: ${pos}%;"></div>
+                                <div class="absolute top-0 left-0 h-full ${fillColor} opacity-80 transition-all duration-300" style="width: ${pos}%;"></div>
                                 <!-- Marcador do Preço Atual -->
-                                <div class="absolute top-0 h-full w-1 bg-white shadow-[0_0_8px_white] ${pos < 25 ? 'shadow-[0_0_12px_#34d399]' : (pos > 75 ? 'shadow-[0_0_12px_#f43f5e]' : 'shadow-[0_0_8px_#3b82f6]')} z-10 transition-all duration-500 ease-out" style="left: calc(${pos}% - 2px);"></div>
+                                <div class="absolute top-0 h-full w-1 bg-white ${markerGlow} z-10 transition-all duration-500 ease-out" style="left: calc(${pos}% - 2px);"></div>
                             </div>
                             <div class="flex justify-between mt-1 text-[11px] font-mono text-gray-500">
-                                <span>${fmtMoney(band.lower)}</span>
-                                <span class="text-gray-400">Preço em ${pos.toFixed(0)}%</span>
-                                <span>${fmtMoney(band.upper)}</span>
+                                <span>Mín: ${fmtMoney(band.lower)}</span>
+                                <span class="text-gray-400">${pos.toFixed(0)}% da banda</span>
+                                <span>Máx: ${fmtMoney(band.upper)}</span>
                             </div>
+                            ${tooltipBlock}
                         </div>
                     `;
+                };
+
+                // Helper para calcular DTE (Dias Até Vencimento)
+                const calcDTE = (expirationStr) => {
+                    if (!expirationStr || expirationStr === '--') return null;
+                    const exp = new Date(expirationStr);
+                    const hoje = new Date();
+                    hoje.setHours(0, 0, 0, 0);
+                    const diff = Math.round((exp - hoje) / (1000 * 60 * 60 * 24));
+                    return diff >= 0 ? diff : null;
                 };
 
                 // Helper para renderizar Cards de Estratégias (Trazendo o feeling PROFISSIONAL)
                 let strategyHTML = '<div class="mt-6 flex flex-col gap-3">';
                 
-                // Checa condição para PUT estruturada
-                if (asset.price <= asset.bands.daily.lower * 1.05 && asset.put) { // Perto ou abaixo da banda inferior
-                    strategyHTML += `
-                        <div class="rounded-lg p-3 border border-emerald-500/20 bg-emerald-500/5 hover:bg-emerald-500/10 transition-colors">
-                            <div class="flex items-center justify-between mb-2">
-                                <span class="text-xs font-bold text-emerald-400 uppercase tracking-widest flex items-center gap-1">
-                                    <div class="w-1.5 h-1.5 rounded-full bg-emerald-400"></div> Venda de PUT
-                                </span>
-                                <span class="text-xs font-mono text-gray-400">${asset.put.code}</span>
-                            </div>
-                            <div class="flex justify-between items-end">
-                                <div>
-                                    <p class="text-xs text-gray-400">Strike / Alvo</p>
-                                    <p class="font-mono text-sm text-gray-200">${fmtMoney(asset.put.strike)}</p>
-                                </div>
-                                <div class="text-right">
-                                    <p class="text-xs text-gray-400">Prêmio (Renda)</p>
-                                    <p class="font-mono text-base font-bold text-emerald-400">${fmtMoney(asset.put.premium)}</p>
-                                </div>
-                            </div>
-                            <div class="mt-2 pt-2 border-t border-emerald-500/10 flex justify-between text-[11px] font-mono text-gray-500">
-                                <span title="Delta">Δ: ${asset.put.delta}</span>
-                                <span title="Gamma" class="text-gray-400">Γ: ${asset.put.gamma}</span>
-                                <span title="Theta">θ: ${asset.put.theta}</span>
-                                <span title="Liquidez (Vol)">Liq: ${asset.put.volume}</span>
-                            </div>
-                        </div>
-                    `;
-                }
+                // Calcula posição relativa do preço nas bandas (para contexto)
+                const posInDaily = ((asset.price - asset.bands.daily.lower) / (asset.bands.daily.upper - asset.bands.daily.lower)) * 100;
+                const nearUpperBand = posInDaily >= 80; // Preço perto ou acima da banda superior
+                const nearLowerBand = posInDaily <= 20; // Preço perto ou abaixo da banda inferior
 
-                // Checa condição para CALL coberta
-                if (asset.price >= asset.bands.daily.upper * 0.95 && asset.call) { // Perto ou acima da banda superior
+                // Helper para badge de contexto de banda
+                const bandContextBadge = (type) => {
+                    if (type === 'CALL') {
+                        if (nearUpperBand) return `<span class="text-[9px] font-bold text-emerald-400 uppercase tracking-wider border border-emerald-500/30 rounded px-1 py-0.5">📈 Sinal Forte</span>`;
+                        if (nearLowerBand) return `<span class="text-[9px] font-bold text-amber-400 uppercase tracking-wider border border-amber-500/30 rounded px-1 py-0.5">⚠️ Contra-tendência</span>`;
+                        return `<span class="text-[9px] font-bold text-sky-400 uppercase tracking-wider border border-sky-500/30 rounded px-1 py-0.5">↔ Neutro</span>`;
+                    } else {
+                        if (nearLowerBand) return `<span class="text-[9px] font-bold text-emerald-400 uppercase tracking-wider border border-emerald-500/30 rounded px-1 py-0.5">📉 Sinal Forte</span>`;
+                        if (nearUpperBand) return `<span class="text-[9px] font-bold text-amber-400 uppercase tracking-wider border border-amber-500/30 rounded px-1 py-0.5">⚠️ Contra-tendência</span>`;
+                        return `<span class="text-[9px] font-bold text-sky-400 uppercase tracking-wider border border-sky-500/30 rounded px-1 py-0.5">↔ Neutro</span>`;
+                    }
+                };
+
+                // Exibe CALL se disponível (sem condição de banda — banda é contexto, não portão)
+                if (asset.call) {
+                    const callDTE = asset.call.dte !== undefined ? asset.call.dte : calcDTE(asset.call.expiration);
+                    const callDTELabel = callDTE !== null ? `<span class="text-[10px] font-bold ${callDTE <= 7 ? 'text-rose-400' : callDTE <= 21 ? 'text-amber-400' : 'text-sky-400'}" title="${asset.call.dte !== undefined ? 'Dias úteis' : 'Dias corridos'} até o vencimento">${callDTE}du</span>` : '';
+                    const callIsReal = asset.call.volume === 'Real';
                     strategyHTML += `
                         <div class="rounded-lg p-3 border border-brand/20 bg-brand/5 hover:bg-brand/10 transition-colors">
                             <div class="flex items-center justify-between mb-2">
                                 <span class="text-xs font-bold text-brand uppercase tracking-widest flex items-center gap-1">
                                     <div class="w-1.5 h-1.5 rounded-full bg-brand"></div> Venda Coberta (Call)
                                 </span>
-                                <span class="text-xs font-mono text-gray-400">${asset.call.code}</span>
+                                <div class="flex items-center gap-2">
+                                    ${bandContextBadge('CALL')}
+                                    ${callDTELabel}
+                                    <span class="text-xs font-mono text-gray-400">${asset.call.code}</span>
+                                </div>
                             </div>
                             <div class="flex justify-between items-end">
                                 <div>
@@ -450,25 +596,68 @@
                                     <p class="font-mono text-sm text-gray-200">${fmtMoney(asset.call.strike)}</p>
                                 </div>
                                 <div class="text-right">
-                                    <p class="text-xs text-gray-400">Taxa Extra</p>
+                                    <p class="text-xs text-gray-400">Taxa Extra ${callIsReal ? '<span class="text-emerald-500">●</span>' : '<span class="text-amber-500" title="Estimativa">~</span>'}</p>
                                     <p class="font-mono text-base font-bold text-brand">${fmtMoney(asset.call.premium)}</p>
                                 </div>
                             </div>
                             <div class="mt-2 pt-2 border-t border-brand/10 flex justify-between text-[11px] font-mono text-gray-500">
-                                <span title="Delta">Δ: ${asset.call.delta}</span>
-                                <span title="Gamma" class="text-gray-400">Γ: ${asset.call.gamma}</span>
-                                <span title="Theta">θ: ${asset.call.theta}</span>
-                                <span title="Liquidez (Vol)">Liq: ${asset.call.volume}</span>
+                                <span title="Delta (estimativa)">Δ: ${asset.call.delta}</span>
+                                <span title="Gamma (estimativa)" class="text-gray-400">Γ: ${asset.call.gamma}</span>
+                                <span title="Theta (estimativa)">θ: ${asset.call.theta}</span>
+                                ${callIsReal ? `<span class="text-emerald-500/80" title="Dados reais - opcoes.net.br">● Real</span>` : `<span class="text-amber-500/80" title="Dados estimados">~ Est.</span>`}
                             </div>
                         </div>
                     `;
                 }
 
-                if (!strategyHTML.includes('<div class="rounded-lg')) {
+                // Exibe PUT se disponível (sem condição de banda — banda é contexto, não portão)
+                if (asset.put) {
+                    const putDTE = asset.put.dte !== undefined ? asset.put.dte : calcDTE(asset.put.expiration);
+                        const putDTELabel = putDTE !== null ? `<span class="text-[10px] font-bold ${putDTE <= 7 ? 'text-rose-400' : putDTE <= 21 ? 'text-amber-400' : 'text-sky-400'}" title="${asset.put.dte !== undefined ? 'Dias úteis' : 'Dias corridos'} até o vencimento">${putDTE}du</span>` : '';
+                    const putIsReal = asset.put.volume === 'Real';
+                    strategyHTML += `
+                        <div class="rounded-lg p-3 border border-emerald-500/20 bg-emerald-500/5 hover:bg-emerald-500/10 transition-colors">
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-xs font-bold text-emerald-400 uppercase tracking-widest flex items-center gap-1">
+                                    <div class="w-1.5 h-1.5 rounded-full bg-emerald-400"></div> Venda de PUT
+                                </span>
+                                <div class="flex items-center gap-2">
+                                    ${bandContextBadge('PUT')}
+                                    ${putDTELabel}
+                                    <span class="text-xs font-mono text-gray-400">${asset.put.code}</span>
+                                </div>
+                            </div>
+                            <div class="flex justify-between items-end">
+                                <div>
+                                    <p class="text-xs text-gray-400">Strike / Alvo</p>
+                                    <p class="font-mono text-sm text-gray-200">${fmtMoney(asset.put.strike)}</p>
+                                </div>
+                                <div class="text-right">
+                                    <p class="text-xs text-gray-400">Prêmio (Renda) ${putIsReal ? '<span class="text-emerald-500">●</span>' : '<span class="text-amber-500" title="Estimativa">~</span>'}</p>
+                                    <p class="font-mono text-base font-bold text-emerald-400">${fmtMoney(asset.put.premium)}</p>
+                                </div>
+                            </div>
+                            <div class="mt-2 pt-2 border-t border-emerald-500/10 flex justify-between text-[11px] font-mono text-gray-500">
+                                <span title="Delta (estimativa)">Δ: ${asset.put.delta}</span>
+                                <span title="Gamma (estimativa)" class="text-gray-400">Γ: ${asset.put.gamma}</span>
+                                <span title="Theta (estimativa)">θ: ${asset.put.theta}</span>
+                                ${putIsReal ? `<span class="text-emerald-500/80" title="Dados reais - opcoes.net.br">● Real</span>` : `<span class="text-amber-500/80" title="Dados estimados">~ Est.</span>`}
+                            </div>
+                        </div>
+                    `;
+                }
+
+                if (!asset.call && !asset.put) {
+                    // Calcula distância para sinal
+                    const posInDailyForWait = ((asset.price - asset.bands.daily.lower) / (asset.bands.daily.upper - asset.bands.daily.lower)) * 100;
+                    const pctToCall = (((asset.bands.daily.upper * 0.95) - asset.price) / asset.price * 100).toFixed(1);
+                    const pctToPut  = ((asset.price - (asset.bands.daily.lower * 1.05)) / asset.price * 100).toFixed(1);
+                    const waitMsg = posInDailyForWait >= 50
+                        ? `Aguardando alta de ${pctToCall}% para sinal de entrada da <strong class="text-brand">CALL</strong>.`
+                        : `Aguardando queda de ${pctToPut}% para sinal de entrada da <strong class="text-emerald-400">PUT</strong>.`;
                      strategyHTML += `
-                        <div class="rounded-lg p-3 border border-dark-600 border-dashed bg-dark-800/50 flex flex-col items-center justify-center text-center py-6">
-                            <svg class="w-6 h-6 text-gray-500 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                            <span class="text-xs text-gray-400 max-w-[200px]">Ativo em zona de consolidação. Sem sinais claros de sob-compra ou sob-venda.</span>
+                        <div class="rounded-lg p-3 border border-dark-600/60 bg-dark-800/40 text-center py-4">
+                            <p class="text-xs text-gray-400 leading-relaxed">${waitMsg}</p>
                         </div>
                      `;
                 }
@@ -481,7 +670,13 @@
                         <!-- Header do Ativo -->
                         <div class="flex justify-between items-start mb-4">
                             <div>
-                                <h3 class="text-2xl font-bold tracking-tight text-white">${asset.ticker}</h3>
+                                <div class="flex items-center gap-2">
+                                    <h3 class="text-2xl font-bold tracking-tight text-white">${asset.ticker}</h3>
+                                    <button onclick="openChart('${asset.ticker}','${asset.company}')" title="Ver Gráfico de Candles" class="flex items-center gap-1 text-[10px] font-bold text-brand border border-brand/30 hover:border-brand/60 hover:bg-brand/10 px-1.5 py-0.5 rounded-md transition-all active:scale-95">
+                                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
+                                        Gráfico
+                                    </button>
+                                </div>
                                 <p class="text-xs text-gray-400">${asset.company}</p>
                             </div>
                             <div class="text-right ${initialLoad ? 'opacity-40 blur-sm animate-pulse' : 'opacity-100'} transition-all duration-500">
@@ -512,16 +707,16 @@
                             </div>
                         </div>
 
-                        <!-- Indicador de Tendência MM200 -->
+                        <!-- Indicador de Valorização Longo Prazo MM200 -->
                         <div class="flex items-center gap-2 mb-2 p-2 rounded bg-dark-800/50 border border-dark-700/50">
-                            <div class="w-1.5 h-1.5 rounded-full ${isAboveTrend ? 'bg-emerald-400' : 'bg-rose-400'} shadow-[0_0_8px_${isAboveTrend ? '#34d399' : '#fb7185'}]"></div>
-                            <span class="text-xs text-gray-300">Tendência Secundária (MM200)</span>
-                            <span class="ml-auto text-xs font-bold ${isAboveTrend ? 'text-emerald-400' : 'text-rose-400'}">${isAboveTrend ? 'ALTA' : 'BAIXA'}</span>
+                            <div class="w-1.5 h-1.5 rounded-full ${isAboveTrend ? 'bg-rose-400' : 'bg-emerald-400'} shadow-[0_0_8px_${isAboveTrend ? '#fb7185' : '#34d399'}]"></div>
+                            <span class="text-xs text-gray-300" title="Relação do Preço Atual contra a Média de 200 períodos">Valorização Longo Prazo (MM200)</span>
+                            <span class="ml-auto text-xs font-bold ${isAboveTrend ? 'text-rose-400' : 'text-emerald-400'}">${isAboveTrend ? 'CARO' : 'BARATO'}</span>
                         </div>
 
                         <!-- Bandas -->
-                        ${renderBand(asset.bands.daily)}
-                        ${renderBand(asset.bands.weekly)}
+                        ${renderBand(asset.bands.daily, true)}
+                        ${renderBand(asset.bands.weekly, false)}
                         
                         <!-- Estratégias Recomendadas -->
                         ${strategyHTML}
@@ -568,6 +763,215 @@
 
         // Dispara a busca inicial de preços com recursividade inteligente (evita travamentos)
         fetchRealTimePrices();
+
+        // ===================================================
+        // GRÁFICO DE CANDLES — Lightweight Charts TradingView
+        // ===================================================
+        let chartInstance = null;
+        let volumeInstance = null;
+        let currentChartTicker = null;
+
+        function calculateSMA(data, period) {
+            return data.map((d, i) => {
+                if (i < period - 1) return null;
+                const slice = data.slice(i - period + 1, i + 1);
+                const avg = slice.reduce((s, x) => s + x.close, 0) / period;
+                return { time: d.time, value: parseFloat(avg.toFixed(2)) };
+            }).filter(Boolean);
+        }
+
+        async function openChart(ticker, company) {
+            currentChartTicker = ticker;
+
+            // Preenche cabeçalho do modal
+            document.getElementById('modal-ticker').textContent = ticker;
+            document.getElementById('modal-company').textContent = company;
+
+            // Atualiza preço/variação no modal com dados já carregados
+            const asset = assetsData.find(a => a.ticker === ticker);
+            if (asset) {
+                const priceEl = document.getElementById('modal-price');
+                const changeEl = document.getElementById('modal-change');
+                priceEl.textContent = fmtMoney(asset.price);
+                priceEl.className = `text-sm font-mono font-bold ${asset.change >= 0 ? 'text-emerald-400' : 'text-rose-400'}`;
+                changeEl.textContent = `${asset.change >= 0 ? '+' : ''}${asset.change.toFixed(2)}%`;
+                changeEl.className = `text-xs font-mono ${asset.change >= 0 ? 'text-emerald-400' : 'text-rose-400'}`;
+            }
+
+            // Abre o modal
+            document.getElementById('chart-modal').classList.add('open');
+            document.body.style.overflow = 'hidden';
+
+            // Inicializa o período padrão (3 meses)
+            await loadChart(ticker, '3mo');
+        }
+
+        async function loadChart(ticker, range) {
+            const loadingEl = document.getElementById('modal-loading');
+            loadingEl.classList.remove('hidden');
+
+            // Atualiza botões de período
+            document.querySelectorAll('.period-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.range === range);
+            });
+
+            // Limpa gráficos anteriores
+            document.getElementById('chart-container').innerHTML = '';
+            document.getElementById('volume-container').innerHTML = '';
+            if (chartInstance) { try { chartInstance.remove(); } catch {} chartInstance = null; }
+            if (volumeInstance) { try { volumeInstance.remove(); } catch {} volumeInstance = null; }
+
+            try {
+                // Busca dados históricos OHLCV da Brapi.dev
+                const url = `https://brapi.dev/api/quote/${ticker}?range=${range}&interval=1d&token=${BRAPI_TOKEN}`;
+                const resp = await fetch(url);
+                const json = await resp.json();
+
+                const history = json?.results?.[0]?.historicalDataPrice;
+                if (!history || history.length < 2) {
+                    document.getElementById('chart-container').innerHTML = '<div class="flex items-center justify-center h-full text-gray-500 text-sm">Dados históricos não disponíveis</div>';
+                    return;
+                }
+
+                // Formata para o Lightweight Charts (precisa de { time, open, high, low, close })
+                const candles = history
+                    .filter(d => d.date && d.open && d.high && d.low && d.close)
+                    .map(d => ({
+                        time: Math.floor(d.date), // Unix timestamp em segundos
+                        open: d.open,
+                        high: d.high,
+                        low: d.low,
+                        close: d.close,
+                    }))
+                    .sort((a, b) => a.time - b.time);
+
+                const volumes = history
+                    .filter(d => d.date && d.volume)
+                    .map(d => ({
+                        time: Math.floor(d.date),
+                        value: d.volume,
+                        color: d.close >= d.open ? 'rgba(16, 185, 129, 0.5)' : 'rgba(239, 68, 68, 0.5)'
+                    }))
+                    .sort((a, b) => a.time - b.time);
+
+                // ====== Gráfico Principal (Candles) ======
+                chartInstance = LightweightCharts.createChart(document.getElementById('chart-container'), {
+                    width: document.getElementById('chart-container').offsetWidth,
+                    height: 340,
+                    layout: {
+                        background: { type: 'solid', color: 'transparent' },
+                        textColor: '#9ca3af',
+                        fontSize: 11,
+                        fontFamily: "'JetBrains Mono', monospace",
+                    },
+                    grid: {
+                        vertLines: { color: 'rgba(31, 41, 55, 0.6)' },
+                        horzLines: { color: 'rgba(31, 41, 55, 0.6)' },
+                    },
+                    crosshair: { mode: LightweightCharts.CrosshairMode.Normal },
+                    rightPriceScale: {
+                        borderColor: 'rgba(55, 65, 81, 0.4)',
+                        scaleMargins: { top: 0.08, bottom: 0.08 }
+                    },
+                    timeScale: {
+                        borderColor: 'rgba(55, 65, 81, 0.4)',
+                        timeVisible: true,
+                        secondsVisible: false,
+                    },
+                    handleScroll: true,
+                    handleScale: true,
+                });
+
+                // Série de Candles
+                const candleSeries = chartInstance.addCandlestickSeries({
+                    upColor: '#10b981',
+                    downColor: '#ef4444',
+                    borderUpColor: '#10b981',
+                    borderDownColor: '#ef4444',
+                    wickUpColor: '#10b981',
+                    wickDownColor: '#ef4444',
+                });
+                candleSeries.setData(candles);
+
+                // SMA 20 (Azul)
+                const closePrices = candles.map(c => ({ time: c.time, close: c.close }));
+                const sma20Data = calculateSMA(closePrices, 20);
+                if (sma20Data.length > 0) {
+                    const sma20 = chartInstance.addLineSeries({ color: '#38bdf8', lineWidth: 1.5, priceLineVisible: false, lastValueVisible: false });
+                    sma20.setData(sma20Data);
+                }
+
+                // SMA 200 (Dourado — só exibe se tiver dados suficientes)
+                if (closePrices.length >= 200) {
+                    const sma200Data = calculateSMA(closePrices, 200);
+                    if (sma200Data.length > 0) {
+                        const sma200 = chartInstance.addLineSeries({ color: '#f59e0b', lineWidth: 1.5, lineStyle: LightweightCharts.LineStyle.Dashed, priceLineVisible: false, lastValueVisible: false });
+                        sma200.setData(sma200Data);
+                    }
+                }
+
+                // Linha do Preço Atual
+                const asset = assetsData.find(a => a.ticker === ticker);
+                if (asset) {
+                    candleSeries.createPriceLine({
+                        price: asset.price,
+                        color: '#3b82f6',
+                        lineWidth: 1,
+                        lineStyle: LightweightCharts.LineStyle.Dotted,
+                        axisLabelVisible: true,
+                        title: 'Atual',
+                    });
+                }
+
+                // ====== Gráfico de Volume ======
+                volumeInstance = LightweightCharts.createChart(document.getElementById('volume-container'), {
+                    width: document.getElementById('volume-container').offsetWidth,
+                    height: 90,
+                    layout: { background: { type: 'solid', color: 'transparent' }, textColor: '#6b7280' },
+                    grid: { vertLines: { visible: false }, horzLines: { visible: false } },
+                    rightPriceScale: { borderVisible: false, scaleMargins: { top: 0.1, bottom: 0 } },
+                    timeScale: { visible: false },
+                    handleScroll: false,
+                    handleScale: false,
+                });
+                const volSeries = volumeInstance.addHistogramSeries({ priceFormat: { type: 'volume' }, priceScaleId: '' });
+                volSeries.setData(volumes);
+
+                // Sync do timeScale entre os dois gráficos
+                chartInstance.timeScale().subscribeVisibleLogicalRangeChange(range => {
+                    if (range) volumeInstance.timeScale().setVisibleLogicalRange(range);
+                });
+
+                // Fit inicial
+                chartInstance.timeScale().fitContent();
+
+                // Atualiza rodapé
+                document.getElementById('modal-last-update').textContent = `Atualizado: ${new Date().toLocaleTimeString('pt-BR')}`;
+
+                // Responsividade — redimensiona ao redimensionar janela
+                const resizeObserver = new ResizeObserver(() => {
+                    if (chartInstance) chartInstance.applyOptions({ width: document.getElementById('chart-container').offsetWidth });
+                    if (volumeInstance) volumeInstance.applyOptions({ width: document.getElementById('volume-container').offsetWidth });
+                });
+                resizeObserver.observe(document.getElementById('chart-modal-box'));
+
+            } catch (err) {
+                console.error('Erro ao carregar gráfico:', err);
+                document.getElementById('chart-container').innerHTML = `<div class="flex items-center justify-center h-full text-rose-400 text-sm">Erro ao carregar: ${err.message}</div>`;
+            } finally {
+                loadingEl.classList.add('hidden');
+            }
+        }
+
+        function closeChart() {
+            document.getElementById('chart-modal').classList.remove('open');
+            document.body.style.overflow = '';
+            if (chartInstance) { try { chartInstance.remove(); } catch {} chartInstance = null; }
+            if (volumeInstance) { try { volumeInstance.remove(); } catch {} volumeInstance = null; }
+        }
+
+        // Fecha com ESC
+        document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeChart(); });
     </script>
 </body>
 </html>

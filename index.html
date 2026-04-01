@@ -210,7 +210,24 @@
             <!-- Renderizado via JS -->
         </div>
 
-        <div class="mt-12 text-center">
+        <!-- Painel de Operações Monitoradas -->
+        <div class="mt-12 mb-8 glass-card rounded-xl p-6 border-t border-brand/20 shadow-lg" id="monitor-container">
+            <div class="flex items-center justify-between mb-6">
+                <div>
+                    <h2 class="text-xl font-bold text-white flex items-center gap-2">
+                        <svg class="w-5 h-5 text-brand" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path></svg>
+                        Operações Ativas
+                    </h2>
+                    <p class="text-sm text-gray-400 mt-1" id="monitor-subtitle">Nenhuma operação acompanhada no momento.</p>
+                </div>
+                <button onclick="clearOperations()" class="text-[10px] uppercase font-bold text-gray-500 hover:text-rose-400 transition-colors border border-dark-600 px-2 py-1 rounded">Limpar Histórico</button>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="operations-grid">
+                <!-- Cards de operações gerados via JS -->
+            </div>
+        </div>
+
+        <div class="mt-12 text-center pb-8 border-t border-dark-700/30 pt-4">
             <p class="text-xs text-gray-500">© 2026 Plataforma Monitor de Opções B3 PRO. O conteúdo aqui é puramente analítico e não configura call de compra ou venda.</p>
         </div>
     </main>
@@ -366,6 +383,243 @@
             }
         }
 
+        let alertedOps = {}; // Anti-spam para alertas de operações (5 min timeout)
+        function checkAndAlertOperations(ticker, currentPrice) {
+            if (!radarActive || Notification.permission !== 'granted') return;
+            const ops = loadOperations().filter(o => o.status === 'ATIVA' && o.ticker === ticker);
+            if (ops.length === 0) return;
+            
+            const opDte = calcDTEReal();
+            
+            ops.forEach(op => {
+                let riskType = null;
+                let riskMessage = '';
+
+                // Verifica risco de strike iminente (5%)
+                if (op.tipo === 'PUT' && currentPrice <= op.strike * 1.05) {
+                    riskType = 'STRIKE_RISK';
+                    riskMessage = `${op.ticker} caiu a ${fmtMoney(currentPrice)} e ameaça seu strike de PUT (${fmtMoney(op.strike)}).`;
+                } else if (op.tipo === 'CALL' && currentPrice >= op.strike * 0.95) {
+                    riskType = 'STRIKE_RISK';
+                    riskMessage = `${op.ticker} subiu a ${fmtMoney(currentPrice)} e ameaça seu strike de CALL (${fmtMoney(op.strike)}).`;
+                }
+
+                // Verifica expiração/rolagem se não houver risco imediato
+                if (!riskType) {
+                    if (opDte <= 0) {
+                        const isOTM = (op.tipo === 'PUT' && currentPrice > op.strike) || (op.tipo === 'CALL' && currentPrice < op.strike);
+                        if (isOTM) {
+                            riskType = 'EXPIRED_OTM';
+                            riskMessage = `${op.ticker} expirou OTM. Retorno máximo atingido!`;
+                        }
+                    } else if (opDte <= 7) {
+                        riskType = 'ROLL_URGENT';
+                        riskMessage = `Semana de vencimento para ${op.ticker}. Avalie rolagem (DTE: ${opDte}).`;
+                    }
+                }
+
+                // Verifica lucro pela passagem do tempo (aprox. Theta)
+                if (!riskType && op.dteInicial > 0) {
+                    const elapsed = op.dteInicial - opDte;
+                    if (elapsed / op.dteInicial >= 0.8) {
+                        riskType = 'PROFIT_80';
+                        riskMessage = `Operação de ${op.ticker} atingiu ~80% de desgaste (Theta). Considere realizar o lucro.`;
+                    }
+                }
+
+                if (riskType) {
+                    // Manda Push Notification a cada 5 mins para não spammar
+                    const alertKey = `${op.id}_${riskType}`;
+                    const lastAlert = alertedOps[alertKey] || 0;
+                    const now = Date.now();
+                    if (now - lastAlert > 300000) {
+                        new Notification('Monitor de Operações ⚠️', { body: riskMessage, icon: 'logo.png' });
+                        alertedOps[alertKey] = now;
+                    }
+                    op.activeAlert = riskMessage;
+                    op.alertType = riskType;
+                } else {
+                    op.activeAlert = null;
+                    op.alertType = null;
+                }
+            });
+            
+            // Grava state UI se mudou o alerta
+            const allOps = loadOperations();
+            let changed = false;
+            ops.forEach(activeOp => {
+                const idx = allOps.findIndex(o => o.id === activeOp.id);
+                if (idx > -1 && allOps[idx].activeAlert !== activeOp.activeAlert) {
+                    allOps[idx] = activeOp;
+                    changed = true;
+                }
+            });
+            if (changed) {
+                saveOperations(allOps);
+                renderOperations();
+            }
+        }
+
+        // === HISTÓRICO DE OPERAÇÕES ===
+        function loadOperations() {
+            const ops = localStorage.getItem('thetalens_ops');
+            return ops ? JSON.parse(ops) : [];
+        }
+
+        function saveOperations(ops) {
+            localStorage.setItem('thetalens_ops', JSON.stringify(ops));
+        }
+
+        function calcDTEReal() {
+            const now = new Date();
+            let dteDate = new Date(now.getFullYear(), now.getMonth(), 1);
+            let fridays = 0;
+            while(fridays < 3) {
+                if (dteDate.getDay() === 5) fridays++;
+                if (fridays < 3) dteDate.setDate(dteDate.getDate() + 1);
+            }
+            if (now.getDate() >= dteDate.getDate()) {
+                dteDate = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+                fridays = 0;
+                while(fridays < 3) {
+                    if (dteDate.getDay() === 5) fridays++;
+                    if (fridays < 3) dteDate.setDate(dteDate.getDate() + 1);
+                }
+            }
+            const diffTime = Math.abs(dteDate - now);
+            return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        }
+
+        function suggestOperation(type, ticker, strike, sma20, price, premium) {
+            const ops = loadOperations();
+            const today = new Date().toISOString().split('T')[0];
+            const duplicate = ops.find(o => o.ticker === ticker && o.tipo === type && o.dataEntrada.startsWith(today));
+            if (duplicate) {
+                alert(`Operação de ${type} em ${ticker} já registrada hoje.`);
+                return;
+            }
+
+            const newOp = {
+                id: Date.now().toString(),
+                ticker,
+                tipo: type, // 'CALL' ou 'PUT'
+                strike,
+                sma20Entrada: sma20,
+                precoEntrada: price,
+                premioEstimado: premium,
+                dataEntrada: new Date().toISOString(),
+                dteInicial: calcDTEReal(),
+                status: 'ATIVA'
+            };
+            ops.unshift(newOp);
+            saveOperations(ops);
+            renderOperations();
+            
+            // Adiciona pequeno timeout e rola suavemente
+            setTimeout(() => {
+                const el = document.getElementById('monitor-container');
+                if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }, 100);
+        }
+
+        function closeOperation(id) {
+            const ops = loadOperations();
+            const idx = ops.findIndex(o => o.id === id);
+            if (idx > -1) {
+                ops[idx].status = 'FECHADA';
+                saveOperations(ops);
+                renderOperations();
+            }
+        }
+
+        function clearOperations() {
+            if(confirm('Limpar as operações fechadas? As ativas continuarão intactas.')){
+                const ops = loadOperations().filter(o => o.status === 'ATIVA');
+                saveOperations(ops);
+                renderOperations();
+            }
+        }
+
+        function renderOperations() {
+            const grid = document.getElementById('operations-grid');
+            if(!grid) return;
+            const ops = loadOperations();
+            
+            const activeCount = ops.filter(o => o.status === 'ATIVA').length;
+            const subtitle = document.getElementById('monitor-subtitle');
+            if(subtitle) subtitle.textContent = activeCount === 0 ? 'Nenhuma operação ativa no momento.' : `${activeCount} operação(ões) ativa(s).`;
+            
+            grid.innerHTML = '';
+            
+            if(ops.length === 0) {
+                grid.innerHTML = '<div class="col-span-1 md:col-span-2 lg:col-span-3 text-center text-gray-500 py-6 text-sm">Registro vazio. Registre uma operação nos cards acima.</div>';
+                return;
+            }
+
+            ops.forEach(op => {
+                const isCall = op.tipo === 'CALL';
+                const color = isCall ? 'brand' : 'emerald-400';
+                const bg = isCall ? 'brand' : 'emerald-500';
+                
+                const dataStr = new Date(op.dataEntrada).toLocaleDateString('pt-BR', {day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit'});
+                const opDte = calcDTEReal();
+                
+                const isClosed = op.status === 'FECHADA';
+                const cardOpacity = isClosed ? 'opacity-50 grayscale' : 'opacity-100';
+
+                grid.innerHTML += `
+                    <div class="rounded-xl border border-${bg}/20 bg-dark-800/80 p-4 ${cardOpacity} relative overflow-hidden transition-all">
+                        ${isClosed ? '<div class="absolute inset-0 bg-dark-900/60 flex items-center justify-center z-10"><span class="bg-dark-800 border-2 border-dark-600 px-4 py-2 rounded-full text-sm font-bold tracking-widest text-gray-400 transform -rotate-12">ENCERRADA</span></div>' : ''}
+                        
+                        <div class="flex justify-between items-start mb-3">
+                            <div>
+                                <h4 class="font-bold text-lg text-white font-mono flex items-center gap-2">
+                                    ${op.ticker}
+                                    ${!isClosed && op.alertType ? `<span class="relative flex h-2 w-2" title="${op.alertType}"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span><span class="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span></span>` : ''}
+                                </h4>
+                                <span class="text-[10px] font-bold uppercase tracking-wider text-${color} border border-${bg}/30 bg-${bg}/5 px-1.5 py-0.5 rounded">${op.tipo}</span>
+                            </div>
+                            <div class="text-right">
+                                <span class="text-[10px] text-gray-500 uppercase tracking-widest block">DTE</span>
+                                <span class="font-mono ${opDte <= 7 && !isClosed ? 'text-rose-400' : 'text-white'} font-bold">${opDte} <span class="text-[10px] text-gray-400 font-sans">dias</span></span>
+                            </div>
+                        </div>
+                        
+                        ${!isClosed && op.activeAlert ? `
+                            <div class="mb-3 p-2 rounded-lg bg-amber-500/10 border border-amber-500/20 text-[10px] text-amber-200 leading-tight">
+                                <strong>⚠️ Alerta:</strong> ${op.activeAlert}
+                            </div>
+                        ` : ''}
+                        
+                        <div class="grid grid-cols-2 gap-2 text-sm text-gray-300 font-mono text-[11px] mb-4 p-2.5 bg-dark-900/70 rounded-lg border border-white/5">
+                            <div>
+                                <span class="text-gray-500 block text-[9px] uppercase font-sans">Strike Alvo</span>
+                                <span class="${isClosed ? 'text-gray-400' : 'text-gray-200'} font-bold">${fmtMoney(op.strike)}</span>
+                            </div>
+                            <div>
+                                <span class="text-gray-500 block text-[9px] uppercase font-sans">Prêmio Coletado</span>
+                                <span class="text-${color} font-bold">+${fmtMoney(op.premioEstimado)}</span>
+                            </div>
+                            <div>
+                                <span class="text-gray-500 block text-[9px] uppercase font-sans">Abertura</span>
+                                <span class="text-gray-400">${dataStr}</span>
+                            </div>
+                            <div>
+                                <span class="text-gray-500 block text-[9px] uppercase font-sans">SMA20 ref.</span>
+                                <span class="text-sky-400/80">${fmtMoney(op.sma20Entrada)}</span>
+                            </div>
+                        </div>
+                        
+                        ${!isClosed ? `
+                        <div class="flex gap-2 relative z-20">
+                            <button onclick="closeOperation('${op.id}')" class="flex-1 py-1.5 rounded-lg border border-dark-500 hover:border-dark-400 hover:bg-dark-600 hover:text-white text-gray-400 text-[10px] font-bold uppercase tracking-widest transition-colors">Encerrar Manualmente</button>
+                        </div>
+                        ` : ''}
+                    </div>
+                `;
+            });
+        }
+
         // Formatadores
         const fmtMoney = (val) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(val);
         // 🔑 TOKEN GRATUITO BRAPI.DEV
@@ -420,6 +674,9 @@
                                         const pos = Math.max(0, Math.min(100, ((asset.price - asset.bands.daily.lower) / (asset.bands.daily.upper - asset.bands.daily.lower)) * 100));
                                         checkRadarAlerts(asset, pos);
                                     }
+                                    
+                                    // Verifica alertas quantitativos de Operações Ativas
+                                    checkAndAlertOperations(asset.ticker, asset.price);
                                 }
                             }
                         }
@@ -556,17 +813,14 @@
                     `;
                 };
 
-                // Helper para calcular DTE (Dias Até Vencimento)
-                const calcDTE = (expirationStr) => {
-                    if (!expirationStr || expirationStr === '--') return null;
-                    const exp = new Date(expirationStr);
-                    const hoje = new Date();
-                    hoje.setHours(0, 0, 0, 0);
-                    const diff = Math.round((exp - hoje) / (1000 * 60 * 60 * 24));
-                    return diff >= 0 ? diff : null;
-                };
+                // === LÓGICA DE SINAL: PUT/CALL baseado em SMA20 (ProfitPro-compatible) ===
+                // CALL: preço ACIMA da SMA20 → strike no BB Superior (2σ exato)
+                // PUT:  preço ABAIXO da SMA20 → strike no BB Inferior (2σ exato)
+                const sma20 = asset.bands.daily.sma20;
+                const priceAboveSMA = sma20 && asset.price > sma20;
+                const priceBelowSMA = sma20 && asset.price < sma20;
+                const pctFromSMA = sma20 ? ((asset.price - sma20) / sma20 * 100) : 0;
 
-                // Helper para renderizar Cards de Estratégias (Trazendo o feeling PROFISSIONAL)
                 let strategyHTML = '<div class="mt-6 flex flex-col gap-3">';
                 
                 // Calcula posição relativa do preço nas bandas (para contexto)
@@ -587,93 +841,72 @@
                     }
                 };
 
-                // Exibe CALL se disponível (sem condição de banda — banda é contexto, não portão)
-                if (asset.call) {
-                    const callDTE = asset.call.dte !== undefined ? asset.call.dte : calcDTE(asset.call.expiration);
-                    const callDTELabel = callDTE !== null ? `<span class="text-[10px] font-bold ${callDTE <= 7 ? 'text-rose-400' : callDTE <= 21 ? 'text-amber-400' : 'text-sky-400'}" title="${asset.call.dte !== undefined ? 'Dias úteis' : 'Dias corridos'} até o vencimento">${callDTE}du</span>` : '';
-                    const callIsReal = asset.call.volume === 'Real';
+                const bbUpper = asset.bands.daily.upper;
+                const bbLower = asset.bands.daily.lower;
+
+                if (priceAboveSMA) {
+                    const premioEst = asset.call ? asset.call.premium : (asset.price * 0.015).toFixed(2);
                     strategyHTML += `
                         <div class="rounded-lg p-3 border border-brand/20 bg-brand/5 hover:bg-brand/10 transition-colors">
-                            <div class="flex items-center justify-between mb-2">
+                            <div class="flex items-center justify-between mb-3">
                                 <span class="text-xs font-bold text-brand uppercase tracking-widest flex items-center gap-1">
-                                    <div class="w-1.5 h-1.5 rounded-full bg-brand"></div> Venda Coberta (Call)
+                                    <div class="w-1.5 h-1.5 rounded-full bg-brand"></div> Sinal: Vender CALL
                                 </span>
-                                <div class="flex items-center gap-2">
-                                    ${bandContextBadge('CALL')}
-                                    ${callDTELabel}
-                                    <span class="text-xs font-mono text-gray-400">${asset.call.code}</span>
-                                </div>
+                                ${bandContextBadge('CALL')}
                             </div>
-                            <div class="flex justify-between items-end">
+                            <div class="flex justify-between items-end mb-4">
                                 <div>
-                                    <p class="text-xs text-gray-400">Strike de Venda</p>
-                                    <p class="font-mono text-sm text-gray-200">${fmtMoney(asset.call.strike)}</p>
+                                    <p class="text-[10px] font-medium text-gray-500 uppercase tracking-wider mb-0.5">Stk Alvo (BB Resist.)</p>
+                                    <p class="font-mono text-xl font-bold text-gray-200">${fmtMoney(bbUpper)}</p>
                                 </div>
                                 <div class="text-right">
-                                    <p class="text-xs text-gray-400">Taxa Extra ${callIsReal ? '<span class="text-emerald-500">●</span>' : '<span class="text-amber-500" title="Estimativa">~</span>'}</p>
-                                    <p class="font-mono text-base font-bold text-brand">${fmtMoney(asset.call.premium)}</p>
+                                    <p class="text-[10px] font-medium text-gray-500 uppercase tracking-wider mb-0.5">Prêmio Est.</p>
+                                    <p class="font-mono text-lg font-bold text-brand">+${fmtMoney(premioEst)}</p>
                                 </div>
                             </div>
-                            <div class="mt-2 pt-2 border-t border-brand/10 flex justify-between text-[11px] font-mono text-gray-500">
-                                <span title="Delta (estimativa)">Δ: ${asset.call.delta}</span>
-                                <span title="Gamma (estimativa)" class="text-gray-400">Γ: ${asset.call.gamma}</span>
-                                <span title="Theta (estimativa)">θ: ${asset.call.theta}</span>
-                                ${callIsReal ? `<span class="text-emerald-500/80" title="Dados reais - opcoes.net.br">● Real</span>` : `<span class="text-amber-500/80" title="Dados estimados">~ Est.</span>`}
-                            </div>
+                            <button onclick="suggestOperation('CALL', '${asset.ticker}', ${bbUpper}, ${sma20}, ${asset.price}, ${premioEst})" class="w-full py-2.5 bg-brand/10 hover:bg-brand/20 text-brand text-xs font-bold uppercase tracking-widest rounded-lg transition-colors border border-brand/30 ring-1 ring-inset ring-brand/10 shadow-[0_0_15px_rgba(139,92,246,0.15)] flex justify-center items-center gap-2">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                                Registrar Operação
+                            </button>
                         </div>
                     `;
-                }
-
-                // Exibe PUT se disponível (sem condição de banda — banda é contexto, não portão)
-                if (asset.put) {
-                    const putDTE = asset.put.dte !== undefined ? asset.put.dte : calcDTE(asset.put.expiration);
-                        const putDTELabel = putDTE !== null ? `<span class="text-[10px] font-bold ${putDTE <= 7 ? 'text-rose-400' : putDTE <= 21 ? 'text-amber-400' : 'text-sky-400'}" title="${asset.put.dte !== undefined ? 'Dias úteis' : 'Dias corridos'} até o vencimento">${putDTE}du</span>` : '';
-                    const putIsReal = asset.put.volume === 'Real';
+                } else if (priceBelowSMA) {
+                    const premioEst = asset.put ? asset.put.premium : (asset.price * 0.012).toFixed(2);
                     strategyHTML += `
                         <div class="rounded-lg p-3 border border-emerald-500/20 bg-emerald-500/5 hover:bg-emerald-500/10 transition-colors">
-                            <div class="flex items-center justify-between mb-2">
+                            <div class="flex items-center justify-between mb-3">
                                 <span class="text-xs font-bold text-emerald-400 uppercase tracking-widest flex items-center gap-1">
-                                    <div class="w-1.5 h-1.5 rounded-full bg-emerald-400"></div> Venda de PUT
+                                    <div class="w-1.5 h-1.5 rounded-full bg-emerald-400"></div> Sinal: Vender PUT
                                 </span>
-                                <div class="flex items-center gap-2">
-                                    ${bandContextBadge('PUT')}
-                                    ${putDTELabel}
-                                    <span class="text-xs font-mono text-gray-400">${asset.put.code}</span>
-                                </div>
+                                ${bandContextBadge('PUT')}
                             </div>
-                            <div class="flex justify-between items-end">
+                            <div class="flex justify-between items-end mb-4">
                                 <div>
-                                    <p class="text-xs text-gray-400">Strike / Alvo</p>
-                                    <p class="font-mono text-sm text-gray-200">${fmtMoney(asset.put.strike)}</p>
+                                    <p class="text-[10px] font-medium text-gray-500 uppercase tracking-wider mb-0.5">Stk Alvo (BB Sup.)</p>
+                                    <p class="font-mono text-xl font-bold text-gray-200">${fmtMoney(bbLower)}</p>
                                 </div>
                                 <div class="text-right">
-                                    <p class="text-xs text-gray-400">Prêmio (Renda) ${putIsReal ? '<span class="text-emerald-500">●</span>' : '<span class="text-amber-500" title="Estimativa">~</span>'}</p>
-                                    <p class="font-mono text-base font-bold text-emerald-400">${fmtMoney(asset.put.premium)}</p>
+                                    <p class="text-[10px] font-medium text-gray-500 uppercase tracking-wider mb-0.5">Prêmio Est.</p>
+                                    <p class="font-mono text-lg font-bold text-emerald-400">+${fmtMoney(premioEst)}</p>
                                 </div>
                             </div>
-                            <div class="mt-2 pt-2 border-t border-emerald-500/10 flex justify-between text-[11px] font-mono text-gray-500">
-                                <span title="Delta (estimativa)">Δ: ${asset.put.delta}</span>
-                                <span title="Gamma (estimativa)" class="text-gray-400">Γ: ${asset.put.gamma}</span>
-                                <span title="Theta (estimativa)">θ: ${asset.put.theta}</span>
-                                ${putIsReal ? `<span class="text-emerald-500/80" title="Dados reais - opcoes.net.br">● Real</span>` : `<span class="text-amber-500/80" title="Dados estimados">~ Est.</span>`}
-                            </div>
+                            <button onclick="suggestOperation('PUT', '${asset.ticker}', ${bbLower}, ${sma20}, ${asset.price}, ${premioEst})" class="w-full py-2.5 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 text-xs font-bold uppercase tracking-widest rounded-lg transition-colors border border-emerald-500/30 ring-1 ring-inset ring-emerald-500/10 shadow-[0_0_15px_rgba(16,185,129,0.15)] flex justify-center items-center gap-2">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                                Registrar Operação
+                            </button>
                         </div>
                     `;
-                }
-
-                if (!asset.call && !asset.put) {
-                    // Calcula distância para sinal
-                    const posInDailyForWait = ((asset.price - asset.bands.daily.lower) / (asset.bands.daily.upper - asset.bands.daily.lower)) * 100;
-                    const pctToCall = (((asset.bands.daily.upper * 0.95) - asset.price) / asset.price * 100).toFixed(1);
-                    const pctToPut  = ((asset.price - (asset.bands.daily.lower * 1.05)) / asset.price * 100).toFixed(1);
-                    const waitMsg = posInDailyForWait >= 50
-                        ? `Aguardando alta de ${pctToCall}% para sinal de entrada da <strong class="text-brand">CALL</strong>.`
-                        : `Aguardando queda de ${pctToPut}% para sinal de entrada da <strong class="text-emerald-400">PUT</strong>.`;
-                     strategyHTML += `
-                        <div class="rounded-lg p-3 border border-dark-600/60 bg-dark-800/40 text-center py-4">
-                            <p class="text-xs text-gray-400 leading-relaxed">${waitMsg}</p>
+                } else {
+                    const pctToCall = (((asset.bands.daily.upper) - asset.price) / asset.price * 100).toFixed(1);
+                    const pctToPut  = ((asset.price - (asset.bands.daily.lower)) / asset.price * 100).toFixed(1);
+                    strategyHTML += `
+                        <div class="rounded-lg p-4 border border-dark-600/60 bg-dark-800/40 text-center flex flex-col items-center justify-center m-auto">
+                            <div class="w-8 h-8 rounded-full bg-dark-700 flex items-center justify-center mb-2">
+                                <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            </div>
+                            <p class="text-xs text-gray-400 leading-relaxed font-medium">Aguardando definição clara de tendência em relação à SMA20.</p>
                         </div>
-                     `;
+                    `;
                 }
 
                 strategyHTML += '</div>';
@@ -849,7 +1082,26 @@
             }
         }
 
+        // Mock inicial para demonstração visual se localStorage estiver vazio
+        if (loadOperations().length === 0) {
+            saveOperations([{
+                id: 'mock-demo-v2',
+                ticker: 'PETR4',
+                tipo: 'PUT',
+                strike: 38.00,
+                sma20Entrada: 36.50,
+                precoEntrada: 36.80,
+                premioEstimado: 0.95,
+                dataEntrada: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3).toISOString(), // 3 dias atrás
+                dteInicial: 21,
+                status: 'ATIVA',
+                activeAlert: 'Operação simulada atingiu limite inicial de 5% de Risco. Monitore a posição.',
+                alertType: 'STRIKE_RISK'
+            }]);
+        }
+
         renderAssets();
+        renderOperations();
         setInterval(updateClock, 1000);
         updateClock();
         updateMarketStatusBadge();

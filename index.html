@@ -1,16 +1,16 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="pt-BR" class="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Monitor de OpÃ§Ãµes B3 PRO | Antigravity</title>
+    <title>Monitor de Opções B3 PRO | Antigravity</title>
     
     <!-- Fonts: Inter for clean UI, JetBrains Mono for numbers -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
     
-    <!-- Tailwind CSS (via CDN para prototipagem rÃ¡pida e visual premium) -->
+    <!-- Tailwind CSS (via CDN para prototipagem rápida e visual premium) -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Lightweight Charts - TradingView (open-source, gratuito) -->
     <script src="https://unpkg.com/lightweight-charts@4.1.3/dist/lightweight-charts.standalone.production.js"></script>
@@ -96,7 +96,7 @@
         
         .number-fmt { font-family: 'JetBrains Mono', monospace; font-variant-numeric: tabular-nums; }
 
-        /* ===== MODAL DO GRÃFICO ===== */
+        /* ===== MODAL DO GRÁFICO ===== */
         #chart-modal {
             display: none;
             position: fixed;
@@ -159,23 +159,27 @@
                     <h1 class="text-xl font-bold tracking-tight text-white flex items-center gap-2">
                         <span id="platform-name">ThetaLens</span> <span class="badge-pro text-sm uppercase tracking-widest border border-brand-gold/30 px-2 py-0.5 rounded ml-1">PRO</span>
                     </h1>
-                    <p class="text-xs text-gray-400">Terminal de InteligÃªncia Quantitativa</p>
+                    <p class="text-xs text-gray-400">Terminal de Inteligência Quantitativa</p>
                 </div>
             </div>
             
-            <div class="flex items-center gap-6">
+            <div class="flex items-center gap-3 sm:gap-6">
+                <!-- MENU DESKTOP -->
                 <div class="hidden md:flex items-center gap-4 text-sm font-medium text-gray-400">
                     <span class="flex items-center gap-1.5 hover:text-white cursor-pointer transition-colors"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg> Screener</span>
-                    <span class="flex items-center gap-1.5 hover:text-white cursor-pointer transition-colors"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg> EstratÃ©gias</span>
+                    <span class="flex items-center gap-1.5 hover:text-white cursor-pointer transition-colors"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg> Estrat\u00e9gias</span>
                 </div>
-                <div class="flex items-center gap-2 px-3 py-1.5 rounded-md bg-dark-800/80 border border-brand-purple/30 shadow-inner">
-                    <span class="text-[11px] font-bold text-brand-purple tracking-widest uppercase flex items-center gap-1"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg> DTE: <span id="dte-counter" class="text-white font-mono ml-1">--</span></span>
-                </div>
-                <!-- NOVO BOTÃƒO RADAR -->
+
+                <!-- RADAR BUTTON -->
                 <button id="btn-radar" onclick="toggleRadar()" class="flex items-center gap-2 px-3 py-1.5 rounded-md bg-dark-800/80 border border-dark-600 hover:border-brand transition-colors shadow-inner group cursor-pointer" title="Ativar Alertas Push do Navegador">
                     <span class="w-2 h-2 rounded-full bg-gray-500 group-[.active]:bg-emerald-500 group-[.active]:shadow-[0_0_8px_#10b981] group-[.active]:animate-pulse" id="radar-led"></span>
                     <span class="text-[11px] font-bold text-gray-400 group-[.active]:text-emerald-400 tracking-widest uppercase hidden sm:inline">Radar</span>
                 </button>
+
+                <!-- DTE COUNTER -->
+                <div class="flex items-center gap-2 px-3 py-1.5 rounded-md bg-dark-800/80 border border-brand-purple/30 shadow-inner">
+                    <span class="text-[11px] font-bold text-brand-purple tracking-widest uppercase flex items-center gap-1"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg> DTE: <span id="dte-counter" class="text-white font-mono ml-1">--</span></span>
+                </div>
             </div>
         </div>
     </nav>
@@ -183,11 +187,11 @@
     <!-- Main Content -->
     <main class="max-w-7xl mx-auto px-6 py-8">
         
-        <!-- Aviso Educacional (Exigido CVM/RegulamentaÃ§Ã£o) -->
+        <!-- Aviso Educacional (Exigido CVM/Regulamentação) -->
         <div class="mb-6 p-4 rounded-xl border border-rose-500/30 bg-rose-500/10 flex items-center gap-4 shadow-lg shadow-rose-500/5">
-            <span class="text-2xl">âš ï¸</span>
+            <span class="text-2xl">⚠️</span>
             <p class="text-sm text-gray-300 font-medium">
-                <strong class="text-rose-400">AVISO:</strong> Este painel Ã© uma ferramenta de apoio educacional e acompanhamento quantitativo. NÃ£o constitui recomendaÃ§Ã£o de investimento. DecisÃµes financeiras devem ser baseadas em avaliaÃ§Ãµes prÃ³prias e profissionais.
+                <strong class="text-rose-400">AVISO:</strong> Este painel é uma ferramenta de apoio educacional e acompanhamento quantitativo. Não constitui recomendação de investimento. Decisões financeiras devem ser baseadas em avaliações próprias e profissionais.
             </p>
         </div>
 
@@ -195,10 +199,10 @@
         <div class="mb-8 glass-card rounded-xl p-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border-l-4 border-l-brand-purple">
             <div>
                 <h2 class="text-gray-200 font-medium">Sinais de Volatilidade Detectados</h2>
-                <p class="text-sm text-gray-400 mt-1">AnÃ¡lise baseada em Desvio PadrÃ£o (Bollinger) e MÃ©dias MÃ³veis. AtualizaÃ§Ã£o em tempo real.</p>
+                <p class="text-sm text-gray-400 mt-1">Análise baseada em Desvio Padrão (Bollinger) e Médias Móveis. Atualização em tempo real.</p>
             </div>
             <div class="flex gap-2">
-                <span class="px-3 py-1 text-xs font-medium rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">IV Rank FavorÃ¡vel</span>
+                <span class="px-3 py-1 text-xs font-medium rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">IV Rank Favorável</span>
                 <span class="px-3 py-1 text-xs font-medium rounded-full bg-brand/10 text-brand border border-brand/20">Oportunidades de PUT</span>
             </div>
         </div>
@@ -209,11 +213,11 @@
         </div>
 
         <div class="mt-12 text-center">
-            <p class="text-xs text-gray-500">Â© 2026 Plataforma Monitor de OpÃ§Ãµes B3 PRO. O conteÃºdo aqui Ã© puramente analÃ­tico e nÃ£o configura call de compra ou venda.</p>
+            <p class="text-xs text-gray-500">© 2026 Plataforma Monitor de Opções B3 PRO. O conteúdo aqui é puramente analítico e não configura call de compra ou venda.</p>
         </div>
     </main>
 
-    <!-- MODAL DO GRÃFICO DE CANDLES -->
+    <!-- MODAL DO GRÁFICO DE CANDLES -->
     <div id="chart-modal" onclick="if(event.target===this)closeChart()">
         <div id="chart-modal-box">
             <!-- Header do Modal -->
@@ -225,7 +229,7 @@
                     <span id="modal-change" class="text-xs font-mono"></span>
                 </div>
                 
-                <!-- Seletor de PerÃ­odo -->
+                <!-- Seletor de Período -->
                 <div class="flex gap-1 w-full sm:w-auto overflow-x-auto pb-1 sm:pb-0" id="period-buttons">
                     <button class="period-btn" data-range="1mo" onclick="loadChart(currentChartTicker,'1mo')">1M</button>
                     <button class="period-btn active" data-range="3mo" onclick="loadChart(currentChartTicker,'3mo')">3M</button>
@@ -245,13 +249,13 @@
                 <span class="flex items-center gap-1"><span class="w-2 h-2 bg-rose-500 rounded-sm inline-block"></span><span class="text-rose-400">Baixa</span></span>
                 <span id="modal-loading" class="ml-auto text-brand animate-pulse hidden">Carregando...</span>
             </div>
-            <!-- GrÃ¡fico de Candles -->
+            <!-- Gráfico de Candles -->
             <div id="chart-container"></div>
             <!-- Volume -->
             <div id="volume-container"></div>
-            <!-- RodapÃ© com fonte -->
+            <!-- Rodapé com fonte -->
             <div class="px-5 py-2 border-t border-dark-700/30 flex justify-between items-center">
-                <span class="text-[10px] text-gray-500">Fonte: Brapi.dev â€¢ Dados com delay de 15min â€¢ Apenas Ãºltimo pregÃ£o</span>
+                <span class="text-[10px] text-gray-500">Fonte: Brapi.dev • Dados com delay de 15min • Apenas último pregão</span>
                 <span class="text-[10px] text-gray-500" id="modal-last-update"></span>
             </div>
         </div>
@@ -268,10 +272,10 @@
                 price: 38.45,
                 change: 1.25,
                 iv: 34.2, 
-                ivRank: 82, // Percentil HistÃ³rico da Volatilidade
+                ivRank: 82, // Percentil Histórico da Volatilidade
                 sma200: 35.15,
                 bands: {
-                    daily: { upper: 40.50, lower: 36.10, label: 'Curto Prazo (DiÃ¡rio)' },
+                    daily: { upper: 40.50, lower: 36.10, label: 'Curto Prazo (Diário)' },
                     weekly: { upper: 42.20, lower: 33.90, label: 'Longo Prazo (Semanal)' }
                 },
                 call: null,
@@ -288,7 +292,7 @@
                 ivRank: 15,
                 sma200: 65.80,
                 bands: {
-                    daily: { upper: 65.10, lower: 60.50, label: 'Curto Prazo (DiÃ¡rio)' },
+                    daily: { upper: 65.10, lower: 60.50, label: 'Curto Prazo (Diário)' },
                     weekly: { upper: 68.20, lower: 58.80, label: 'Longo Prazo (Semanal)' }
                 },
                 call: null,
@@ -305,7 +309,7 @@
                 ivRank: 45,
                 sma200: 25.50,
                 bands: {
-                    daily: { upper: 29.50, lower: 26.80, label: 'Curto Prazo (DiÃ¡rio)' },
+                    daily: { upper: 29.50, lower: 26.80, label: 'Curto Prazo (Diário)' },
                     weekly: { upper: 30.20, lower: 24.20, label: 'Longo Prazo (Semanal)' }
                 },
                 call: null,
@@ -313,7 +317,7 @@
             },
             {
                 ticker: 'ITUB4',
-                company: 'ItaÃº Unibanco',
+                company: 'Itaú Unibanco',
                 nextEarnings: '08 Ago 2026',
                 nextDividend: { label: 'JCP', value: 0.017, datacom: '29 Fev 2026' },
                 price: 34.22,
@@ -322,7 +326,7 @@
                 ivRank: 38,
                 sma200: 31.90,
                 bands: {
-                    daily: { upper: 35.98, lower: 32.39, label: 'Curto Prazo (DiÃ¡rio)' },
+                    daily: { upper: 35.98, lower: 32.39, label: 'Curto Prazo (Diário)' },
                     weekly: { upper: 36.20, lower: 30.80, label: 'Longo Prazo (Semanal)' }
                 },
                 call: null,
@@ -335,7 +339,7 @@
                 change: 2.10,
                 sma200: 110.50,
                 bands: {
-                    daily: { upper: 160.00, lower: 140.00, label: 'Banda DiÃ¡ria' },
+                    daily: { upper: 160.00, lower: 140.00, label: 'Banda Diária' },
                     weekly: { upper: 165.00, lower: 135.00, label: 'Banda Semanal' }
                 },
                 call: { code: 'BITHC165', strike: 165.00, premium: 3.50, expiration: '2024-05-17', delta: '0.25', theta: '-0.05', gamma: '0.02' },
@@ -345,23 +349,23 @@
 
         // Formatadores
         const fmtMoney = (val) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(val);
-        // ðŸ”‘ TOKEN GRATUITO BRAPI.DEV
-        // Para ambientes profissionais/comerciais proxy pÃºblico falha (CORS/500).
-        // Crie sua conta grÃ¡tis em https://brapi.dev/ e cole seu token abaixo:
+        // 🔑 TOKEN GRATUITO BRAPI.DEV
+        // Para ambientes profissionais/comerciais proxy público falha (CORS/500).
+        // Crie sua conta grátis em https://brapi.dev/ e cole seu token abaixo:
         const BRAPI_TOKEN = 'ip1K3nN5Z9vhEgZ8jbiyHT';
         let eventsLoaded = false;
         let initialLoad = true; // Impede flash dos dados mockados no topo
 
         // ========================================================
-        // CONFIG DO BACKEND â€” Ajuste a URL apÃ³s deploy no Render!
+        // CONFIG DO BACKEND — Ajuste a URL após deploy no Render!
         // ========================================================
-        const RENDER_API_URL = 'https://monitor-de-opcoes-b3.onrender.com'; // â† serÃ¡ atualizada apÃ³s deploy
+        const RENDER_API_URL = 'https://monitor-de-opcoes-b3.onrender.com'; // ← será atualizada após deploy
         const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
         const API_BASE_URL = isLocal ? 'http://localhost:3000' : RENDER_API_URL;
         const API_AVAILABLE = true; // Sempre tenta buscar (localhost OU Render)
 
         // ==========================================
-        // CÃLCULO DE VOLATILIDADE HISTÃ“RICA (VH)
+        // CÁLCULO DE VOLATILIDADE HISTÓRICA (VH)
         // ==========================================
         let hvLoaded = false;
         
@@ -379,23 +383,24 @@
                         if (!data.results || !data.results[0] || !data.results[0].historicalDataPrice) return;
                         
                         const result = data.results[0];
-                        // Filtra preços históricos sem incluir o candle do dia atual
-                        const todayDateStr = new Date().toISOString().split('T')[0];
+                        const todayStr = new Date().toISOString().split('T')[0];
                         const prices = result.historicalDataPrice
                             .filter(day => {
                                 if(!day.date) return false;
                                 const dayStr = new Date(day.date * 1000).toISOString().split('T')[0];
-                                return dayStr !== todayDateStr && typeof day.close === 'number' && day.close > 0;
+                                return dayStr !== todayStr && typeof day.close === 'number' && day.close > 0;
                             })
                             .map(day => day.close);
-                        if (prices.length < 30) return; // Precisa de amostra suficiente
+                        
+                        asset.historicalPrices = prices; // Salva para recálculo live 
+                        if (prices.length < 20) return; 
                         
                         const logReturns = [];
                         for(let i = 1; i < prices.length; i++) {
                            logReturns.push(Math.log(prices[i] / prices[i-1]));
                         }
                         
-                        // Janela de volatilidade atual = Ãºltimos 21 pregÃµes (aproximadamente 1 mÃªs Ãºtil)
+                        // Janela de volatilidade atual = últimos 21 pregões (aproximadamente 1 mês útil)
                         const WINDOW_SIZE = 21; 
                         
                         const calcStdDev = (arr) => {
@@ -404,17 +409,14 @@
                             return Math.sqrt(variance);
                         };
                         
-                        const SQRT_252 = Math.sqrt(252); // Constante de anualizaÃ§Ã£o
+                        const SQRT_252 = Math.sqrt(252); // Constante de anualização
                         
-                        // Volatilidade HistÃ³rica Atual
+                        // Volatilidade Histórica Atual
                         const currentReturns = logReturns.slice(-WINDOW_SIZE);
                         const currentVol = calcStdDev(currentReturns) * SQRT_252;
                         asset.hv = (currentVol * 100).toFixed(1);
                         
-                        // Guardar histÃ³rico para recalculo Real-Time das bandas
-                        asset.historicalPrices = prices.slice(-200); 
-                        
-                        // VH max e min do Ãºltimo ano inteiro (janelas mÃ³veis de 21 dias) para encontrar o Rank
+                        // VH max e min do último ano inteiro (janelas móveis de 21 dias) para encontrar o Rank
                         let hvs = [];
                         for (let i = 0; i <= logReturns.length - WINDOW_SIZE; i++) {
                             const frame = logReturns.slice(i, i + WINDOW_SIZE);
@@ -425,7 +427,7 @@
                         const minHv = Math.min(...hvs);
                         const maxHv = Math.max(...hvs);
                         
-                        // Percentil HistÃ³rico (Rank)
+                        // Percentil Histórico (Rank)
                         let rank = ((currentVol - minHv) / (maxHv - minHv)) * 100;
                         if (rank < 0) rank = 0;
                         if (rank > 100) rank = 100;
@@ -435,48 +437,10 @@
                     }
                 });
 
+                await Promise.allSettled(fetchPromises);
                 hvLoaded = true;
-                // ForÃ§a primeiro recalculo
-                assetsData.forEach(recalculateBands);
-                renderAssets();
             } catch (e) {
                 console.error("Erro calcular VH global:", e);
-            }
-        }
-
-        // ==========================================
-        // RECALCULO DE BANDAS LIVE SYNC (BOLINGER)
-        // ==========================================
-        function recalculateBands(asset) {
-            if (!asset.historicalPrices || asset.historicalPrices.length < 20) return;
-
-            const calcStdDevArr = (arr) => {
-                const mean = arr.reduce((a, b) => a + b, 0) / arr.length;
-                const variance = arr.reduce((a, b) => a + Math.pow(b - mean, 2), 0) / (arr.length - 1);
-                return Math.sqrt(variance);
-            };
-
-            // Banda DiÃ¡ria (Bollinger 20, 2): 19 fechamentos + 1 preÃ§o atual
-            const sampleDaily = [...asset.historicalPrices.slice(-19), asset.price];
-            const sma20 = sampleDaily.reduce((a, b) => a + b, 0) / 20;
-            const sd20 = calcStdDevArr(sampleDaily);
-            
-            asset.bands.daily.lower = parseFloat((sma20 - (2 * sd20)).toFixed(2));
-            asset.bands.daily.upper = parseFloat((sma20 + (2 * sd20)).toFixed(2));
-
-            // Banda Semanal/Longo Prazo (Bollinger 100, 2): 99 fechamentos + 1 preÃ§o atual
-            if (asset.historicalPrices.length >= 99) {
-                const sampleWeekly = [...asset.historicalPrices.slice(-99), asset.price];
-                const sma100 = sampleWeekly.reduce((a, b) => a + b, 0) / 100;
-                const sd100 = calcStdDevArr(sampleWeekly);
-                asset.bands.weekly.lower = parseFloat((sma100 - (2 * sd100)).toFixed(2));
-                asset.bands.weekly.upper = parseFloat((sma100 + (2 * sd100)).toFixed(2));
-                
-                // MÃ©dia MÃ³vel 200 (TendÃªncia Longo Prazo)
-                if (asset.historicalPrices.length >= 199) {
-                    const sample200 = [...asset.historicalPrices.slice(-199), asset.price];
-                    asset.sma200 = parseFloat((sample200.reduce((a,b)=>a+b,0)/200).toFixed(2));
-                }
             }
         }
 
@@ -489,13 +453,13 @@
                 }
                 
                 if (BRAPI_TOKEN === 'SUA_CHAVE_AQUI') {
-                    console.warn("âš ï¸ Token do Brapi ausente. Mantendo visualizaÃ§Ã£o base.");
+                    console.warn("⚠️ Token do Brapi ausente. Mantendo visualização base.");
                     setTimeout(fetchRealTimePrices, 5000);
                     return;
                 }
 
-                // O plano grÃ¡tis do Brapi sÃ³ permite consultar 1 ativo por vez
-                // Entao faremos um loop sequencial rÃ¡pido
+                // O plano grátis do Brapi só permite consultar 1 ativo por vez
+                // Entao faremos um loop sequencial rápido
                 const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
                 
                 for (const asset of assetsData) {
@@ -511,15 +475,21 @@
                                     asset.price = quote.regularMarketPrice;
                                     asset.change = quote.regularMarketChangePercent || 0;
                                     
-                                    // Sincroniza bandas com o novo preÃ§o Live
+                                    // Rec\u00e1lculo quantitativo Live (Bollinger Sync)
                                     recalculateBands(asset);
+                                    
+                                    // Monitoramento do Radar (Trigger de Alertas)
+                                    if (asset.bands && asset.bands.daily) {
+                                       const pos = ((asset.price - asset.bands.daily.lower) / (asset.bands.daily.upper - asset.bands.daily.lower)) * 100;
+                                       checkAlerts(asset, pos);
+                                    }
                                 }
                             }
                         }
                     } catch(e) { console.error("Erro Brapi no ticker: " + asset.ticker, e); }
 
                     // ============================================
-                    // INTEGRAÃ‡ÃƒO ROBÃ” QUANTITATIVO OPCOES.NET.BR
+                    // INTEGRAÇÃO ROBÔ QUANTITATIVO OPCOES.NET.BR
                     // ============================================
                     if (API_AVAILABLE) {
                         try {
@@ -546,7 +516,7 @@
                                     }
                                 }
                             }
-                        } catch(e) { console.warn("Motor de OpÃ§Ãµes offline ou erro de scraping: ", e.message); }
+                        } catch(e) { console.warn("Motor de Opções offline ou erro de scraping: ", e.message); }
                     }
 
                     
@@ -554,7 +524,7 @@
                     await new Promise(r => setTimeout(r, 200));
                 }
 
-                // Busca Eventos Corporativos apenas UMA VEZ para evitar bloqueio de IP
+                // Fetch Corporate Events (Earnings/Dividends) ONLY ONCE, preventing Infinite Lock & IP Ban
                 if (API_AVAILABLE && !eventsLoaded) {
                     const eventPromises = assetsData.map(async (asset) => {
                         try {
@@ -564,30 +534,29 @@
                                 if (eventData.nextEarnings) asset.nextEarnings = eventData.nextEarnings;
                                 if (eventData.nextDividend !== undefined) asset.nextDividend = eventData.nextDividend;
                             }
-                        } catch (e) { /* Falha silenciosa se backend off */ }
+                        } catch (e) { /* Servidor node off, let it fail silently */ }
                     });
                     await Promise.allSettled(eventPromises);
-                    eventsLoaded = true;
+                    eventsLoaded = true; // Never query scraping again in this session
                 }
                 
-                // Dispara cÃ¡lculo de Volatilidade HistÃ³rica (e Bandas Iniciais) logo apÃ³s o 1Âº preÃ§o real
-                if (!hvLoaded && BRAPI_TOKEN !== 'SUA_CHAVE_AQUI') {
+                // Fetch Historical Volatility para substituir os mocks antigos (calculado via client-side quantitative engine)
+                if (!hvLoaded) {
                     await fetchHistoricalVolatility();
                 }
 
-                if (initialLoad) initialLoad = false;
+                initialLoad = false; // Tudo carregado pela 1a vez
+                renderAssets(); // Atualiza a grade com novos preços e eventos
                 
-                renderAssets(); // Atualiza a tela com os dados syncados
-                
-            } catch (error) {
-                console.error("Erro no Sync B3:", error);
-            } finally {
-                const clockStatus = document.getElementById('clock');
                 if (clockStatus) {
                     clockStatus.classList.remove('text-brand');
                     clockStatus.classList.add('text-emerald-400');
                 }
-                setTimeout(fetchRealTimePrices, 15000); // Intervalo de 15s para respeitar limites da API free
+            } catch (error) {
+                console.error("Erro no Sync B3:", error);
+            } finally {
+                // Schedule next call AFTER this one finishes (prevents interval pile-up and freezes)
+                setTimeout(fetchRealTimePrices, 5000);
             }
         }
 
@@ -597,10 +566,12 @@
 
             assetsData.forEach(asset => {
                 const isAboveTrend = asset.price > asset.sma200;
-                const changeColor = asset.change >= 0 ? 'text-emerald-400                // Helper para renderizar a barra de progresso (Banda de Bollinger)
+                const changeColor = asset.change >= 0 ? 'text-emerald-400' : 'text-rose-400';
+                const changeIcon = asset.change >= 0 ? '↑' : '↓';
+                
+                // Helper para renderizar a barra de progresso (Banda de Bollinger)
                 const renderBand = (band) => {
-                    const range = band.upper - band.lower;
-                    const pos = range === 0 ? 50 : Math.max(0, Math.min(100, ((asset.price - band.lower) / range) * 100));
+                    const pos = Math.max(0, Math.min(100, ((asset.price - band.lower) / (band.upper - band.lower)) * 100));
                     
                     // Volatilidade Real Calculada ou fallback
                     const volStr = asset.hv ? asset.hv + '%' : '--';
@@ -610,61 +581,49 @@
                     return `
                         <div class="mt-4">
                             <div class="flex justify-between items-end mb-2">
-                                <span class="text-[11px] font-bold uppercase tracking-widest text-gray-400 group relative cursor-help">
+                                <span class="text-xs font-semibold uppercase tracking-wider text-gray-400 group relative cursor-help">
                                     ${band.label}
                                     <div class="absolute bottom-full left-0 mb-2 hidden group-hover:block w-[280px] p-3 bg-dark-800 border border-dark-700 rounded-lg shadow-xl text-left z-50 normal-case tracking-normal">
-                                        <strong class="text-white text-xs">Bandas de RetraÃ§Ã£o</strong>
-                                        <p class="text-[10px] text-gray-300 mt-1 leading-relaxed"><span class="text-gray-400">O que Ã©:</span> Limites inferior e superior baseados no desvio padrÃ£o de preÃ§os do perÃ­odo.</p>
-                                        <p class="text-[10px] text-gray-300 mt-1 leading-relaxed"><span class="text-gray-400">Porque importa:</span> O preÃ§o oscila entre essas faixas. Extremos indicam provÃ¡veis reversÃµes (sobrecomprado ou sobrevendido).</p>
+                                        <strong class="text-white text-xs">Bandas de Retração</strong>
+                                        <p class="text-[10px] text-gray-300 mt-1 leading-relaxed"><span class="text-gray-400">O que é:</span> Limites inferior e superior baseados no desvio padrão de preços do período.</p>
+                                        <p class="text-[10px] text-gray-300 mt-1 leading-relaxed"><span class="text-gray-400">Porque importa:</span> O preço oscila entre essas faixas. Extremos indicam prováveis reversões (sobrecomprado ou sobrevendido).</p>
                                     </div>
                                 </span>
                                 
                                 <div class="flex items-center gap-2">
                                     <div class="group relative cursor-help">
-                                        <span class="text-[10px] font-mono text-gray-300 border-b border-dashed border-gray-600 pb-0.5">Vol ${volStr}</span>
-                                        <div class="absolute bottom-full right-0 mb-2 hidden group-hover:block w-[280px] p-3 bg-dark-800 border border-dark-700 rounded-lg shadow-xl text-left z-50 normal-case tracking-normal">
-                                            <strong class="text-white text-xs">Volatilidade HistÃ³rica (VH)</strong>
-                                            <p class="text-[10px] text-gray-300 mt-1 leading-relaxed"><span class="text-gray-400">O que Ã©:</span> Desvio PadrÃ£o dos retornos diÃ¡rios logarÃ­tmicos do Ãºltimo mÃªs, anualizado para janela de 252 dias Ãºteis.</p>
-                                            <p class="text-[10px] text-white mt-1 leading-relaxed"><span class="text-gray-400">Porque importa:</span> Vol alta engorda diretamente os PrÃªmios das opÃ§Ãµes. Quanto maior a Vol, mais a opÃ§Ã£o paga na venda.</p>
+                                        <span class="text-xs font-mono text-gray-300 border-b border-dashed border-gray-600 pb-0.5">Vol ${volStr}</span>
+                                        <div class="absolute bottom-full right-0 mb-2 hidden group-hover:block w-[280px] p-3 bg-dark-800 border border-dark-700 rounded-lg shadow-xl text-left z-50">
+                                            <strong class="text-white text-xs">Volatilidade Histórica (VH)</strong>
+                                            <p class="text-[10px] text-gray-300 mt-1 leading-relaxed"><span class="text-gray-400">O que é:</span> Desvio Padrão dos retornos diários logarítmicos do último mês, anualizado para janela de 252 dias úteis.</p>
+                                            <p class="text-[10px] text-white mt-1 leading-relaxed"><span class="text-gray-400">Porque importa:</span> Vol alta engorda diretamente os Prêmios das opções. Quanto maior a Vol, mais a opção paga na venda.</p>
                                         </div>
                                     </div>
 
                                     <div class="group relative cursor-help">
-                                        <span class="text-[10px] font-bold px-1.5 py-0.5 rounded ${rankColor}">Rk: ${rankStr}</span>
-                                        <div class="absolute bottom-full right-0 mb-2 hidden group-hover:block w-[280px] p-3 bg-dark-800 border ${asset.hvRank > 50 ? 'border-emerald-500/50' : 'border-rose-500/50'} rounded-lg shadow-xl text-left z-50 normal-case tracking-normal">
+                                        <span class="text-[10px] px-1.5 py-0.5 rounded ${rankColor}">Rk: ${rankStr}</span>
+                                        <div class="absolute bottom-full right-0 mb-2 hidden group-hover:block w-[280px] p-3 bg-dark-800 border ${asset.hvRank > 50 ? 'border-emerald-500/50' : 'border-rose-500/50'} rounded-lg shadow-xl text-left z-50">
                                             <strong class="${asset.hvRank > 50 ? 'text-emerald-400' : 'text-rose-400'} text-xs">Rank de Volatilidade (1 Ano)</strong>
-                                            <p class="text-[10px] text-gray-300 mt-1 leading-relaxed"><span class="text-gray-400">O que Ã©:</span> Percentil rankeando a Volatilidade de hoje em comparaÃ§Ã£o Ã s oscilaÃ§Ãµes dos Ãºltimos 12 meses.</p>
-                                            <p class="text-[10px] text-white mt-1 leading-relaxed"><span class="text-gray-400">Porque importa:</span> ${asset.hvRank > 50 ? 'Um Rank alto (>50) sinaliza que as OpÃ§Ãµes estÃ£o historicamente CARAS. Excelente momento para vendÃª-las.' : 'Um Rank baixo (<50) sinaliza que as OpÃ§Ãµes estÃ£o historicamente BARATAS. O prÃªmio que irÃ¡ receber pode nÃ£o compensar o risco.'}</p>
+                                            <p class="text-[10px] text-gray-300 mt-1 leading-relaxed"><span class="text-gray-400">O que é:</span> Percentil rankeando a Volatilidade de hoje em comparação às oscilações dos últimos 12 meses.</p>
+                                            <p class="text-[10px] text-white mt-1 leading-relaxed"><span class="text-gray-400">Porque importa:</span> ${asset.hvRank > 50 ? 'Um Rank alto (>50) sinaliza que as Opções estão historicamente CARAS. Excelente momento para vendê-las.' : 'Um Rank baixo (<50) sinaliza que as Opções estão historicamente BARATAS. O prêmio que irá receber pode não compensar o risco.'}</p>
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                            <div class="w-full h-1.5 bg-dark-800/50 rounded-full overflow-hidden border border-dark-700/40">
-                                <div class="h-full rounded-full transition-all duration-300 ease-out ${pos <= 10 ? 'bg-emerald-400 shadow-[0_0_6px_#34d399]' : pos >= 90 ? 'bg-rose-400 shadow-[0_0_6px_#f87171]' : pos <= 30 ? 'bg-emerald-500' : pos >= 70 ? 'bg-amber-400' : 'bg-brand'}" style="width: ${pos}%;"></div>
+                            <div class="w-full h-1.5 bg-dark-800/80 rounded-full overflow-hidden relative flex border border-dark-700/30">
+                                <!-- Barra preenchida intuitivamente com cor baseada na zona -->
+                                <div class="h-full transition-all duration-300 ease-out shadow-[0_0_8px_currentColor] ${pos <= 20 ? 'bg-emerald-400 text-emerald-400' : pos >= 80 ? 'bg-rose-400 text-rose-400' : 'bg-brand text-brand'}" style="width: ${pos}%;"></div>
                             </div>
-                            <div class="flex justify-between items-start mt-2 text-[10px] font-mono leading-tight">
-                                <div class="flex flex-col">
-                                    <span class="text-gray-500 uppercase">Ponto MÃ­nimo</span>
-                                    <span class="text-gray-300 font-bold">${fmtMoney(band.lower)}</span>
-                                </div>
-                                <div class="flex flex-col items-center">
-                                    <span class="text-brand font-black text-xs">${pos.toFixed(0)}%</span>
-                                    <span class="text-gray-600 uppercase text-[8px]">da banda</span>
-                                </div>
-                                <div class="flex flex-col items-end">
-                                    <span class="text-gray-500 uppercase">Ponto MÃ¡ximo</span>
-                                    <span class="text-gray-300 font-bold">${fmtMoney(band.upper)}</span>
-                                </div>
-                            </div>
-                        </div>
-                    `;
-                };¡xima: <span class="text-gray-300 font-medium">${fmtMoney(band.upper)}</span></span>
+                            <div class="flex justify-between mt-1 text-[11px] font-mono text-gray-500">
+                                <span>${fmtMoney(band.lower)}</span>
+                                <span class="text-gray-400">Preço em ${pos.toFixed(0)}%</span>
+                                <span>${fmtMoney(band.upper)}</span>
                             </div>
                         </div>
                     `;
                 };
 
-                // Helper para calcular DTE (Dias AtÃ© Vencimento)
+                // Helper para calcular DTE (Dias Até Vencimento)
                 const calcDTE = (expirationStr) => {
                     if (!expirationStr || expirationStr === '--') return null;
                     const exp = new Date(expirationStr);
@@ -674,17 +633,13 @@
                     return diff >= 0 ? diff : null;
                 };
 
-                // Helper para renderizar Cards de EstratÃ©gias (Trazendo o feeling PROFISSIONAL)
+                // Helper para renderizar Cards de Estratégias (Trazendo o feeling PROFISSIONAL)
                 let strategyHTML = '<div class="mt-6 flex flex-col gap-3">';
                 
-                // Calcula posiÃ§Ã£o relativa do preÃ§o nas bandas (para contexto)
+                // Calcula posição relativa do preço nas bandas (para contexto)
                 const posInDaily = ((asset.price - asset.bands.daily.lower) / (asset.bands.daily.upper - asset.bands.daily.lower)) * 100;
-                
-                // Dispara alertas caso Radar esteja ativo e nos limites
-                if (typeof checkAlerts === 'function') checkAlerts(asset, posInDaily);
-
-                const nearUpperBand = posInDaily >= 80; // PreÃ§o perto ou acima da banda superior
-                const nearLowerBand = posInDaily <= 20; // PreÃ§o perto ou abaixo da banda inferior
+                const nearUpperBand = posInDaily >= 80; // Preço perto ou acima da banda superior
+                const nearLowerBand = posInDaily <= 20; // Preço perto ou abaixo da banda inferior
 
                 // Helper para badge de contexto de banda
                 const bandContextBadge = (type) => {
@@ -698,48 +653,48 @@
                     if (type === 'CALL') {
                         if (nearUpperBand) return `
                             <div class="group relative cursor-help">
-                                <span class="text-[9px] font-bold text-emerald-400 uppercase tracking-wider border border-emerald-500/30 rounded px-1 py-0.5">ðŸ“ˆ Sinal Forte</span>
-                                ${tooltipHtml('Venda em Alta', 'PreÃ§o prÃ³ximo Ã  banda superior (Risco de sobrecompra). Ã“tima regiÃ£o para embolsar prÃªmios caros da CALL.', 'text-emerald-400', 'border-emerald-500/50')}
+                                <span class="text-[9px] font-bold text-emerald-400 uppercase tracking-wider border border-emerald-500/30 rounded px-1 py-0.5">📈 Sinal Forte</span>
+                                ${tooltipHtml('Venda em Alta', 'Preço próximo à banda superior (Risco de sobrecompra). Ótima região para embolsar prêmios caros da CALL.', 'text-emerald-400', 'border-emerald-500/50')}
                             </div>`;
                         if (nearLowerBand) return `
                             <div class="group relative cursor-help">
-                                <span class="text-[9px] font-bold text-amber-400 uppercase tracking-wider border border-amber-500/30 rounded px-1 py-0.5">âš ï¸ Contra-tendÃªncia</span>
-                                ${tooltipHtml('Venda em Baixa', 'PreÃ§o recuado prÃ³ximo Ã  banda inferior. Perigoso vender CALL agora pois a aÃ§Ã£o pode espirrar para o alto (reversÃ£o Ã  mÃ©dia).', 'text-amber-400', 'border-amber-500/50')}
+                                <span class="text-[9px] font-bold text-amber-400 uppercase tracking-wider border border-amber-500/30 rounded px-1 py-0.5">⚠️ Contra-tendência</span>
+                                ${tooltipHtml('Venda em Baixa', 'Preço recuado próximo à banda inferior. Perigoso vender CALL agora pois a ação pode espirrar para o alto (reversão à média).', 'text-amber-400', 'border-amber-500/50')}
                             </div>`;
                         return `
                             <div class="group relative cursor-help">
-                                <span class="text-[9px] font-bold text-sky-400 uppercase tracking-wider border border-sky-500/30 rounded px-1 py-0.5">â†” Neutro</span>
-                                ${tooltipHtml('RegiÃ£o de Consenso', 'PreÃ§o nÃ£o apresenta exaustÃ£o. Ideal aguardar extremos nas bandas.', 'text-sky-400', 'border-sky-500/50')}
+                                <span class="text-[9px] font-bold text-sky-400 uppercase tracking-wider border border-sky-500/30 rounded px-1 py-0.5">↔ Neutro</span>
+                                ${tooltipHtml('Região de Consenso', 'Preço não apresenta exaustão. Ideal aguardar extremos nas bandas.', 'text-sky-400', 'border-sky-500/50')}
                             </div>`;
                     } else {
                         if (nearLowerBand) return `
                             <div class="group relative cursor-help">
-                                <span class="text-[9px] font-bold text-emerald-400 uppercase tracking-wider border border-emerald-500/30 rounded px-1 py-0.5">ðŸ“‰ Sinal Forte</span>
-                                ${tooltipHtml('Venda em Baixa', 'PreÃ§o prÃ³ximo Ã  banda inferior. O "sangue na rua" encareceu muito a PUT. Oportunidade excelente de venda gorda.', 'text-emerald-400', 'border-emerald-500/50')}
+                                <span class="text-[9px] font-bold text-emerald-400 uppercase tracking-wider border border-emerald-500/30 rounded px-1 py-0.5">📉 Sinal Forte</span>
+                                ${tooltipHtml('Venda em Baixa', 'Preço próximo à banda inferior. O "sangue na rua" encareceu muito a PUT. Oportunidade excelente de venda gorda.', 'text-emerald-400', 'border-emerald-500/50')}
                             </div>`;
                         if (nearUpperBand) return `
                             <div class="group relative cursor-help">
-                                <span class="text-[9px] font-bold text-amber-400 uppercase tracking-wider border border-amber-500/30 rounded px-1 py-0.5">âš ï¸ Contra-tendÃªncia</span>
-                                ${tooltipHtml('Venda em Alta', 'PreÃ§o esticado prÃ³ximo ao topo. Vender PUT agora gera prÃªmios baixos e alto risco da aÃ§Ã£o despencar forte na sua cara.', 'text-amber-400', 'border-amber-500/50')}
+                                <span class="text-[9px] font-bold text-amber-400 uppercase tracking-wider border border-amber-500/30 rounded px-1 py-0.5">⚠️ Contra-tendência</span>
+                                ${tooltipHtml('Venda em Alta', 'Preço esticado próximo ao topo. Vender PUT agora gera prêmios baixos e alto risco da ação despencar forte na sua cara.', 'text-amber-400', 'border-amber-500/50')}
                             </div>`;
                         return `
                             <div class="group relative cursor-help">
-                                <span class="text-[9px] font-bold text-sky-400 uppercase tracking-wider border border-sky-500/30 rounded px-1 py-0.5">â†” Neutro</span>
-                                ${tooltipHtml('RegiÃ£o de Consenso', 'PreÃ§o nÃ£o apresenta exaustÃ£o de venda. Aguarde pÃ¢nico para vender PUTs com gordura real.', 'text-sky-400', 'border-sky-500/50')}
+                                <span class="text-[9px] font-bold text-sky-400 uppercase tracking-wider border border-sky-500/30 rounded px-1 py-0.5">↔ Neutro</span>
+                                ${tooltipHtml('Região de Consenso', 'Preço não apresenta exaustão de venda. Aguarde pânico para vender PUTs com gordura real.', 'text-sky-400', 'border-sky-500/50')}
                             </div>`;
                     }
                 };
 
-                // Exibe CALL se disponÃ­vel (sem condiÃ§Ã£o de banda â€” banda Ã© contexto, nÃ£o portÃ£o)
+                // Exibe CALL se disponível (sem condição de banda — banda é contexto, não portão)
                 if (asset.call) {
                     const callDTE = asset.call.dte !== undefined ? asset.call.dte : calcDTE(asset.call.expiration);
                     const callDTELabel = callDTE !== null ? `
                         <div class="group relative cursor-help">
                             <span class="text-[10px] font-bold ${callDTE <= 7 ? 'text-rose-400' : callDTE <= 21 ? 'text-amber-400' : 'text-sky-400'} border-b border-dashed ${callDTE <= 7 ? 'border-rose-400/50' : callDTE <= 21 ? 'border-amber-400/50' : 'border-sky-400/50'} pb-0.5">${callDTE}du</span>
                             <div class="absolute bottom-full right-0 mb-2 hidden group-hover:block w-[280px] p-3 bg-dark-800 border border-brand/30 rounded-lg shadow-xl text-left z-50 normal-case tracking-normal">
-                                <strong class="text-white text-xs">Dias atÃ© Vencimento (DTE)</strong>
-                                <p class="text-[10px] text-gray-300 mt-1 leading-relaxed"><span class="text-gray-400">O que Ã©:</span> Quantidade de dias Ãºteis restantes atÃ© a opÃ§Ã£o expirar (virar pÃ³ ou ser exercida).</p>
-                                <p class="text-[10px] text-brand/90 mt-1 leading-relaxed"><span class="text-gray-400">Porque importa:</span> O Theta decay (corrosÃ£o de tempo) ganha forÃ§a exponencial em janelas de 45 dias Ãºteis. Priorizamos garimpar opÃ§Ãµes exatamente com este prazo.</p>
+                                <strong class="text-white text-xs">Dias até Vencimento (DTE)</strong>
+                                <p class="text-[10px] text-gray-300 mt-1 leading-relaxed"><span class="text-gray-400">O que é:</span> Quantidade de dias úteis restantes até a opção expirar (virar pó ou ser exercida).</p>
+                                <p class="text-[10px] text-brand/90 mt-1 leading-relaxed"><span class="text-gray-400">Porque importa:</span> O Theta decay (corrosão de tempo) ganha força exponencial em janelas de 45 dias úteis. Priorizamos garimpar opções exatamente com este prazo.</p>
                             </div>
                         </div>` : '';
                     const callIsReal = asset.call.volume === 'Real';
@@ -761,48 +716,48 @@
                                     <p class="font-mono text-sm text-gray-200">${fmtMoney(asset.call.strike)}</p>
                                 </div>
                                 <div class="text-right">
-                                    <p class="text-xs text-gray-400">Taxa Extra ${callIsReal ? '<span class="text-emerald-500">â—</span>' : '<span class="text-amber-500" title="Estimativa">~</span>'}</p>
+                                    <p class="text-xs text-gray-400">Taxa Extra ${callIsReal ? '<span class="text-emerald-500">●</span>' : '<span class="text-amber-500" title="Estimativa">~</span>'}</p>
                                     <p class="font-mono text-base font-bold text-brand">${fmtMoney(asset.call.premium)}</p>
                                 </div>
                             </div>
                             <div class="mt-2 pt-2 border-t border-brand/10 flex justify-between text-[11px] font-mono text-gray-500">
-                                <span class="group relative cursor-help">Î”: ${asset.call.delta}
+                                <span class="group relative cursor-help">Δ: ${asset.call.delta}
                                     <div class="absolute bottom-full left-0 mb-2 hidden group-hover:block w-[240px] p-3 bg-dark-800 border border-dark-700 rounded-lg shadow-xl text-left z-50 normal-case tracking-normal text-white">
-                                        <strong class="text-brand text-xs">Delta (Î”)</strong>
-                                        <p class="text-[10px] text-gray-300 mt-1 leading-relaxed"><span class="text-gray-400">O que Ã©:</span> Sensibilidade da opÃ§Ã£o ao movimento do papel.</p>
-                                        <p class="text-[10px] mt-1 leading-relaxed"><span class="text-gray-400">Porque importa:</span> Na prÃ¡tica, representa a probabilidade teÃ³rica (ITM). Um Delta de ~0.30 indica 30% de chance da CALL dar exercÃ­cio (teremos as aÃ§Ãµes vendidas na alta).</p>
+                                        <strong class="text-brand text-xs">Delta (Δ)</strong>
+                                        <p class="text-[10px] text-gray-300 mt-1 leading-relaxed"><span class="text-gray-400">O que é:</span> Sensibilidade da opção ao movimento do papel.</p>
+                                        <p class="text-[10px] mt-1 leading-relaxed"><span class="text-gray-400">Porque importa:</span> Na prática, representa a probabilidade teórica (ITM). Um Delta de ~0.30 indica 30% de chance da CALL dar exercício (teremos as ações vendidas na alta).</p>
                                     </div>
                                 </span>
-                                <span class="group relative cursor-help text-gray-400">Î“: ${asset.call.gamma}
+                                <span class="group relative cursor-help text-gray-400">Γ: ${asset.call.gamma}
                                     <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block w-[240px] p-3 bg-dark-800 border border-dark-700 rounded-lg shadow-xl text-left z-50 normal-case tracking-normal text-white">
-                                        <strong class="text-brand text-xs">Gamma (Î“)</strong>
-                                        <p class="text-[10px] text-gray-300 mt-1 leading-relaxed"><span class="text-gray-400">O que Ã©:</span> AceleraÃ§Ã£o do Delta.</p>
-                                        <p class="text-[10px] mt-1 leading-relaxed"><span class="text-gray-400">Porque importa:</span> Evitamos operar muito perto do vencimento pois o Gamma explode, gerando "buracos" de prejuÃ­zo em movimentos bruscos nÃ£o esperados.</p>
+                                        <strong class="text-brand text-xs">Gamma (Γ)</strong>
+                                        <p class="text-[10px] text-gray-300 mt-1 leading-relaxed"><span class="text-gray-400">O que é:</span> Aceleração do Delta.</p>
+                                        <p class="text-[10px] mt-1 leading-relaxed"><span class="text-gray-400">Porque importa:</span> Evitamos operar muito perto do vencimento pois o Gamma explode, gerando "buracos" de prejuízo em movimentos bruscos não esperados.</p>
                                     </div>
                                 </span>
-                                <span class="group relative cursor-help">Î¸: ${asset.call.theta}
+                                <span class="group relative cursor-help">θ: ${asset.call.theta}
                                     <div class="absolute bottom-full right-0 mb-2 hidden group-hover:block w-[240px] p-3 bg-dark-800 border border-dark-700 rounded-lg shadow-xl text-left z-50 normal-case tracking-normal text-white">
-                                        <strong class="text-brand text-xs">Theta (Î¸)</strong>
-                                        <p class="text-[10px] text-gray-300 mt-1 leading-relaxed"><span class="text-gray-400">O que Ã©:</span> CorrosÃ£o do prÃªmio da opÃ§Ã£o por dia que passa.</p>
-                                        <p class="text-[10px] mt-1 leading-relaxed"><span class="text-gray-400">Porque importa:</span> Nosso lucro diÃ¡rio. Ao VENDER opÃ§Ãµes cobertas, o tempo estÃ¡ ao nosso favor destruindo o valor extrÃ­nseco do contrato todo dia.</p>
+                                        <strong class="text-brand text-xs">Theta (θ)</strong>
+                                        <p class="text-[10px] text-gray-300 mt-1 leading-relaxed"><span class="text-gray-400">O que é:</span> Corrosão do prêmio da opção por dia que passa.</p>
+                                        <p class="text-[10px] mt-1 leading-relaxed"><span class="text-gray-400">Porque importa:</span> Nosso lucro diário. Ao VENDER opções cobertas, o tempo está ao nosso favor destruindo o valor extrínseco do contrato todo dia.</p>
                                     </div>
                                 </span>
-                                ${callIsReal ? `<span class="text-emerald-500/80" title="Dados reais - opcoes.net.br">â— Real</span>` : `<span class="text-amber-500/80" title="Dados estimados">~ Est.</span>`}
+                                ${callIsReal ? `<span class="text-emerald-500/80" title="Dados reais - opcoes.net.br">● Real</span>` : `<span class="text-amber-500/80" title="Dados estimados">~ Est.</span>`}
                             </div>
                         </div>
                     `;
                 }
 
-                // Exibe PUT se disponÃ­vel (sem condiÃ§Ã£o de banda â€” banda Ã© contexto, nÃ£o portÃ£o)
+                // Exibe PUT se disponível (sem condição de banda — banda é contexto, não portão)
                 if (asset.put) {
                     const putDTE = asset.put.dte !== undefined ? asset.put.dte : calcDTE(asset.put.expiration);
                     const putDTELabel = putDTE !== null ? `
                         <div class="group relative cursor-help">
                             <span class="text-[10px] font-bold ${putDTE <= 7 ? 'text-rose-400' : putDTE <= 21 ? 'text-amber-400' : 'text-sky-400'} border-b border-dashed ${putDTE <= 7 ? 'border-rose-400/50' : putDTE <= 21 ? 'border-amber-400/50' : 'border-sky-400/50'} pb-0.5">${putDTE}du</span>
                             <div class="absolute bottom-full right-0 mb-2 hidden group-hover:block w-[280px] p-3 bg-dark-800 border border-emerald-500/30 rounded-lg shadow-xl text-left z-50 normal-case tracking-normal">
-                                <strong class="text-white text-xs">Dias atÃ© Vencimento (DTE)</strong>
-                                <p class="text-[10px] text-gray-300 mt-1 leading-relaxed"><span class="text-gray-400">O que Ã©:</span> Quantidade de dias Ãºteis restantes atÃ© a opÃ§Ã£o expirar (virar pÃ³ ou ser exercida).</p>
-                                <p class="text-[10px] text-emerald-400/90 mt-1 leading-relaxed"><span class="text-gray-400">Porque importa:</span> O Theta decay acelera exponencialmente em ciclos de ~45 dias Ãºteis. Ideal para gerar lucros consistentes na Venda de PUT.</p>
+                                <strong class="text-white text-xs">Dias até Vencimento (DTE)</strong>
+                                <p class="text-[10px] text-gray-300 mt-1 leading-relaxed"><span class="text-gray-400">O que é:</span> Quantidade de dias úteis restantes até a opção expirar (virar pó ou ser exercida).</p>
+                                <p class="text-[10px] text-emerald-400/90 mt-1 leading-relaxed"><span class="text-gray-400">Porque importa:</span> O Theta decay acelera exponencialmente em ciclos de ~45 dias úteis. Ideal para gerar lucros consistentes na Venda de PUT.</p>
                             </div>
                         </div>` : '';
                     const putIsReal = asset.put.volume === 'Real';
@@ -824,33 +779,33 @@
                                     <p class="font-mono text-sm text-gray-200">${fmtMoney(asset.put.strike)}</p>
                                 </div>
                                 <div class="text-right">
-                                    <p class="text-xs text-gray-400">PrÃªmio (Renda) ${putIsReal ? '<span class="text-emerald-500">â—</span>' : '<span class="text-amber-500" title="Estimativa">~</span>'}</p>
+                                    <p class="text-xs text-gray-400">Prêmio (Renda) ${putIsReal ? '<span class="text-emerald-500">●</span>' : '<span class="text-amber-500" title="Estimativa">~</span>'}</p>
                                     <p class="font-mono text-base font-bold text-emerald-400">${fmtMoney(asset.put.premium)}</p>
                                 </div>
                             </div>
                             <div class="mt-2 pt-2 border-t border-emerald-500/10 flex justify-between text-[11px] font-mono text-gray-500">
-                                <span class="group relative cursor-help">Î”: ${asset.put.delta}
+                                <span class="group relative cursor-help">Δ: ${asset.put.delta}
                                     <div class="absolute bottom-full left-0 mb-2 hidden group-hover:block w-[240px] p-3 bg-dark-800 border border-dark-700 rounded-lg shadow-xl text-left z-50 normal-case tracking-normal text-white">
-                                        <strong class="text-emerald-400 text-xs">Delta (Î”)</strong>
-                                        <p class="text-[10px] text-gray-300 mt-1 leading-relaxed"><span class="text-gray-400">O que Ã©:</span> Sensibilidade da Puta ao movimento de queda.</p>
-                                        <p class="text-[10px] mt-1 leading-relaxed"><span class="text-gray-400">Porque importa:</span> Representa o risco de sermos exercidos. Delta -0.30 indica ~30% de chance teÃ³rica de sermos obrigados a comprar o ativo pelo Strike.</p>
+                                        <strong class="text-emerald-400 text-xs">Delta (Δ)</strong>
+                                        <p class="text-[10px] text-gray-300 mt-1 leading-relaxed"><span class="text-gray-400">O que é:</span> Sensibilidade da Puta ao movimento de queda.</p>
+                                        <p class="text-[10px] mt-1 leading-relaxed"><span class="text-gray-400">Porque importa:</span> Representa o risco de sermos exercidos. Delta -0.30 indica ~30% de chance teórica de sermos obrigados a comprar o ativo pelo Strike.</p>
                                     </div>
                                 </span>
-                                <span class="group relative cursor-help text-gray-400">Î“: ${asset.put.gamma}
+                                <span class="group relative cursor-help text-gray-400">Γ: ${asset.put.gamma}
                                     <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block w-[240px] p-3 bg-dark-800 border border-dark-700 rounded-lg shadow-xl text-left z-50 normal-case tracking-normal text-white">
-                                        <strong class="text-emerald-400 text-xs">Gamma (Î“)</strong>
-                                        <p class="text-[10px] text-gray-300 mt-1 leading-relaxed"><span class="text-gray-400">O que Ã©:</span> AceleraÃ§Ã£o do Delta. O quanto ele cresce num Dump (queda) brusca.</p>
-                                        <p class="text-[10px] mt-1 leading-relaxed"><span class="text-gray-400">Porque importa:</span> Perigoso na semana do vencimento. Causa a "explosÃ£o" do preÃ§o da opÃ§Ã£o vendida caso haja pÃ¢nico do mercado.</p>
+                                        <strong class="text-emerald-400 text-xs">Gamma (Γ)</strong>
+                                        <p class="text-[10px] text-gray-300 mt-1 leading-relaxed"><span class="text-gray-400">O que é:</span> Aceleração do Delta. O quanto ele cresce num Dump (queda) brusca.</p>
+                                        <p class="text-[10px] mt-1 leading-relaxed"><span class="text-gray-400">Porque importa:</span> Perigoso na semana do vencimento. Causa a "explosão" do preço da opção vendida caso haja pânico do mercado.</p>
                                     </div>
                                 </span>
-                                <span class="group relative cursor-help">Î¸: ${asset.put.theta}
+                                <span class="group relative cursor-help">θ: ${asset.put.theta}
                                     <div class="absolute bottom-full right-0 mb-2 hidden group-hover:block w-[240px] p-3 bg-dark-800 border border-dark-700 rounded-lg shadow-xl text-left z-50 normal-case tracking-normal text-white">
-                                        <strong class="text-emerald-400 text-xs">Theta (Î¸)</strong>
-                                        <p class="text-[10px] text-gray-300 mt-1 leading-relaxed"><span class="text-gray-400">O que Ã©:</span> Valor da opÃ§Ã£o que evapora a cada tick do relÃ³gio.</p>
-                                        <p class="text-[10px] mt-1 leading-relaxed"><span class="text-gray-400">Porque importa:</span> Aliado do Vendedor. Recebemos e lucramos todos os dias Ãºteis apenas deixando a panela ferver no sol quente.</p>
+                                        <strong class="text-emerald-400 text-xs">Theta (θ)</strong>
+                                        <p class="text-[10px] text-gray-300 mt-1 leading-relaxed"><span class="text-gray-400">O que é:</span> Valor da opção que evapora a cada tick do relógio.</p>
+                                        <p class="text-[10px] mt-1 leading-relaxed"><span class="text-gray-400">Porque importa:</span> Aliado do Vendedor. Recebemos e lucramos todos os dias úteis apenas deixando a panela ferver no sol quente.</p>
                                     </div>
                                 </span>
-                                ${putIsReal ? `<span class="text-emerald-500/80" title="Dados reais - opcoes.net.br">â— Real</span>` : `<span class="text-amber-500/80" title="Dados estimados">~ Est.</span>`}
+                                ${putIsReal ? `<span class="text-emerald-500/80" title="Dados reais - opcoes.net.br">● Real</span>` : `<span class="text-amber-500/80" title="Dados estimados">~ Est.</span>`}
                             </div>
                         </div>
                     `;
@@ -876,9 +831,9 @@
                             <div>
                                 <div class="flex items-center gap-2">
                                     <h3 class="text-2xl font-bold tracking-tight text-white">${asset.ticker}</h3>
-                                    <button onclick="openChart('${asset.ticker}','${asset.company}')" title="Ver GrÃ¡fico de Candles" class="flex items-center gap-1 text-[10px] font-bold text-brand border border-brand/30 hover:border-brand/60 hover:bg-brand/10 px-1.5 py-0.5 rounded-md transition-all active:scale-95">
+                                    <button onclick="openChart('${asset.ticker}','${asset.company}')" title="Ver Gráfico de Candles" class="flex items-center gap-1 text-[10px] font-bold text-brand border border-brand/30 hover:border-brand/60 hover:bg-brand/10 px-1.5 py-0.5 rounded-md transition-all active:scale-95">
                                         <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
-                                        GrÃ¡fico
+                                        Gráfico
                                     </button>
                                 </div>
                                 <p class="text-xs text-gray-400">${asset.company}</p>
@@ -893,10 +848,10 @@
 
                         <!-- Eventos Corporativos -->
                         <div class="grid grid-cols-2 gap-3 mb-4">
-                            <!-- BalanÃ§o -->
+                            <!-- Balanço -->
                             <div class="p-3 rounded-lg bg-dark-800 border-l-2 border-l-brand-purple border-t border-r border-b border-white/5 flex flex-col justify-center relative overflow-hidden group">
                                 <div class="absolute -right-4 -top-4 w-12 h-12 bg-brand-purple/5 rounded-full group-hover:scale-150 transition-transform duration-500"></div>
-                                <span class="text-[10px] font-bold uppercase tracking-wider text-brand-purple/90 mb-1 flex items-center gap-1"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg> PrÃ³x. BalanÃ§o</span>
+                                <span class="text-[10px] font-bold uppercase tracking-wider text-brand-purple/90 mb-1 flex items-center gap-1"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg> Próx. Balanço</span>
                                 <span class="text-sm font-mono font-medium text-gray-200">${asset.nextEarnings}</span>
                             </div>
                             
@@ -911,19 +866,19 @@
                             </div>
                         </div>
 
-                        <!-- Indicador de ValorizaÃ§Ã£o Longo Prazo MM200 -->
+                        <!-- Indicador de Valorização Longo Prazo MM200 -->
                         <div class="flex items-center gap-2 mb-2 p-2 rounded bg-dark-800/50 border border-dark-700/50">
                             <div class="w-1.5 h-1.5 rounded-full ${isAboveTrend ? 'bg-rose-400' : 'bg-emerald-400'} shadow-[0_0_8px_${isAboveTrend ? '#fb7185' : '#34d399'}]"></div>
                             
                             <div class="group relative cursor-help flex-1 text-xs text-gray-300 border-b border-dashed border-gray-600/50 pb-0.5 max-w-fit">
-                                ValorizaÃ§Ã£o Longo Prazo (MM200)
+                                Valorização Longo Prazo (MM200)
                                 <div class="absolute bottom-full left-0 mb-2 hidden group-hover:block w-[280px] p-3 bg-dark-800 border ${isAboveTrend ? 'border-rose-500/30' : 'border-emerald-500/30'} rounded-lg shadow-xl text-left z-50 normal-case tracking-normal">
-                                    <strong class="${isAboveTrend ? 'text-rose-400' : 'text-emerald-400'} text-xs">MÃ©dia MÃ³vel de 200 PerÃ­odos</strong>
-                                    <p class="text-[10px] text-gray-300 mt-1 leading-relaxed"><span class="text-gray-400">O que Ã©:</span> Radar de tendÃªncia secular comparando o preÃ§o hoje com o custo mÃ©dio do Ãºltimo 1 ano de negociaÃ§Ãµes da Bolsa.</p>
+                                    <strong class="${isAboveTrend ? 'text-rose-400' : 'text-emerald-400'} text-xs">Média Móvel de 200 Períodos</strong>
+                                    <p class="text-[10px] text-gray-300 mt-1 leading-relaxed"><span class="text-gray-400">O que é:</span> Radar de tendência secular comparando o preço hoje com o custo médio do último 1 ano de negociações da Bolsa.</p>
                                     <p class="text-[10px] mt-1 leading-relaxed text-white"><span class="text-gray-400">Porque importa:</span> 
                                         ${isAboveTrend ? 
-                                            'PreÃ§o rasgando acima da mÃ©dia aponta o ativo na classe de aÃ§Ã£o \'CARA\'. Em OpÃ§Ãµes, preferimos operar <strong>Vendas de CALL</strong> neste ciclo de exaustÃ£o compradora.' : 
-                                            'PreÃ§o amasso abaixo da mÃ©dia aponta o ativo na classe de aÃ§Ã£o \'BARATA\'. Em OpÃ§Ãµes, procuramos sangramentos extremos para fazer <strong>Venda de PUT (Seguro)</strong> super gorda.'}
+                                            'Preço rasgando acima da média aponta o ativo na classe de ação \'CARA\'. Em Opções, preferimos operar <strong>Vendas de CALL</strong> neste ciclo de exaustão compradora.' : 
+                                            'Preço amasso abaixo da média aponta o ativo na classe de ação \'BARATA\'. Em Opções, procuramos sangramentos extremos para fazer <strong>Venda de PUT (Seguro)</strong> super gorda.'}
                                     </p>
                                 </div>
                             </div>
@@ -935,26 +890,7 @@
                         ${renderBand(asset.bands.daily)}
                         ${renderBand(asset.bands.weekly)}
                         
-                        <!-- Signal Box Inteligente -->
-                        ${(() => {
-                            const distLower = ((asset.price - asset.bands.daily.lower) / asset.price) * 100;
-                            const distUpper = ((asset.bands.daily.upper - asset.price) / asset.price) * 100;
-                            const isHighVol = asset.hvRank >= 50;
-
-                            if (asset.price <= asset.bands.daily.lower) {
-                                return `<div class="mt-5 p-3 rounded-lg border border-emerald-500/40 bg-emerald-500/10 text-center text-sm font-medium text-emerald-400 shadow-[0_0_15px_rgba(16,185,129,0.15)]">Sinal de Entrada ATIVO:<br/> ${isHighVol ? 'Venda de PUT (PrÃªmio Gordo)' : 'Compra LotaÃ§Ã£o (AÃ§Ã£o Barata)'}</div>`;
-                            } else if (asset.price >= asset.bands.daily.upper) {
-                                return `<div class="mt-5 p-3 rounded-lg border border-brand/40 bg-brand/10 text-center text-sm font-medium text-brand shadow-[0_0_15px_rgba(59,130,246,0.15)]">Sinal de Entrada ATIVO:<br/> ${isHighVol ? 'Venda de CALL (PrÃªmio Gordo)' : 'Desova de AÃ§Ãµes (Sobrecompra)'}</div>`;
-                            } else {
-                                if (posInDaily < 50) {
-                                    return `<div class="mt-5 p-3 rounded-lg border border-dark-600 bg-dark-800/80 text-center text-[12px] font-medium text-sky-400">Aguardando queda de ${distLower.toFixed(1)}% para sinal de entrada da <strong>PUT</strong>.</div>`;
-                                } else {
-                                    return `<div class="mt-5 p-3 rounded-lg border border-dark-600 bg-dark-800/80 text-center text-[12px] font-medium text-sky-400">Aguardando alta de ${distUpper.toFixed(1)}% para sinal de entrada da <strong>CALL</strong>.</div>`;
-                                }
-                            }
-                        })()}
-                        
-                        <!-- EstratÃ©gias Recomendadas -->
+                        <!-- Estratégias Recomendadas -->
                         ${strategyHTML}
                     </div>
                 `;
@@ -962,13 +898,13 @@
             });
         }
 
-        // RelÃ³gio Real-time simulando terminal quantitativo
+        // Relógio Real-time simulando terminal quantitativo
         function updateClock() {
             const now = new Date();
             const clockEl = document.getElementById('clock');
             if (clockEl) clockEl.textContent = now.toLocaleTimeString('pt-BR');
             
-            // Calculador AutomÃ¡tico de DTE (3Âª Sexta-feira do MÃªs Atual ou PrÃ³xima)
+            // Calculador Automático de DTE (3ª Sexta-feira do Mês Atual ou Próxima)
             const dteCounter = document.getElementById('dte-counter');
             if (dteCounter) {
                 let dteDate = new Date(now.getFullYear(), now.getMonth(), 1);
@@ -978,7 +914,7 @@
                     if (fridays < 3) dteDate.setDate(dteDate.getDate() + 1);
                 }
                 
-                // OpÃ§Ãµes vencem Ã s 16:00, adicionamos um atraso de seguranÃ§a no cÃ¡lculo prÃ¡tico
+                // Opções vencem às 16:00, adicionamos um atraso de segurança no cálculo prático
                 if (now.getDate() >= dteDate.getDate()) {
                     dteDate = new Date(now.getFullYear(), now.getMonth() + 1, 1);
                     fridays = 0;
@@ -997,11 +933,11 @@
         setInterval(updateClock, 1000);
         updateClock();
 
-        // Dispara a busca inicial de preÃ§os com recursividade inteligente (evita travamentos)
+        // Dispara a busca inicial de preços com recursividade inteligente (evita travamentos)
         fetchRealTimePrices();
 
         // ===================================================
-        // GRÃFICO DE CANDLES â€” Lightweight Charts TradingView
+        // GRÁFICO DE CANDLES — Lightweight Charts TradingView
         // ===================================================
         let chartInstance = null;
         let volumeInstance = null;
@@ -1019,11 +955,11 @@
         async function openChart(ticker, company) {
             currentChartTicker = ticker;
 
-            // Preenche cabeÃ§alho do modal
+            // Preenche cabeçalho do modal
             document.getElementById('modal-ticker').textContent = ticker;
             document.getElementById('modal-company').textContent = company;
 
-            // Atualiza preÃ§o/variaÃ§Ã£o no modal com dados jÃ¡ carregados
+            // Atualiza preço/variação no modal com dados já carregados
             const asset = assetsData.find(a => a.ticker === ticker);
             if (asset) {
                 const priceEl = document.getElementById('modal-price');
@@ -1038,7 +974,7 @@
             document.getElementById('chart-modal').classList.add('open');
             document.body.style.overflow = 'hidden';
 
-            // Inicializa o perÃ­odo padrÃ£o (3 meses)
+            // Inicializa o período padrão (3 meses)
             await loadChart(ticker, '3mo');
         }
 
@@ -1046,26 +982,26 @@
             const loadingEl = document.getElementById('modal-loading');
             loadingEl.classList.remove('hidden');
 
-            // Atualiza botÃµes de perÃ­odo
+            // Atualiza botões de período
             document.querySelectorAll('.period-btn').forEach(btn => {
                 btn.classList.toggle('active', btn.dataset.range === range);
             });
 
-            // Limpa grÃ¡ficos anteriores
+            // Limpa gráficos anteriores
             document.getElementById('chart-container').innerHTML = '';
             document.getElementById('volume-container').innerHTML = '';
             if (chartInstance) { try { chartInstance.remove(); } catch {} chartInstance = null; }
             if (volumeInstance) { try { volumeInstance.remove(); } catch {} volumeInstance = null; }
 
             try {
-                // Busca dados histÃ³ricos OHLCV da Brapi.dev
+                // Busca dados históricos OHLCV da Brapi.dev
                 const url = `https://brapi.dev/api/quote/${ticker}?range=${range}&interval=1d&token=${BRAPI_TOKEN}`;
                 const resp = await fetch(url);
                 const json = await resp.json();
 
                 const history = json?.results?.[0]?.historicalDataPrice;
                 if (!history || history.length < 2) {
-                    document.getElementById('chart-container').innerHTML = '<div class="flex items-center justify-center h-full text-gray-500 text-sm">Dados histÃ³ricos nÃ£o disponÃ­veis</div>';
+                    document.getElementById('chart-container').innerHTML = '<div class="flex items-center justify-center h-full text-gray-500 text-sm">Dados históricos não disponíveis</div>';
                     return;
                 }
 
@@ -1090,7 +1026,7 @@
                     }))
                     .sort((a, b) => a.time - b.time);
 
-                // ====== GrÃ¡fico Principal (Candles) ======
+                // ====== Gráfico Principal (Candles) ======
                 chartInstance = LightweightCharts.createChart(document.getElementById('chart-container'), {
                     width: document.getElementById('chart-container').offsetWidth,
                     height: 340,
@@ -1118,7 +1054,7 @@
                     handleScale: true,
                 });
 
-                // SÃ©rie de Candles
+                // Série de Candles
                 const candleSeries = chartInstance.addCandlestickSeries({
                     upColor: '#10b981',
                     downColor: '#ef4444',
@@ -1137,7 +1073,7 @@
                     sma20.setData(sma20Data);
                 }
 
-                // SMA 200 (Dourado â€” sÃ³ exibe se tiver dados suficientes)
+                // SMA 200 (Dourado — só exibe se tiver dados suficientes)
                 if (closePrices.length >= 200) {
                     const sma200Data = calculateSMA(closePrices, 200);
                     if (sma200Data.length > 0) {
@@ -1146,7 +1082,7 @@
                     }
                 }
 
-                // Linha do PreÃ§o Atual
+                // Linha do Preço Atual
                 const asset = assetsData.find(a => a.ticker === ticker);
                 if (asset) {
                     candleSeries.createPriceLine({
@@ -1159,7 +1095,7 @@
                     });
                 }
 
-                // CÃ¡lculo de Suporte Recente (MÃ­nima do perÃ­odo exibido)
+                // Cálculo de Suporte Recente (Mínima do período exibido)
                 if (candles.length > 0) {
                     const minPrice = Math.min(...candles.map(c => c.low));
                     candleSeries.createPriceLine({
@@ -1172,7 +1108,7 @@
                     });
                 }
 
-                // ====== GrÃ¡fico de Volume ======
+                // ====== Gráfico de Volume ======
                 volumeInstance = LightweightCharts.createChart(document.getElementById('volume-container'), {
                     width: document.getElementById('volume-container').offsetWidth,
                     height: 90,
@@ -1186,7 +1122,7 @@
                 const volSeries = volumeInstance.addHistogramSeries({ priceFormat: { type: 'volume' }, priceScaleId: '' });
                 volSeries.setData(volumes);
 
-                // Sync do timeScale entre os dois grÃ¡ficos
+                // Sync do timeScale entre os dois gráficos
                 chartInstance.timeScale().subscribeVisibleLogicalRangeChange(range => {
                     if (range) volumeInstance.timeScale().setVisibleLogicalRange(range);
                 });
@@ -1194,10 +1130,10 @@
                 // Fit inicial
                 chartInstance.timeScale().fitContent();
 
-                // Atualiza rodapÃ©
+                // Atualiza rodapé
                 document.getElementById('modal-last-update').textContent = `Atualizado: ${new Date().toLocaleTimeString('pt-BR')}`;
 
-                // Responsividade â€” redimensiona ao redimensionar janela
+                // Responsividade — redimensiona ao redimensionar janela
                 const resizeObserver = new ResizeObserver(() => {
                     if (chartInstance) chartInstance.applyOptions({ width: document.getElementById('chart-container').offsetWidth });
                     if (volumeInstance) volumeInstance.applyOptions({ width: document.getElementById('volume-container').offsetWidth });
@@ -1205,7 +1141,7 @@
                 resizeObserver.observe(document.getElementById('chart-modal-box'));
 
             } catch (err) {
-                console.error('Erro ao carregar grÃ¡fico:', err);
+                console.error('Erro ao carregar gráfico:', err);
                 document.getElementById('chart-container').innerHTML = `<div class="flex items-center justify-center h-full text-rose-400 text-sm">Erro ao carregar: ${err.message}</div>`;
             } finally {
                 loadingEl.classList.add('hidden');
@@ -1218,69 +1154,76 @@
             if (chartInstance) { try { chartInstance.remove(); } catch {} chartInstance = null; }
             if (volumeInstance) { try { volumeInstance.remove(); } catch {} volumeInstance = null; }
         }
-        
-        // ==========================================
-        // SISTEMA DE ALERTA RADAR (PUSH NOTIFICATIONS)
-        // ==========================================
-        let radarInterval = null;
-        let activeAlerts = new Set(); 
 
+        // ==========================================
+        // RADAR E ALERTAS PUSH (NOTIFICAÇÕES)
+        // ==========================================
+        const activeAlerts = new Set();
+        
         async function toggleRadar() {
             const btn = document.getElementById('btn-radar');
             const isActive = btn.classList.contains('active');
             
             if (!isActive) {
-                // Solicitar permissÃ£o de notificaÃ§Ã£o (Browser nativo)
-                if ("Notification" in window) {
-                    if (Notification.permission !== "granted") {
-                        const perm = await Notification.requestPermission();
-                        if (perm !== "granted") return alert("PermissÃ£o de notificaÃ§Ã£o negada. O Radar serÃ¡ apenas visual.");
-                    }
-                }
-                
-                btn.classList.add('active');
-                radarInterval = setInterval(() => {
-                    fetchRealTimePrices(); // Atualiza em segundo plano e engatilha renderAssets -> checkAlerts
-                }, 60000); // Roda a cada 60s
-                
-                if ("Notification" in window && Notification.permission === "granted") {
-                    new Notification("🟢 Radar ThetaLens Ativado", { body: "Monitorando bandas a cada 60s.\nAlerta quando ativo atingir extremos Call (≥95%) ou Put (≤5%)." });
+                const permission = await Notification.requestPermission();
+                if (permission === 'granted') {
+                    btn.classList.add('active');
+                    new Notification("Radar ThetaLens Ativado \u2705", { 
+                        body: "Monitorando bandas a cada 60s. Voc\u00ea ser\u00e1 avisado ao atingir extremos." 
+                    });
+                    fetchRealTimePrices(); // For\u00e7a atualiza\u00e7\u00e3o e engatilha alertas
                 }
             } else {
                 btn.classList.remove('active');
-                clearInterval(radarInterval);
-                activeAlerts.clear();
             }
         }
-        
+
         function checkAlerts(asset, posInDaily) {
             const btn = document.getElementById('btn-radar');
             if (!btn || !btn.classList.contains('active')) return;
             
-            let message = null;
-            // Alerta precoce se chegar aos extremos (0% a 5% ou 95% a 100%)
-            if (posInDaily <= 5) message = `📉 ${asset.ticker} na Sobrevenda (${posInDaily.toFixed(0)}% da banda). Sinal de VENDA de PUT! Preço: ${fmtMoney(asset.price)}`;
-            else if (posInDaily >= 95) message = `📈 ${asset.ticker} na Sobrecompra (${posInDaily.toFixed(0)}% da banda). Sinal de VENDA de CALL! Preço: ${fmtMoney(asset.price)}`;
+            let message = "";
+            let signal = "";
             
-            if (message) {
-                const signalId = `${asset.ticker}-${message}`;
-                if (!activeAlerts.has(signalId)) {
-                    if ("Notification" in window && Notification.permission === "granted") {
-                        new Notification(`ðŸš¨ Alerta ${asset.ticker}`, { 
-                            body: `${message}\nPreÃ§o Atual: ${fmtMoney(asset.price)}`, 
-                        });
-                    }
-                    // Som nativo curto
-                    try { const a = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3'); a.volume = 0.5; a.play(); } catch(e){}
-                    activeAlerts.add(signalId);
-                }
-            } else {
-                // Remove alertas antigos se o preÃ§o sair da zona de perigo para alertar novamente no futuro
-                const prefix = `${asset.ticker}-`;
-                activeAlerts.forEach(key => { if (key.startsWith(prefix)) activeAlerts.delete(key); });
+            if (posInDaily <= 5) {
+                message = `\ud83d\udcc9 ${asset.ticker} na Sobrevenda (${posInDaily.toFixed(0)}% da banda). Sinal de VENDA de PUT! Pre\u00e7o: ${fmtMoney(asset.price)}`;
+                signal = 'PUT';
+            } else if (posInDaily >= 95) {
+                message = `\ud83d\udcc8 ${asset.ticker} na Sobrecompra (${posInDaily.toFixed(0)}% da banda). Sinal de VENDA de CALL! Pre\u00e7o: ${fmtMoney(asset.price)}`;
+                signal = 'CALL';
+            }
+            
+            if (message && !activeAlerts.has(`${asset.ticker}-${signal}`)) {
+                activeAlerts.add(`${asset.ticker}-${signal}`);
+                new Notification(`\ud83d\udea8 Sinal ${asset.ticker}`, { 
+                    body: message, 
+                    icon: 'logo.png' 
+                });
+                
+                // Feedback sonoro opcional
+                try { new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3').play(); } catch(e){}
+                
+                // Limpa o alerta ap\u00f3s 15 minutos para permitir novo aviso caso o pre\u00e7o retorne
+                setTimeout(() => activeAlerts.delete(`${asset.ticker}-${signal}`), 15 * 60000);
             }
         }
 
+        function recalculateBands(asset) {
+            if (!asset.historicalPrices || asset.historicalPrices.length < 19) return;
+            
+            // Banda = M\u00e9dia + live (20 per\u00edodos)
+            const prices = [...asset.historicalPrices.slice(-19), asset.price];
+            const n = prices.length;
+            const mean = prices.reduce((a, b) => a + b, 0) / n;
+            const variance = prices.reduce((a, b) => a + Math.pow(b - mean, 2), 0) / (n - 1);
+            const stdDev = Math.sqrt(variance);
+            
+            if (asset.bands && asset.bands.daily) {
+                asset.bands.daily.upper = mean + (2 * stdDev);
+                asset.bands.daily.lower = mean - (2 * stdDev);
+                asset.bands.daily.mid = mean; // opcional
+            }
+        }
 
         // Fecha com ESC
         document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeChart(); });

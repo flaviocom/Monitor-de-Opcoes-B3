@@ -895,7 +895,10 @@
                             <div class="flex justify-between items-end mb-4">
                                 <div>
                                     <p class="text-[10px] font-medium text-gray-500 uppercase tracking-wider mb-0.5">Stk Alvo (BB Resist.)</p>
-                                    <p class="font-mono text-xl font-bold text-gray-200">${fmtMoney(bbUpper)}</p>
+                                    <div class="flex items-center gap-2">
+                                        <p class="font-mono text-xl font-bold text-gray-200">${fmtMoney(bbUpper)}</p>
+                                        <span class="text-[9px] font-mono bg-dark-700/50 text-gray-400 px-1.5 py-0.5 rounded border border-white/5" title="Opção sugerida estimada baseada no vencimento atual">${estimateOptionTicker(asset.ticker, 'CALL', bbUpper)}</span>
+                                    </div>
                                 </div>
                                 <div class="text-right">
                                     <p class="text-[10px] font-medium text-gray-500 uppercase tracking-wider mb-0.5">Prêmio Est.</p>
@@ -921,7 +924,10 @@
                             <div class="flex justify-between items-end mb-4">
                                 <div>
                                     <p class="text-[10px] font-medium text-gray-500 uppercase tracking-wider mb-0.5">Stk Alvo (BB Sup.)</p>
-                                    <p class="font-mono text-xl font-bold text-gray-200">${fmtMoney(bbLower)}</p>
+                                    <div class="flex items-center gap-2">
+                                        <p class="font-mono text-xl font-bold text-gray-200">${fmtMoney(bbLower)}</p>
+                                        <span class="text-[9px] font-mono bg-dark-700/50 text-gray-400 px-1.5 py-0.5 rounded border border-white/5" title="Opção sugerida estimada baseada no vencimento atual">${estimateOptionTicker(asset.ticker, 'PUT', bbLower)}</span>
+                                    </div>
                                 </div>
                                 <div class="text-right">
                                     <p class="text-[10px] font-medium text-gray-500 uppercase tracking-wider mb-0.5">Prêmio Est.</p>

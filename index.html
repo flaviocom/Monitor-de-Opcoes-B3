@@ -5,14 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Monitor de Op&ccedil;&otilde;es B3 PRO | Antigravity</title>
     
-    <!-- Fonts: Inter for clean UI, JetBrains Mono for numbers -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
     
-    <!-- Tailwind CSS (via CDN para prototipagem r&aacute;pida e visual premium) -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Lightweight Charts - TradingView (open-source, gratuito) -->
     <script src="https://unpkg.com/lightweight-charts@4.1.3/dist/lightweight-charts.standalone.production.js"></script>
     <script>
         tailwind.config = {
@@ -25,15 +22,15 @@
                     },
                     colors: {
                         dark: {
-                            900: '#030712', // Background
-                            800: '#111827', // Cards
-                            700: '#1f2937', // Borders
+                            900: '#030712',
+                            800: '#111827',
+                            700: '#1f2937',
                             600: '#374151',
                         },
                         brand: {
-                            DEFAULT: '#3b82f6', // Premium Blue
-                            purple: '#8b5cf6',   // Pro accent
-                            gold: '#f59e0b',     // Premium tag
+                            DEFAULT: '#3b82f6',
+                            purple: '#8b5cf6',
+                            gold: '#f59e0b',
                         }
                     },
                     animation: {
@@ -52,7 +49,6 @@
     </script>
 
     <style>
-        /* CSS Customizado para Glassmorphism e Ergonomia (UI/UX PRO MAX) */
         body {
             background-color: theme('colors.dark.900');
             background-image: radial-gradient(circle at top right, rgba(59, 130, 246, 0.08), transparent 40%),
@@ -84,11 +80,6 @@
             font-weight: 700;
         }
 
-        .progress-gradient {
-            background: linear-gradient(90deg, #ef4444, #f59e0b, #10b981);
-        }
-
-        /* Scrollbar customizada */
         ::-webkit-scrollbar { width: 8px; height: 8px; }
         ::-webkit-scrollbar-track { background: theme('colors.dark.900'); }
         ::-webkit-scrollbar-thumb { background: theme('colors.dark.700'); border-radius: 4px; }
@@ -96,7 +87,6 @@
         
         .number-fmt { font-family: 'JetBrains Mono', monospace; font-variant-numeric: tabular-nums; }
 
-        /* ===== MODAL DO GRÃFICO ===== */
         #chart-modal {
             display: none;
             position: fixed;
@@ -119,16 +109,8 @@
             max-width: 900px;
             overflow: hidden;
         }
-        #chart-container {
-            width: 100%;
-            height: 340px;
-            background: transparent;
-        }
-        #volume-container {
-            width: 100%;
-            height: 90px;
-            background: transparent;
-        }
+        #chart-container { width: 100%; height: 340px; }
+        #volume-container { width: 100%; height: 90px; }
         .period-btn {
             padding: 3px 10px;
             border-radius: 6px;
@@ -150,7 +132,6 @@
 </head>
 <body class="bg-[#030712] text-gray-200 antialiased selection:bg-brand selection:text-white min-h-screen">
 
-    <!-- Top Navigation -->
     <nav class="sticky top-0 z-50 glass-card border-b border-dark-700/50 px-6 py-4">
         <div class="max-w-7xl mx-auto flex justify-between items-center">
             <div class="flex items-center gap-3">
@@ -164,19 +145,16 @@
             </div>
             
             <div class="flex items-center gap-3 sm:gap-6">
-                <!-- MENU DESKTOP -->
                 <div class="hidden md:flex items-center gap-4 text-sm font-medium text-gray-400">
                     <span class="flex items-center gap-1.5 hover:text-white cursor-pointer transition-colors"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg> Screener</span>
                     <span class="flex items-center gap-1.5 hover:text-white cursor-pointer transition-colors"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg> Estrat&eacute;gias</span>
                 </div>
 
-                <!-- RADAR BUTTON -->
                 <button id="btn-radar" onclick="toggleRadar()" class="flex items-center gap-2 px-3 py-1.5 rounded-md bg-dark-800/80 border border-dark-600 hover:border-brand transition-colors shadow-inner group cursor-pointer" title="Ativar Alertas Push do Navegador">
                     <span class="w-2 h-2 rounded-full bg-gray-500 group-[.active]:bg-emerald-500 group-[.active]:shadow-[0_0_8px_#10b981] group-[.active]:animate-pulse" id="radar-led"></span>
                     <span class="text-[11px] font-bold text-gray-400 group-[.active]:text-emerald-400 tracking-widest uppercase hidden sm:inline">Radar</span>
                 </button>
 
-                <!-- DTE COUNTER -->
                 <div class="flex items-center gap-2 px-3 py-1.5 rounded-md bg-dark-800/80 border border-brand-purple/30 shadow-inner">
                     <span class="text-[11px] font-bold text-brand-purple tracking-widest uppercase flex items-center gap-1"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg> DTE: <span id="dte-counter" class="text-white font-mono ml-1">--</span></span>
                 </div>
@@ -184,22 +162,18 @@
         </div>
     </nav>
 
-    <!-- Main Content -->
     <main class="max-w-7xl mx-auto px-6 py-8">
-        
-        <!-- Aviso Educacional (Exigido CVM/Regulamenta&ccedil;&atilde;o) -->
         <div class="mb-6 p-4 rounded-xl border border-rose-500/30 bg-rose-500/10 flex items-center gap-4 shadow-lg shadow-rose-500/5">
-            <span class="text-2xl">â ï¸</span>
+            <span class="text-2xl">⚠️</span>
             <p class="text-sm text-gray-300 font-medium">
-                <strong class="text-rose-400">AVISO:</strong> Este painel &eacute; uma ferramenta de apoio educacional e acompanhamento quantitativo. N&atilde;o constitui recomenda&ccedil;&atilde;o de investimento. Decis&otilde;es financeiras devem ser baseadas em avalia&ccedil;&otilde;es prÃ³prias e profissionais.
+                <strong class="text-rose-400">AVISO:</strong> Este painel &eacute; uma ferramenta de apoio educacional e acompanhamento quantitativo. N&atilde;o constitui recomenda&ccedil;&atilde;o de investimento. Decis&otilde;es financeiras devem ser baseadas em avalia&ccedil;&otilde;es pr&oacute;prias e profissionais.
             </p>
         </div>
 
-        <!-- Header Info Banner -->
         <div class="mb-8 glass-card rounded-xl p-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border-l-4 border-l-brand-purple">
             <div>
                 <h2 class="text-gray-200 font-medium">Sinais de Volatilidade Detectados</h2>
-                <p class="text-sm text-gray-400 mt-1">An&aacute;lise baseada em Desvio Padr&atilde;o (Bollinger) e M&eacute;dias MÃ³veis. Atualiza&ccedil;&atilde;o em tempo real.</p>
+                <p class="text-sm text-gray-400 mt-1">An&aacute;lise baseada em Desvio Padr&atilde;o (Bollinger) e M&eacute;dias M&oacute;veis. Atualiza&ccedil;&atilde;o em tempo real.</p>
             </div>
             <div class="flex gap-2">
                 <span class="px-3 py-1 text-xs font-medium rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">IV Rank Favor&aacute;vel</span>
@@ -207,459 +181,241 @@
             </div>
         </div>
 
-        <!-- Grid de Ativos -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-6" id="assets-grid">
-            <!-- Renderizado via JS -->
-        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-6" id="assets-grid"></div>
 
         <div class="mt-12 text-center">
             <p class="text-xs text-gray-500">&copy; 2026 Plataforma Monitor de Op&ccedil;&otilde;es B3 PRO. O conte&uacute;do aqui &eacute; puramente anal&iacute;tico e n&atilde;o configura call de compra ou venda.</p>
         </div>
     </main>
 
-    <!-- MODAL DO GRÃFICO DE CANDLES -->
     <div id="chart-modal" onclick="if(event.target===this)closeChart()">
         <div id="chart-modal-box">
-            <!-- Header do Modal -->
             <div class="flex flex-wrap items-center justify-between px-5 py-4 border-b border-dark-700/60 relative gap-y-3">
                 <div class="flex items-center flex-wrap gap-2 sm:gap-3 w-[calc(100%-40px)] sm:w-auto pr-2">
-                    <span class="text-white font-bold font-mono text-lg" id="modal-ticker">PETR4</span>
-                    <span class="text-gray-400 text-sm hidden sm:inline" id="modal-company">Petrobras</span>
+                    <span class="text-white font-bold font-mono text-lg" id="modal-ticker">--</span>
+                    <span class="text-gray-400 text-sm hidden sm:inline" id="modal-company">--</span>
                     <span id="modal-price" class="text-sm font-mono font-bold text-emerald-400"></span>
                     <span id="modal-change" class="text-xs font-mono"></span>
                 </div>
-                
-                <!-- Seletor de Per&iacute;odo -->
                 <div class="flex gap-1 w-full sm:w-auto overflow-x-auto pb-1 sm:pb-0" id="period-buttons">
                     <button class="period-btn" data-range="1mo" onclick="loadChart(currentChartTicker,'1mo')">1M</button>
                     <button class="period-btn active" data-range="3mo" onclick="loadChart(currentChartTicker,'3mo')">3M</button>
                     <button class="period-btn" data-range="6mo" onclick="loadChart(currentChartTicker,'6mo')">6M</button>
                     <button class="period-btn" data-range="1y" onclick="loadChart(currentChartTicker,'1y')">1A</button>
                 </div>
-                
                 <button onclick="closeChart()" class="absolute top-4 right-4 text-gray-400 hover:text-white transition-colors p-1.5 rounded-lg hover:bg-dark-700/50 bg-dark-800 sm:bg-transparent">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                 </button>
             </div>
-            <!-- Legenda de Indicadores -->
             <div class="flex items-center gap-4 px-5 py-2 bg-dark-800/40 border-b border-dark-700/30 text-[11px] font-mono">
                 <span class="flex items-center gap-1"><span class="w-3 h-0.5 bg-sky-400 inline-block"></span><span class="text-sky-400">SMA 20</span></span>
                 <span class="flex items-center gap-1"><span class="w-3 h-0.5 bg-amber-400 inline-block"></span><span class="text-amber-400">SMA 200</span></span>
-                <span class="flex items-center gap-1"><span class="w-2 h-2 bg-emerald-500 rounded-sm inline-block"></span><span class="text-emerald-400">Alta</span></span>
-                <span class="flex items-center gap-1"><span class="w-2 h-2 bg-rose-500 rounded-sm inline-block"></span><span class="text-rose-400">Baixa</span></span>
                 <span id="modal-loading" class="ml-auto text-brand animate-pulse hidden">Carregando...</span>
             </div>
-            <!-- Gr&aacute;fico de Candles -->
             <div id="chart-container"></div>
-            <!-- Volume -->
             <div id="volume-container"></div>
-            <!-- Rodap&eacute; com fonte -->
             <div class="px-5 py-2 border-t border-dark-700/30 flex justify-between items-center">
-                <span class="text-[10px] text-gray-500">Fonte: Brapi.dev â¢ Dados com delay de 15min â¢ Apenas &uacute;ltimo preg&atilde;o</span>
+                <span class="text-[10px] text-gray-500">Fonte: Brapi.dev &bull; Delay 15min</span>
                 <span class="text-[10px] text-gray-500" id="modal-last-update"></span>
             </div>
         </div>
     </div>
 
     <script>
-        // Dados Mockados de Alta Fidelidade com "Greeks" e IV (Implied Volatility)
         const assetsData = [
-            {
-                ticker: 'PETR4',
-                company: 'Petrobras',
-                nextEarnings: '15 Mai 2026',
-                nextDividend: { label: 'DIVIDENDO', value: 1.15, datacom: '28 Fev 2026' },
-                price: 38.45,
-                change: 1.25,
-                iv: 34.2, 
-                ivRank: 82, // Percentil HistÃ³rico da Volatilidade
-                sma200: 35.15,
-                bands: {
-                    daily: { upper: 40.50, lower: 36.10, label: 'Curto Prazo (Di&aacute;rio)' },
-                    weekly: { upper: 42.20, lower: 33.90, label: 'Longo Prazo (Semanal)' }
-                },
-                call: null,
-                put: null
-            },
-            {
-                ticker: 'VALE3',
-                company: 'Vale S.A.',
-                nextEarnings: '25 Jul 2026',
-                nextDividend: { label: 'DIVIDENDO', value: 2.73, datacom: '15 Mar 2026' },
-                price: 61.30,
-                change: -2.10,
-                iv: 29.8,
-                ivRank: 15,
-                sma200: 65.80,
-                bands: {
-                    daily: { upper: 65.10, lower: 60.50, label: 'Curto Prazo (Di&aacute;rio)' },
-                    weekly: { upper: 68.20, lower: 58.80, label: 'Longo Prazo (Semanal)' }
-                },
-                call: null,
-                put: null
-            },
-            {
-                ticker: 'BBAS3',
-                company: 'Banco do Brasil',
-                nextEarnings: '04 Ago 2026',
-                nextDividend: { label: 'JCP', value: 0.45, datacom: '03 Mar 2026' },
-                price: 28.15,
-                change: 0.45,
-                iv: 22.1,
-                ivRank: 45,
-                sma200: 25.50,
-                bands: {
-                    daily: { upper: 29.50, lower: 26.80, label: 'Curto Prazo (Di&aacute;rio)' },
-                    weekly: { upper: 30.20, lower: 24.20, label: 'Longo Prazo (Semanal)' }
-                },
-                call: null,
-                put: null
-            },
-            {
-                ticker: 'ITUB4',
-                company: 'Ita&uacute; Unibanco',
-                nextEarnings: '08 Ago 2026',
-                nextDividend: { label: 'JCP', value: 0.017, datacom: '29 Fev 2026' },
-                price: 34.22,
-                change: -0.15,
-                iv: 20.5,
-                ivRank: 38,
-                sma200: 31.90,
-                bands: {
-                    daily: { upper: 35.98, lower: 32.39, label: 'Curto Prazo (Di&aacute;rio)' },
-                    weekly: { upper: 36.20, lower: 30.80, label: 'Longo Prazo (Semanal)' }
-                },
-                call: null,
-                put: null
-            },
-            {
-                ticker: 'BITH11',
-                company: 'Hashdex Nasdaq Bitcoin',
-                price: 151.30,
-                change: 2.10,
-                sma200: 110.50,
-                bands: {
-                    daily: { upper: 160.00, lower: 140.00, label: 'Banda Di&aacute;ria' },
-                    weekly: { upper: 165.00, lower: 135.00, label: 'Banda Semanal' }
-                },
-                call: { code: 'BITHC165', strike: 165.00, premium: 3.50, expiration: '2024-05-17', delta: '0.25', theta: '-0.05', gamma: '0.02' },
-                put: { code: 'BITHO135', strike: 135.00, premium: 4.80, expiration: '2024-05-17', delta: '-0.20', theta: '-0.04', gamma: '0.02' }
-            }
+            { ticker: 'PETR4', company: 'Petrobras', nextEarnings: '--', price: 0, change: 0, bands: { daily: { upper: 0, lower: 0, label: 'Banda Di&aacute;ria' }, weekly: { upper: 0, lower: 0, label: 'Banda Semanal' } } },
+            { ticker: 'VALE3', company: 'Vale S.A.', nextEarnings: '--', price: 0, change: 0, bands: { daily: { upper: 0, lower: 0, label: 'Banda Di&aacute;ria' }, weekly: { upper: 0, lower: 0, label: 'Banda Semanal' } } },
+            { ticker: 'BBAS3', company: 'Banco do Brasil', nextEarnings: '--', price: 0, change: 0, bands: { daily: { upper: 0, lower: 0, label: 'Banda Di&aacute;ria' }, weekly: { upper: 0, lower: 0, label: 'Banda Semanal' } } },
+            { ticker: 'ITUB4', company: 'Ita&uacute; Unibanco', nextEarnings: '--', price: 0, change: 0, bands: { daily: { upper: 0, lower: 0, label: 'Banda Di&aacute;ria' }, weekly: { upper: 0, lower: 0, label: 'Banda Semanal' } } },
+            { ticker: 'BITH11', company: 'Hashdex Bitcoin', nextEarnings: '--', price: 0, change: 0, bands: { daily: { upper: 0, lower: 0, label: 'Banda Di&aacute;ria' }, weekly: { upper: 0, lower: 0, label: 'Banda Semanal' } } }
         ];
 
-        // Formatadores
         const fmtMoney = (val) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(val);
-        // ð TOKEN GRATUITO BRAPI.DEV
         const BRAPI_TOKEN = 'ip1K3nN5Z9vhEgZ8jbiyHT';
+        const API_BASE_URL = window.location.hostname === 'localhost' ? 'http://localhost:3000' : 'https://monitor-de-opcoes-b3.onrender.com';
         let eventsLoaded = false;
-        let initialLoad = true;
-
-        const RENDER_API_URL = 'https://monitor-de-opcoes-b3.onrender.com';
-        const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-        const API_BASE_URL = isLocal ? 'http://localhost:3000' : RENDER_API_URL;
-        const API_AVAILABLE = true;
-
         let hvLoaded = false;
-        
-        async function fetchHistoricalVolatility() {
-            if (hvLoaded || BRAPI_TOKEN === 'SUA_CHAVE_AQUI') return;
-            
-            try {
-                const fetchPromises = assetsData.map(async (asset) => {
-                    try {
-                        const url = `https://brapi.dev/api/quote/${asset.ticker}?range=1y&interval=1d&token=${BRAPI_TOKEN}`;
-                        const res = await fetch(url);
-                        if (!res.ok) return;
-                        
-                        const data = await res.json();
-                        if (!data.results || !data.results[0] || !data.results[0].historicalDataPrice) return;
-                        
-                        const result = data.results[0];
-                        const todayStr = new Date().toISOString().split('T')[0];
-                        const prices = result.historicalDataPrice
-                            .filter(day => {
-                                if(!day.date) return false;
-                                const dayStr = new Date(day.date * 1000).toISOString().split('T')[0];
-                                return dayStr !== todayStr && typeof day.close === 'number' && day.close > 0;
-                            })
-                            .map(day => day.close);
-                        
-                        asset.historicalPrices = prices;
-                        if (prices.length < 20) return;
-                        
-                        const logReturns = [];
-                        for(let i = 1; i < prices.length; i++) {
-                           logReturns.push(Math.log(prices[i] / prices[i-1]));
-                        }
-                        
-                        const WINDOW_SIZE = 21; 
-                        const calcStdDev = (arr) => {
-                            const mean = arr.reduce((a, b) => a + b, 0) / arr.length;
-                            const variance = arr.reduce((a, b) => a + Math.pow(b - mean, 2), 0) / (arr.length - 1);
-                            return Math.sqrt(variance);
-                        };
-                        const SQRT_252 = Math.sqrt(252);
-                        const currentReturns = logReturns.slice(-WINDOW_SIZE);
-                        const currentVol = calcStdDev(currentReturns) * SQRT_252;
-                        asset.hv = (currentVol * 100).toFixed(1);
-                        
-                        let hvs = [];
-                        for (let i = 0; i <= logReturns.length - WINDOW_SIZE; i++) {
-                            const frame = logReturns.slice(i, i + WINDOW_SIZE);
-                            const vol = calcStdDev(frame) * SQRT_252;
-                            hvs.push(vol);
-                        }
-                        const minHv = Math.min(...hvs);
-                        const maxHv = Math.max(...hvs);
-                        let rank = ((currentVol - minHv) / (maxHv - minHv)) * 100;
-                        asset.hvRank = Math.round(Math.max(0, Math.min(100, rank)));
-                    } catch (err) { console.warn(`VH ignorada:`, err.message); }
-                });
+        let currentChartTicker = '';
 
-                await Promise.allSettled(fetchPromises);
-                hvLoaded = true;
-            } catch (e) { console.error("Erro VH:", e); }
+        async function fetchHistoricalVolatility() {
+            if (hvLoaded) return;
+            for (const asset of assetsData) {
+                try {
+                    const res = await fetch(`https://brapi.dev/api/quote/${asset.ticker}?range=1y&interval=1d&token=${BRAPI_TOKEN}`);
+                    const data = await res.json();
+                    if (data.results?.[0]?.historicalDataPrice) {
+                        const prices = data.results[0].historicalDataPrice.map(d => d.close).filter(p => p > 0);
+                        asset.historicalPrices = prices;
+                        if (prices.length > 21) {
+                            const returns = [];
+                            for(let i=1; i<prices.length; i++) returns.push(Math.log(prices[i]/prices[i-1]));
+                            const std = Math.sqrt(returns.slice(-21).reduce((s, x) => s + x*x, 0) / 20);
+                            asset.hv = (std * Math.sqrt(252) * 100).toFixed(1);
+                        }
+                    }
+                } catch(e) {}
+            }
+            hvLoaded = true;
         }
 
         async function fetchRealTimePrices() {
-            try {
-                if (BRAPI_TOKEN === 'SUA_CHAVE_AQUI') {
-                    setTimeout(fetchRealTimePrices, 5000);
-                    return;
-                }
-                
+            for (const asset of assetsData) {
+                try {
+                    const res = await fetch(`https://brapi.dev/api/quote/${asset.ticker}?token=${BRAPI_TOKEN}`);
+                    const data = await res.json();
+                    if (data.results?.[0]) {
+                        const q = data.results[0];
+                        asset.price = q.regularMarketPrice;
+                        asset.change = q.regularMarketChangePercent;
+                        recalculateBands(asset);
+                        if(asset.bands.daily.upper > 0) {
+                            const pos = ((asset.price - asset.bands.daily.lower) / (asset.bands.daily.upper - asset.bands.daily.lower)) * 100;
+                            checkAlerts(asset, pos);
+                        }
+                    }
+                } catch(e) {}
+
+                try {
+                    const resO = await fetch(`${API_BASE_URL}/api/options/${asset.ticker}`);
+                    if (resO.ok) {
+                        const oData = await resO.json();
+                        asset.dte = oData.dte;
+                        const calls = oData.options.filter(o => o.type === 'CALL' && o.strike > asset.price);
+                        if(calls.length) asset.call = calls[0];
+                        const puts = oData.options.filter(o => o.type === 'PUT' && o.strike < asset.price);
+                        if(puts.length) asset.put = puts[0];
+                    }
+                } catch(e) {}
+            }
+            if (!eventsLoaded) {
                 for (const asset of assetsData) {
                     try {
-                        const urlBrapi = `https://brapi.dev/api/quote/${asset.ticker}?token=${BRAPI_TOKEN}`;
-                        const resBrapi = await fetch(urlBrapi);
-                        if (resBrapi.ok) {
-                            const rawData = await resBrapi.json();
-                            if (rawData && rawData.results && rawData.results.length > 0) {
-                                const quote = rawData.results[0];
-                                if (quote.regularMarketPrice) {
-                                    asset.price = quote.regularMarketPrice;
-                                    asset.change = quote.regularMarketChangePercent || 0;
-                                    recalculateBands(asset);
-                                    if (asset.bands && asset.bands.daily) {
-                                       const pos = ((asset.price - asset.bands.daily.lower) / (asset.bands.daily.upper - asset.bands.daily.lower)) * 100;
-                                       checkAlerts(asset, pos);
-                                    }
-                                }
-                            }
+                        const resE = await fetch(`${API_BASE_URL}/api/events/${asset.ticker}`);
+                        if (resE.ok) {
+                            const eData = await resE.json();
+                            asset.nextEarnings = eData.nextEarnings || '--';
+                            asset.nextDividend = eData.nextDividend;
                         }
                     } catch(e) {}
-
-                    if (API_AVAILABLE) {
-                        try {
-                            const resOpt = await fetch(`${API_BASE_URL}/api/options/${asset.ticker}`);
-                            if (resOpt.ok) {
-                                const optData = await resOpt.json();
-                                if (optData.options && optData.options.length > 0) {
-                                    asset.put = null; asset.call = null;
-                                    const targetPut = asset.price * 0.95;
-                                    const puts = optData.options.filter(o => o.type === 'PUT' && o.strike < asset.price);
-                                    if (puts.length > 0) {
-                                        const bestPut = puts.reduce((prev, curr) => Math.abs(curr.strike - targetPut) < Math.abs(prev.strike - targetPut) ? curr : prev);
-                                        asset.put = { code: bestPut.code, strike: bestPut.strike, premium: bestPut.premium, expiration: bestPut.expiration, dte: optData.dte, delta: '~0.30', theta: '~-0.02', gamma: '~0.04', volume: 'Real' };
-                                    }
-                                    const targetCall = asset.price * 1.05;
-                                    const calls = optData.options.filter(o => o.type === 'CALL' && o.strike > asset.price);
-                                    if (calls.length > 0) {
-                                        const bestCall = calls.reduce((prev, curr) => Math.abs(curr.strike - targetCall) < Math.abs(prev.strike - targetCall) ? curr : prev);
-                                        asset.call = { code: bestCall.code, strike: bestCall.strike, premium: bestCall.premium, expiration: bestCall.expiration, dte: optData.dte, delta: '~0.30', theta: '~-0.02', gamma: '~0.04', volume: 'Real' };
-                                    }
-                                }
-                            }
-                        } catch(e) {}
-                    }
-                    await new Promise(r => setTimeout(r, 200));
                 }
-
-                if (API_AVAILABLE && !eventsLoaded) {
-                    await Promise.allSettled(assetsData.map(async (asset) => {
-                        try {
-                            const resEvents = await fetch(`${API_BASE_URL}/api/events/${asset.ticker}`);
-                            if (resEvents.ok) {
-                                const eventData = await resEvents.json();
-                                if (eventData.nextEarnings) asset.nextEarnings = eventData.nextEarnings;
-                                if (eventData.nextDividend !== undefined) asset.nextDividend = eventData.nextDividend;
-                            }
-                        } catch (e) {}
-                    }));
-                    eventsLoaded = true;
-                }
-                
-                if (!hvLoaded) await fetchHistoricalVolatility();
-                initialLoad = false;
-                renderAssets();
-            } catch (error) {} finally { setTimeout(fetchRealTimePrices, 60000); }
-        }
-
-        function renderAssets() {
-            const grid = document.getElementById('assets-grid');
-            grid.innerHTML = '';
-            assetsData.forEach(asset => {
-                const isAboveTrend = asset.price > asset.sma200;
-                const changeColor = asset.change >= 0 ? 'text-emerald-400' : 'text-rose-400';
-                const changeIcon = asset.change >= 0 ? 'â' : 'â';
-                const renderBand = (band) => {
-                    const pos = Math.max(0, Math.min(100, ((asset.price - band.lower) / (band.upper - band.lower)) * 100));
-                    const volStr = asset.hv ? asset.hv + '%' : '--';
-                    const rankStr = asset.hvRank !== undefined ? asset.hvRank : '--';
-                    const rankColor = asset.hvRank > 50 ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-rose-500/20 text-rose-400 border border-rose-500/30';
-                    return `
-                        <div class="mt-4">
-                            <div class="flex justify-between items-end mb-2">
-                                <span class="text-xs font-semibold uppercase tracking-wider text-gray-400 group relative cursor-help">${band.label}</span>
-                                <div class="flex items-center gap-2">
-                                    <span class="text-xs font-mono text-gray-300">Vol ${volStr}</span>
-                                    <span class="text-[10px] px-1.5 py-0.5 rounded ${rankColor}">Rk: ${rankStr}</span>
-                                </div>
-                            </div>
-                            <div class="w-full h-1.5 bg-dark-800/80 rounded-full overflow-hidden relative flex border border-dark-700/30">
-                                <div class="h-full transition-all duration-300 ease-out shadow-[0_0_8px_currentColor] $\{pos <= 20 ? 'bg-emerald-400 text-emerald-400' : pos >= 80 ? 'bg-rose-400 text-rose-400' : 'bg-brand text-brand'}" style="width: $\{pos\}%;"></div>
-                            </div>
-                            <div class="flex justify-between mt-1 text-[11px] font-mono text-gray-500">
-                                <span>$\{fmtMoney(band.lower)\}</span>
-                                <span class="text-gray-400">Pre&ccedil;o em $\{pos.toFixed(0)\}%</span>
-                                <span>$\{fmtMoney(band.upper)\}</span>
-                            </div>
-                        </div>`;
-                };
-
-                const calcDTE = (expStr) => { if (!expStr || expStr === '--') return null; const exp = new Date(expStr); const hoje = new Date(); hoje.setHours(0,0,0,0); return Math.max(0, Math.round((exp - hoje) / 864e5)); };
-
-                let strategyHTML = '<div class="mt-6 flex flex-col gap-3">';
-                const posInDaily = ((asset.price - asset.bands.daily.lower) / (asset.bands.daily.upper - asset.bands.daily.lower)) * 100;
-                
-                if (asset.call) {
-                    const dte = asset.call.dte || calcDTE(asset.call.expiration);
-                    strategyHTML += `
-                        <div class="rounded-lg p-3 border border-brand/20 bg-brand/5">
-                            <div class="flex justify-between mb-2">
-                                <span class="text-[11px] font-bold text-brand uppercase">Venda Coberta (Call)</span>
-                                <span class="text-[10px] font-mono text-gray-400">$\{asset.call.code\} ($\{dte\}du)</span>
-                            </div>
-                            <div class="flex justify-between items-end">
-                                <div><p class="text-xs text-gray-400">Strike</p><p class="font-mono text-sm">$\{fmtMoney(asset.call.strike)\}</p></div>
-                                <div class="text-right"><p class="text-xs text-gray-400">Pr&ecirc;mio</p><p class="font-mono text-base font-bold text-brand">$\{fmtMoney(asset.call.premium)\}</p></div>
-                            </div>
-                        </div>`;
-                }
-                if (asset.put) {
-                    const dte = asset.put.dte || calcDTE(asset.put.expiration);
-                    strategyHTML += `
-                        <div class="rounded-lg p-3 border border-emerald-500/20 bg-emerald-500/5">
-                            <div class="flex justify-between mb-2">
-                                <span class="text-[11px] font-bold text-emerald-400 uppercase">Venda de PUT</span>
-                                <span class="text-[10px] font-mono text-gray-400">$\{asset.put.code\} ($\{dte\}du)</span>
-                            </div>
-                            <div class="flex justify-between items-end">
-                                <div><p class="text-xs text-gray-400">Strike</p><p class="font-mono text-sm">$\{fmtMoney(asset.put.strike)\}</p></div>
-                                <div class="text-right"><p class="text-xs text-gray-400">Pr&ecirc;mio</p><p class="font-mono text-base font-bold text-emerald-400">$\{fmtMoney(asset.put.premium)\}</p></div>
-                            </div>
-                        </div>`;
-                }
-                strategyHTML += '</div>';
-
-                grid.innerHTML += `
-                    <div class="glass-card rounded-2xl p-6 flex flex-col">
-                        <div class="flex justify-between items-start mb-4">
-                            <div>
-                                <h3 class="text-2xl font-bold text-white">$\{asset.ticker\} <button onclick="openChart('$\{asset.ticker\}','$\{asset.company\}')" class="text-[10px] border border-brand/30 px-1.5 py-0.5 rounded ml-1">Gr&aacute;fico</button></h3>
-                                <p class="text-xs text-gray-400">$\{asset.company\}</p>
-                            </div>
-                            <div class="text-right">
-                                <div class="text-xl font-mono font-bold">$\{fmtMoney(asset.price)\}</div>
-                                <div class="text-sm font-mono $\{changeColor\}">$\{changeIcon\} $\{Math.abs(asset.change).toFixed(2)\}%</div>
-                            </div>
-                        </div>
-                        <div class="grid grid-cols-2 gap-3 mb-4">
-                            <div class="p-3 rounded bg-dark-800 border-l-2 border-l-brand-purple"><span class="text-[9px] text-brand-purple block uppercase font-bold">Balan&ccedil;o</span><span class="text-xs">$\{asset.nextEarnings\}</span></div>
-                            <div class="p-3 rounded bg-dark-800 border-l-2 border-l-emerald-500"><span class="text-[9px] text-emerald-400 block uppercase font-bold">Data-Com</span><span class="text-xs">$\{asset.nextDividend?.datacom || '--'\}</span></div>
-                        </div>
-                        $\{renderBand(asset.bands.daily)\}
-                        $\{renderBand(asset.bands.weekly)\}
-                        $\{strategyHTML\}
-                    </div>`;
-            });
-        }
-
-        function updateClock() {
-            const now = new Date();
-            const dteCounter = document.getElementById('dte-counter');
-            if (dteCounter) {
-                let dteDate = new Date(now.getFullYear(), now.getMonth(), 1);
-                let f = 0; while(f < 3) { if (dteDate.getDay() === 5) f++; if (f < 3) dteDate.setDate(dteDate.getDate() + 1); }
-                if (now.getDate() >= dteDate.getDate()) { dteDate = new Date(now.getFullYear(), now.getMonth() + 1, 1); f=0; while(f<3){ if(dteDate.getDay()===5) f++; if(f<3) dteDate.setDate(dteDate.getDate()+1); } }
-                dteCounter.textContent = Math.ceil((dteDate - now) / 864e5);
+                eventsLoaded = true;
             }
-        }
-
-        const activeAlerts = new Set();
-        async function toggleRadar() {
-            const btn = document.getElementById('btn-radar');
-            if (!btn.classList.contains('active')) {
-                const p = await Notification.requestPermission();
-                if (p === 'granted') {
-                    btn.classList.add('active');
-                    new Notification("Radar Ativado \u2705", { body: "Monitorando extremos de banda." });
-                    fetchRealTimePrices();
-                }
-            } else btn.classList.remove('active');
-        }
-
-        function checkAlerts(asset, pos) {
-            const btn = document.getElementById('btn-radar');
-            if (!btn || !btn.classList.contains('active')) return;
-            let msg = "";
-            if (pos <= 5) msg = `\ud83d\udcc9 $\{asset.ticker\} na Sobrevenda ($\{pos.toFixed(0)\}%). Pre&ccedil;o: $\{fmtMoney(asset.price)\}`;
-            else if (pos >= 95) msg = `\ud83d\udcc8 $\{asset.ticker\} na Sobrecompra ($\{pos.toFixed(0)\}%). Pre&ccedil;o: $\{fmtMoney(asset.price)\}`;
-            if (msg && !activeAlerts.has(asset.ticker)) {
-                activeAlerts.add(asset.ticker);
-                new Notification(`Sinal $\{asset.ticker\}`, { body: msg });
-                try { new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3').play(); } catch(e){}
-                setTimeout(() => activeAlerts.delete(asset.ticker), 900000);
-            }
+            if(!hvLoaded) await fetchHistoricalVolatility();
+            renderAssets();
+            setTimeout(fetchRealTimePrices, 60000);
         }
 
         function recalculateBands(asset) {
             if (!asset.historicalPrices || asset.historicalPrices.length < 19) return;
             const prices = [...asset.historicalPrices.slice(-19), asset.price];
             const m = prices.reduce((a, b) => a + b, 0) / 20;
-            const v = prices.reduce((a, b) => a + Math.pow(b - m, 2), 0) / 19;
-            const s = Math.sqrt(v);
-            if (asset.bands && asset.bands.daily) {
-                asset.bands.daily.upper = m + (2 * s);
-                asset.bands.daily.lower = m - (1 * s); // Simetria ou conservadorismo
+            const s = Math.sqrt(prices.reduce((a, b) => a + Math.pow(b - m, 2), 0) / 19);
+            asset.bands.daily.upper = m + (2 * s);
+            asset.bands.daily.lower = m - (2 * s);
+            asset.bands.weekly.upper = m + (3 * s);
+            asset.bands.weekly.lower = m - (3 * s);
+        }
+
+        function renderAssets() {
+            const grid = document.getElementById('assets-grid');
+            grid.innerHTML = '';
+            assetsData.forEach(asset => {
+                const renderBand = (band) => {
+                    const pos = Math.max(0, Math.min(100, ((asset.price - band.lower) / (band.upper - band.lower)) * 100));
+                    const color = pos <= 20 ? 'bg-emerald-400' : pos >= 80 ? 'bg-rose-400' : 'bg-brand';
+                    return `
+                        <div class="mt-4">
+                            <div class="flex justify-between mb-1 text-[10px] uppercase font-bold text-gray-500"><span>${band.label}</span><span>${pos.toFixed(0)}%</span></div>
+                            <div class="w-full h-1.5 bg-dark-800 rounded-full overflow-hidden border border-dark-700/30">
+                                <div class="h-full ${color} transition-all duration-500" style="width: ${pos}%"></div>
+                            </div>
+                            <div class="flex justify-between mt-1 text-[10px] font-mono text-gray-500">
+                                <span>${fmtMoney(band.lower)}</span><span>${fmtMoney(band.upper)}</span>
+                            </div>
+                        </div>`;
+                };
+
+                let strategies = '<div class="mt-4 flex flex-col gap-2">';
+                if (asset.call) strategies += `<div class="p-2 rounded bg-brand/5 border border-brand/20 flex justify-between text-xs"><span>CALL ${asset.call.code} @ ${fmtMoney(asset.call.strike)}</span><span class="font-bold text-brand">${fmtMoney(asset.call.premium)}</span></div>`;
+                if (asset.put) strategies += `<div class="p-2 rounded bg-emerald-500/5 border border-emerald-500/20 flex justify-between text-xs"><span>PUT ${asset.put.code} @ ${fmtMoney(asset.put.strike)}</span><span class="font-bold text-emerald-400">${fmtMoney(asset.put.premium)}</span></div>`;
+                strategies += '</div>';
+
+                grid.innerHTML += `
+                    <div class="glass-card rounded-2xl p-5">
+                        <div class="flex justify-between items-start mb-4">
+                            <div><h3 class="text-xl font-bold text-white">${asset.ticker}</h3><p class="text-[10px] text-gray-400 uppercase tracking-tighter">${asset.company}</p></div>
+                            <div class="text-right"><p class="text-lg font-mono font-bold">${fmtMoney(asset.price)}</p><p class="text-xs font-mono ${asset.change>=0?'text-emerald-400':'text-rose-400'}">${asset.change>=0?'+':''}${asset.change.toFixed(2)}%</p></div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-2 text-[10px] mb-2">
+                            <div class="p-2 rounded bg-dark-800">BALAN&Ccedil;O: ${asset.nextEarnings}</div>
+                            <div class="p-2 rounded bg-dark-800">DATA-COM: ${asset.nextDividend?.datacom || '--'}</div>
+                        </div>
+                        ${renderBand(asset.bands.daily)}
+                        ${renderBand(asset.bands.weekly)}
+                        ${strategies}
+                        <button onclick="openChart('${asset.ticker}','${asset.company}')" class="w-full mt-4 py-2 rounded-lg bg-dark-800 border border-dark-700 hover:bg-dark-700 transition-colors text-xs font-bold uppercase tracking-widest text-gray-400">Ver Gr&aacute;fico</button>
+                    </div>`;
+            });
+        }
+
+        function updateClock() {
+            const dte = document.getElementById('dte-counter');
+            if (dte) {
+                const now = new Date();
+                let target = new Date(now.getFullYear(), now.getMonth(), 1);
+                let count = 0; while(count < 3) { if(target.getDay() === 5) count++; if(count < 3) target.setDate(target.getDate()+1); }
+                if (now > target) { target = new Date(now.getFullYear(), now.getMonth()+1, 1); count=0; while(count<3){ if(target.getDay()===5) count++; if(count<3) target.setDate(target.getDate()+1); } }
+                dte.textContent = Math.ceil((target - now)/864e5);
             }
         }
 
+        const activeAlerts = new Set();
+        async function toggleRadar() {
+            const btn = document.getElementById('btn-radar');
+            if (btn.classList.toggle('active')) {
+                const p = await Notification.requestPermission();
+                if (p === 'granted') new Notification("Radar Ativado", { body: "Monitorando limites das bandas." });
+                else btn.classList.remove('active');
+            }
+        }
+
+        function checkAlerts(asset, pos) {
+            const btn = document.getElementById('btn-radar');
+            if (!btn.classList.contains('active') || activeAlerts.has(asset.ticker)) return;
+            if (pos <= 5 || pos >= 95) {
+                activeAlerts.add(asset.ticker);
+                new Notification(`Alerta ${asset.ticker}`, { body: `${asset.ticker} atingiu ${pos.toFixed(0)}% da banda!` });
+                setTimeout(() => activeAlerts.delete(asset.ticker), 600000);
+            }
+        }
+
+        let chart = null;
         async function openChart(t, c) {
             currentChartTicker = t;
             document.getElementById('modal-ticker').textContent = t;
-            const a = assetsData.find(x => x.ticker === t);
-            if (a) document.getElementById('modal-price').textContent = fmtMoney(a.price);
+            document.getElementById('modal-company').textContent = c;
             document.getElementById('chart-modal').classList.add('open');
-            await loadChart(t, '3mo');
-        }
-
-        async function loadChart(t, r) {
-            document.getElementById('chart-container').innerHTML = '';
-            try {
-                const resp = await fetch(`https://brapi.dev/api/quote/$\{t\}?range=$\{r\}&interval=1d&token=$\{BRAPI_TOKEN\}`);
-                const j = await resp.json();
-                const h = j?.results?.[0]?.historicalDataPrice;
-                if (!h) return;
-                const candles = h.map(d => ({ time: Math.floor(d.date), open: d.open, high: d.high, low: d.low, close: d.close }));
-                const chart = LightweightCharts.createChart(document.getElementById('chart-container'), { width: 800, height: 340, layout: { background: { color: 'transparent' }, textColor: '#ccc' } });
-                const series = chart.addCandlestickSeries();
-                series.setData(candles);
-                chart.timeScale().fitContent();
-            } catch(e) {}
+            loadChart(t, '3mo');
         }
 
         function closeChart() { document.getElementById('chart-modal').classList.remove('open'); }
+
+        async function loadChart(t, r) {
+            const container = document.getElementById('chart-container');
+            container.innerHTML = '';
+            document.getElementById('modal-loading').classList.remove('hidden');
+            try {
+                const res = await fetch(`https://brapi.dev/api/quote/${t}?range=${r}&interval=1d&token=${BRAPI_TOKEN}`);
+                const data = await res.json();
+                const h = data.results[0].historicalDataPrice;
+                const candles = h.map(d => ({ time: d.date, open: d.open, high: d.high, low: d.low, close: d.close }));
+                chart = LightweightCharts.createChart(container, { width: container.offsetWidth, height: 340, layout: { background: { color: 'transparent' }, textColor: '#ccc' }, grid: { vertLines: { color: '#222' }, horzLines: { color: '#222' } } });
+                const series = chart.addCandlestickSeries({ upColor: '#10b981', downColor: '#ef4444', borderVisible: false, wickUpColor: '#10b981', wickDownColor: '#ef4444' });
+                series.setData(candles);
+                chart.timeScale().fitContent();
+            } catch(e) {}
+            document.getElementById('modal-loading').classList.add('hidden');
+        }
 
         setInterval(updateClock, 1000);
         updateClock();

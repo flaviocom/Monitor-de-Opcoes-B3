@@ -96,6 +96,99 @@
         
         .number-fmt { font-family: 'JetBrains Mono', monospace; font-variant-numeric: tabular-nums; }
 
+        /* ===== PAINEL DE CAPITAL (Position Sizing) ===== */
+        #capital-panel {
+            background: rgba(17, 24, 39, 0.85);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-bottom: 1px solid rgba(59, 130, 246, 0.15);
+            padding: 10px 24px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            position: sticky;
+            top: 73px;
+            z-index: 40;
+        }
+        #capital-input {
+            background: rgba(3, 7, 18, 0.7);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            border-radius: 8px;
+            color: #f3f4f6;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 14px;
+            font-weight: 600;
+            padding: 6px 12px;
+            outline: none;
+            width: 180px;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+        #capital-input:focus {
+            border-color: rgba(59, 130, 246, 0.7);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+        #capital-input::placeholder { color: #6b7280; font-weight: 400; }
+
+        /* ===== BOTÃO COPIAR TICKER ===== */
+        .copy-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 18px;
+            height: 18px;
+            border-radius: 4px;
+            border: 1px solid rgba(255,255,255,0.1);
+            background: rgba(255,255,255,0.04);
+            color: #6b7280;
+            cursor: pointer;
+            flex-shrink: 0;
+            transition: all 0.15s ease;
+            position: relative;
+        }
+        .copy-btn:hover {
+            background: rgba(59, 130, 246, 0.15);
+            border-color: rgba(59, 130, 246, 0.4);
+            color: #60a5fa;
+        }
+        .copy-btn.copied {
+            background: rgba(16, 185, 129, 0.15);
+            border-color: rgba(16, 185, 129, 0.4);
+            color: #34d399;
+        }
+
+        /* Tooltip personalizado */
+        [data-tooltip] {
+            position: relative;
+            cursor: help;
+        }
+        [data-tooltip]::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: calc(100% + 6px);
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(17, 24, 39, 0.97);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            border-radius: 8px;
+            padding: 8px 12px;
+            font-size: 11px;
+            color: #d1d5db;
+            white-space: pre-wrap;
+            width: max-content;
+            max-width: 260px;
+            line-height: 1.5;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.15s ease;
+            z-index: 999;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+            font-family: 'Inter', sans-serif;
+            font-weight: 400;
+        }
+        [data-tooltip]:hover::after {
+            opacity: 1;
+        }
+
         /* ===== MODAL DO GRÁFICO ===== */
         #chart-modal {
             display: none;
@@ -182,6 +275,29 @@
         </div>
     </nav>
 
+    <!-- Painel de Dimensionamento de Capital (Position Sizing) -->
+    <div id="capital-panel">
+        <div class="max-w-7xl mx-auto flex items-center gap-3 flex-wrap">
+            <svg class="w-4 h-4 text-brand-gold flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3"/></svg>
+            <span class="text-xs font-bold text-gray-400 uppercase tracking-widest">Capital Disponível</span>
+            <div class="relative">
+                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm font-mono">R$</span>
+                <input
+                    id="capital-input"
+                    type="number"
+                    min="0"
+                    step="1000"
+                    placeholder="ex: 20000"
+                    style="padding-left: 32px;"
+                    oninput="onCapitalChange()"
+                    title="Informe o patrimônio disponível para calcular automaticamente o lote máximo de contratos que pode operar em cada ativo"
+                />
+            </div>
+            <span class="text-[11px] text-gray-500">→ Os cards mostrarão quantos lotes você pode vender</span>
+            <span id="capital-helper" class="ml-auto text-[10px] font-mono text-gray-600 hidden"></span>
+        </div>
+    </div>
+
     <!-- Main Content -->
     <main class="max-w-7xl mx-auto px-6 py-8">
         
@@ -191,18 +307,6 @@
             <p class="text-sm text-gray-300 font-medium">
                 <strong class="text-rose-400">AVISO:</strong> Este painel é uma ferramenta de apoio educacional e acompanhamento quantitativo. Não constitui recomendação de investimento. Decisões financeiras devem ser baseadas em avaliações próprias e profissionais.
             </p>
-        </div>
-
-        <!-- Header Info Banner -->
-        <div class="mb-8 glass-card rounded-xl p-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border-l-4 border-l-brand-purple">
-            <div>
-                <h2 class="text-gray-200 font-medium">Sinais de Volatilidade Detectados</h2>
-                <p class="text-sm text-gray-400 mt-1">Análise baseada em Desvio Padrão (Bollinger) e Médias Móveis. Atualização em tempo real.</p>
-            </div>
-            <div class="flex gap-2">
-                <span class="px-3 py-1 text-xs font-medium rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">IV Rank Favorável</span>
-                <span class="px-3 py-1 text-xs font-medium rounded-full bg-brand/10 text-brand border border-brand/20">Oportunidades de PUT</span>
-            </div>
         </div>
 
         <!-- Grid de Ativos -->
@@ -658,13 +762,83 @@
             });
         }
 
+        // ================================================================
+        // POSITION SIZING — Capital & Lotes
+        // ================================================================
+        let globalCapital = 0;
+
+        function onCapitalChange() {
+            const input = document.getElementById('capital-input');
+            globalCapital = parseFloat(input.value) || 0;
+            renderAssets(); // re-render para atualizar badges de lote
+        }
+
+        // Calcula lotes (múltiplos de 100) dado capital e strike
+        function calcLotes(capital, strike) {
+            if (!capital || !strike || strike <= 0) return 0;
+            // Na venda de PUT você precisa ter margem = strike × 100 × lotes
+            // Lote = capital / (strike * 100), arredondado para baixo, mínimo 1 lote
+            const lotesBrutos = Math.floor(capital / (strike * 100));
+            return Math.max(0, lotesBrutos);
+        }
+
+        // Retorna HTML da badge de lotes para os cards
+        function capitalLots(ticker, type, strike) {
+            if (!globalCapital || globalCapital <= 0) return '';
+            const lotes = calcLotes(globalCapital, strike);
+            if (lotes === 0) return `<span class="text-[9px] text-rose-400/70 font-mono mt-1 block">Capital insuficiente para 1 lote</span>`;
+            const comprometido = lotes * strike * 100;
+            const color = type === 'CALL' ? 'text-brand' : 'text-emerald-400';
+            const borderColor = type === 'CALL' ? 'border-brand/30' : 'border-emerald-500/30';
+            return `
+                <div class="mt-2 p-2 rounded-lg bg-dark-900/70 border ${borderColor} flex items-center justify-between">
+                    <div>
+                        <span class="text-[9px] uppercase font-bold text-gray-500 tracking-widest block">Sua capacidade</span>
+                        <span class="font-mono font-bold ${color} text-base">${lotes.toLocaleString('pt-BR')} lotes</span>
+                        <span class="text-[9px] font-mono text-gray-600 block">${(lotes * 100).toLocaleString('pt-BR')} ações</span>
+                    </div>
+                    <div class="text-right">
+                        <span class="text-[9px] uppercase font-bold text-gray-500 tracking-widest block">Margem usada</span>
+                        <span class="font-mono text-xs text-gray-300">${new Intl.NumberFormat('pt-BR', {style:'currency',currency:'BRL'}).format(comprometido)}</span>
+                        <span class="text-[9px] font-mono text-gray-600 block">${((comprometido / globalCapital) * 100).toFixed(0)}% do capital</span>
+                    </div>
+                </div>
+            `;
+        }
+
+        // ================================================================
+        // COPY TO CLIPBOARD
+        // ================================================================
+        function copyTicker(spanId, btn) {
+            const span = document.getElementById(spanId);
+            if (!span) return;
+            const text = span.textContent.trim();
+            navigator.clipboard.writeText(text).then(() => {
+                btn.classList.add('copied');
+                btn.innerHTML = `<svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>`;
+                setTimeout(() => {
+                    btn.classList.remove('copied');
+                    btn.innerHTML = `<svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>`;
+                }, 2000);
+            }).catch(() => {
+                // Fallback para IE/Safari
+                const ta = document.createElement('textarea');
+                ta.value = text;
+                document.body.appendChild(ta);
+                ta.select();
+                document.execCommand('copy');
+                document.body.removeChild(ta);
+            });
+        }
+
         // Formatadores
-        const fmtMoney = (val) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(val);
+        const fmtMoney = (val) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(val || 0);
         // 🔑 TOKEN GRATUITO BRAPI.DEV
         // Para ambientes profissionais/comerciais proxy público falha (CORS/500).
         // Crie sua conta grátis em https://brapi.dev/ e cole seu token abaixo:
         const BRAPI_TOKEN = 'ip1K3nN5Z9vhEgZ8jbiyHT';
         let eventsLoaded = false;
+        let fundamentalsLoaded = false;
         let initialLoad = true; // Impede flash dos dados mockados no topo
 
         // ========================================================
@@ -756,7 +930,7 @@
                     await new Promise(r => setTimeout(r, 200));
                 }
 
-                // Fetch Corporate Events (Earnings/Dividends) ONLY ONCE, preventing Infinite Lock & IP Ban
+                // Fetch Corporate Events (Earnings/Dividends) ONLY ONCE
                 if (API_AVAILABLE && !eventsLoaded) {
                     const eventPromises = assetsData.map(async (asset) => {
                         try {
@@ -769,7 +943,34 @@
                         } catch (e) { /* Servidor node off, let it fail silently */ }
                     });
                     await Promise.allSettled(eventPromises);
-                    eventsLoaded = true; // Never query scraping again in this session
+                    eventsLoaded = true;
+                }
+                
+                // Fetch Fundamentais (VPA, LPA, Preço Justo) ONLY ONCE
+                if (API_AVAILABLE && !fundamentalsLoaded) {
+                    const fundPromises = assetsData.map(async (asset) => {
+                        try {
+                            const resFund = await fetch(`${API_BASE_URL}/api/fundamentals/${asset.ticker}`);
+                            if (resFund.ok) {
+                                const fundData = await resFund.json();
+                                if (fundData.vpa || fundData.grahamPrice) {
+                                    asset.fundamentals = {
+                                        vpa: fundData.vpa,
+                                        lpa: fundData.lpa,
+                                        grahamPrice: fundData.grahamPrice,
+                                        dy: fundData.dy,
+                                        pvp: fundData.pvp,
+                                    };
+                                    // Sobrescreve nextDividend se o backend trouxer DataCom
+                                    if (fundData.nextDividend && fundData.nextDividend.datacom) {
+                                        asset.nextDividend = fundData.nextDividend;
+                                    }
+                                }
+                            }
+                        } catch (e) { /* backend offline */ }
+                    });
+                    await Promise.allSettled(fundPromises);
+                    fundamentalsLoaded = true;
                 }
                 
                 initialLoad = false; // Tudo carregado pela 1a vez
@@ -895,10 +1096,16 @@
                             <div class="flex justify-between items-end mb-4">
                                 <div>
                                     <p class="text-[10px] font-medium text-gray-500 uppercase tracking-wider mb-0.5">Stk Alvo (BB Resist.)</p>
-                                    <div class="flex items-center gap-2">
+                                    <div class="flex items-center gap-2 flex-wrap">
                                         <p class="font-mono text-xl font-bold text-gray-200">${fmtMoney(bbUpper)}</p>
-                                        <span class="text-[9px] font-mono bg-dark-700/50 text-gray-400 px-1.5 py-0.5 rounded border border-white/5" title="Opção sugerida estimada baseada no vencimento atual">${estimateOptionTicker(asset.ticker, 'CALL', bbUpper)}</span>
+                                        <div class="flex items-center gap-1">
+                                            <span id="opt-call-${asset.ticker}" class="text-[9px] font-mono bg-dark-700/50 text-gray-400 px-1.5 py-0.5 rounded border border-white/5" data-tooltip="Código estimado da opção para o vencimento atual. Confirme com sua corretora antes de operar.">${estimateOptionTicker(asset.ticker, 'CALL', bbUpper)}</span>
+                                            <button onclick="copyTicker('opt-call-${asset.ticker}', this)" class="copy-btn" data-tooltip="Copiar ticker da opção">
+                                                <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                                            </button>
+                                        </div>
                                     </div>
+                                    ${capitalLots(asset.ticker, 'CALL', bbUpper)}
                                 </div>
                                 <div class="text-right">
                                     <p class="text-[10px] font-medium text-gray-500 uppercase tracking-wider mb-0.5">Prêmio Est.</p>
@@ -924,10 +1131,16 @@
                             <div class="flex justify-between items-end mb-4">
                                 <div>
                                     <p class="text-[10px] font-medium text-gray-500 uppercase tracking-wider mb-0.5">Stk Alvo (BB Sup.)</p>
-                                    <div class="flex items-center gap-2">
+                                    <div class="flex items-center gap-2 flex-wrap">
                                         <p class="font-mono text-xl font-bold text-gray-200">${fmtMoney(bbLower)}</p>
-                                        <span class="text-[9px] font-mono bg-dark-700/50 text-gray-400 px-1.5 py-0.5 rounded border border-white/5" title="Opção sugerida estimada baseada no vencimento atual">${estimateOptionTicker(asset.ticker, 'PUT', bbLower)}</span>
+                                        <div class="flex items-center gap-1">
+                                            <span id="opt-put-${asset.ticker}" class="text-[9px] font-mono bg-dark-700/50 text-gray-400 px-1.5 py-0.5 rounded border border-white/5" data-tooltip="Código estimado da opção para o vencimento atual. Confirme com sua corretora antes de operar.">${estimateOptionTicker(asset.ticker, 'PUT', bbLower)}</span>
+                                            <button onclick="copyTicker('opt-put-${asset.ticker}', this)" class="copy-btn" data-tooltip="Copiar ticker da opção">
+                                                <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                                            </button>
+                                        </div>
                                     </div>
+                                    ${capitalLots(asset.ticker, 'PUT', bbLower)}
                                 </div>
                                 <div class="text-right">
                                     <p class="text-[10px] font-medium text-gray-500 uppercase tracking-wider mb-0.5">Prêmio Est.</p>
@@ -988,22 +1201,44 @@
                             </div>
                             
                             <!-- Dividendos (Data-Com via Investidor10) -->
-                            <div class="p-3 rounded-lg bg-dark-800 border-l-2 border-l-emerald-500 border-t border-r border-b border-white/5 flex flex-col justify-center relative overflow-hidden group hover:bg-emerald-500/5 transition-colors">
+                            <div class="p-3 rounded-lg bg-dark-800 border-l-2 border-l-emerald-500 border-t border-r border-b border-white/5 flex flex-col justify-center relative overflow-hidden group hover:bg-emerald-500/5 transition-colors" data-tooltip="Data Com: último dia para ter direito ao dividendo. No dia seguinte (Ex), o valor é subtraído do preço de abertura. Atenção ao operar próximo desta data!">
                                 <div class="absolute -right-4 -top-4 w-12 h-12 bg-emerald-500/5 rounded-full group-hover:scale-150 transition-transform duration-500"></div>
                                 <span class="text-[10px] font-bold uppercase tracking-wider text-emerald-400 mb-1 flex items-center gap-1"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg> ${asset.nextDividend ? asset.nextDividend.label : 'DIVIDENDOS'}</span>
                                 <span class="flex flex-col">
                                     <span class="text-sm font-mono font-bold text-emerald-400">${asset.nextDividend ? fmtMoney(asset.nextDividend.value) : 'R$ --'}</span>
-                                    ${asset.nextDividend && asset.nextDividend.datacom ? `<span class="text-[9px] text-gray-400 uppercase tracking-widest mt-0.5">Com: ${asset.nextDividend.datacom}</span>` : ''}
+                                    ${asset.nextDividend && asset.nextDividend.datacom ? `
+                                        <span class="text-[9px] text-gray-400 uppercase tracking-widest mt-0.5">Com: ${asset.nextDividend.datacom}</span>
+                                        ${asset.nextDividend.diasParaDataCom !== undefined ? `
+                                            <span class="text-[9px] font-bold mt-1 ${asset.nextDividend.diasParaDataCom <= 10 ? 'text-rose-400' : 'text-amber-400'}">⏱ ${asset.nextDividend.diasParaDataCom > 0 ? `${asset.nextDividend.diasParaDataCom} dias` : 'Passou'}</span>
+                                        ` : ''}
+                                    ` : '<span class="text-[9px] text-gray-600 mt-0.5">Sem previsão declarada</span>'}
                                 </span>
                             </div>
                         </div>
 
-                        <!-- Indicador de Valorização Longo Prazo MM200 -->
+                        <!-- Indicador Situação Preço Longo Prazo MM200 -->
                         <div class="flex items-center gap-2 mb-2 p-2 rounded bg-dark-800/50 border border-dark-700/50">
                             <div class="w-1.5 h-1.5 rounded-full ${isAboveTrend ? 'bg-rose-400' : 'bg-emerald-400'} shadow-[0_0_8px_${isAboveTrend ? '#fb7185' : '#34d399'}]"></div>
-                            <span class="text-xs text-gray-300" title="Relação do Preço Atual contra a Média de 200 períodos">Valorização Longo Prazo (MM200)</span>
-                            <span class="ml-auto text-xs font-bold ${isAboveTrend ? 'text-rose-400' : 'text-emerald-400'}">${isAboveTrend ? 'CARO' : 'BARATO'}</span>
+                            <span class="text-xs text-gray-300" data-tooltip="Média Móvel de 200 dias (MM200). Preço ACIMA = tendência de alta de longo prazo (ativo 'caro' vs histórico). Preço ABAIXO = tendência de baixa de longo prazo.">Situação do preço no Longo prazo (MM200)</span>
+                            <span class="ml-auto text-xs font-bold ${isAboveTrend ? 'text-rose-400' : 'text-emerald-400'}">${isAboveTrend ? '▲ ACIMA' : '▼ ABAIXO'}</span>
                         </div>
+
+                        <!-- Dados Fundamentalistas (VPA, Preço Justo) -->
+                        ${asset.fundamentals ? `
+                        <div class="grid grid-cols-3 gap-2 mb-3">
+                            <div class="p-2 rounded-lg bg-dark-800/60 border border-white/5 flex flex-col" data-tooltip="VPA = Valor Patrimonial por Ação. Representa quanto vale contabilmente cada ação. Se preço < VPA, ativo pode estar sendo negociado abaixo do patrimônio.">
+                                <span class="text-[9px] font-bold uppercase tracking-widest text-gray-500 mb-0.5">VPA</span>
+                                <span class="text-xs font-mono font-bold text-gray-200">${fmtMoney(asset.fundamentals.vpa)}</span>
+                            </div>
+                            <div class="p-2 rounded-lg bg-dark-800/60 border border-white/5 flex flex-col" data-tooltip="LPA = Lucro por Ação. Indica quanto de lucro cada ação gerou nos últimos 12 meses.">
+                                <span class="text-[9px] font-bold uppercase tracking-widest text-gray-500 mb-0.5">LPA</span>
+                                <span class="text-xs font-mono font-bold text-gray-200">${fmtMoney(asset.fundamentals.lpa)}</span>
+                            </div>
+                            <div class="p-2 rounded-lg border flex flex-col ${asset.price < asset.fundamentals.grahamPrice ? 'bg-emerald-500/10 border-emerald-500/30' : 'bg-rose-500/10 border-rose-500/20'}" data-tooltip="Preço Justo de Graham = √(22,5 × VPA × LPA). Abaixo deste valor pode indicar subvalorização. Acima pode indicar sobrevalorização.">
+                                <span class="text-[9px] font-bold uppercase tracking-widest text-gray-500 mb-0.5">P. Justo</span>
+                                <span class="text-xs font-mono font-bold ${asset.price < asset.fundamentals.grahamPrice ? 'text-emerald-400' : 'text-rose-400'}">${fmtMoney(asset.fundamentals.grahamPrice)}</span>
+                            </div>
+                        </div>` : ''}
 
                         <!-- Bandas -->
                         ${renderBand(asset.bands.daily, true)}

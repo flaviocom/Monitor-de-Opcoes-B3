@@ -1,0 +1,140 @@
+# -*- coding: utf-8 -*-
+content = r"""<!DOCTYPE html>
+<html lang="pt-BR" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ThetaLens PRO | Monitor de Op&ccedil;&otilde;es B3</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lightweight-charts@4.1.3/dist/lightweight-charts.standalone.production.js"></script>
+    <script>
+        tailwind.config = { darkMode: 'class', theme: { extend: { fontFamily: { sans: ['Inter', 'sans-serif'], mono: ['JetBrains Mono', 'monospace'] }, colors: { dark: { 900: '#030712', 800: '#111827', 700: '#1f2937' }, brand: { DEFAULT: '#3b82f6', purple: '#8b5cf6' } } } } }
+    </script>
+    <style>
+        body { background-color: #030712; color: #f3f4f6; min-height: 100vh; }
+        .glass-card { background: rgba(17, 24, 39, 0.65); backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.05); transition: all 0.2s; }
+        .glass-card:hover { transform: translateY(-2px); border-color: rgba(59, 130, 246, 0.2); }
+        .badge-pro { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+        #chart-container { height: 400px; }
+    </style>
+</head>
+<body class="bg-[#030712] antialiased">
+    <nav class="sticky top-0 z-50 glass-card border-b border-dark-700/50 px-6 py-4">
+        <div class="max-w-7xl mx-auto flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <img src="logo.png" class="w-10 h-10 rounded-lg shadow-lg" />
+                <div>
+                    <h1 class="text-xl font-bold text-white">ThetaLens <span class="badge-pro text-[10px] border border-amber-500/20 px-1.5 py-0.5 rounded ml-2">PRO</span></h1>
+                    <p class="text-[10px] text-gray-400">Terminal de Intelig&ecirc;ncia Quantitativa</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-6">
+                <button id="btn-radar" onclick="toggleRadar()" class="flex items-center gap-2 px-3 py-2 rounded-lg bg-dark-800 border border-dark-600 hover:border-brand group transition-all">
+                    <span class="w-2.5 h-2.5 rounded-full bg-gray-600 group-[.active]:bg-emerald-500 group-[.active]:shadow-[0_0_10px_#10b981]" id="radar-led"></span>
+                    <span class="text-[10px] font-bold text-gray-400 group-[.active]:text-emerald-400 uppercase hidden sm:inline">Radar</span>
+                </button>
+                <div class="px-3 py-2 rounded-lg bg-dark-800 border border-brand-purple/20">
+                    <span class="text-[10px] font-bold text-brand-purple">DTE: <span id="dte-counter" class="text-white font-mono">--</span></span>
+                </div>
+            </div>
+        </div>
+    </nav>
+    <main class="max-w-7xl mx-auto px-6 py-8">
+        <div class="mb-8 p-4 rounded-xl border border-rose-500/30 bg-rose-500/5 flex items-center gap-4">
+            <span class="text-xl">⚠️</span>
+            <p class="text-xs text-gray-400 leading-relaxed"><strong class="text-rose-400">AVISO:</strong> Ferramenta educacional. N&atilde;o constitui recomenda&ccedil;&atilde;o. Decis&otilde;es pr&oacute;prias e profissionais.</p>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="assets-grid"></div>
+    </main>
+    <div id="chart-modal" onclick="if(event.target===this)closeChart()" class="hidden fixed inset-0 z-999 bg-black/80 backdrop-blur-md items-center justify-center p-4">
+        <div class="bg-dark-800 border border-dark-700 rounded-xl w-full max-w-4xl overflow-hidden shadow-2xl">
+           <div class="p-4 border-b border-dark-700 flex justify-between"><h3 id="modal-ticker" class="text-2xl font-mono font-bold text-white"></h3><button onclick="closeChart()" class="text-gray-400">✕</button></div>
+           <div id="chart-container"></div>
+        </div>
+    </div>
+    <script>
+        const assetsData = [
+            { ticker: 'PETR4', company: 'Petrobras', price: 0, change: 0, bands: { daily: { upper: 0, lower: 0 } }, nextEarnings: '--', nextDividend: { datacom: '--' } },
+            { ticker: 'VALE3', company: 'Vale S.A.', price: 0, change: 0, bands: { daily: { upper: 0, lower: 0 } }, nextEarnings: '--', nextDividend: { datacom: '--' } },
+            { ticker: 'BBAS3', company: 'Banco do Brasil', price: 0, change: 0, bands: { daily: { upper: 0, lower: 0 } }, nextEarnings: '--', nextDividend: { datacom: '--' } },
+            { ticker: 'ITUB4', company: 'Ita\u00fa Unibanco', price: 0, change: 0, bands: { daily: { upper: 0, lower: 0 } }, nextEarnings: '--', nextDividend: { datacom: '--' } }
+        ];
+        const fmtMoney = (v) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v);
+        const BRAPI_TOKEN = 'ip1K3nN5Z9vhEgZ8jbiyHT';
+        const API_URL = 'https://monitor-de-opcoes-b3.onrender.com';
+        async function updateData() {
+            for(const a of assetsData) {
+                try {
+                    const r = await fetch(`https://brapi.dev/api/quote/${a.ticker}?range=1mo&interval=1d&token=${BRAPI_TOKEN}`);
+                    const d = await r.json();
+                    if(d.results?.[0]) {
+                        const q = d.results[0]; a.price = q.regularMarketPrice; a.change = q.regularMarketChangePercent;
+                        const h = q.historicalDataPrice.map(x => x.close).filter(x => x > 0);
+                        if(h.length >= 20) {
+                            const m = h.slice(-19).concat(a.price).reduce((s,x)=>s+x,0)/20;
+                            const sd = Math.sqrt(h.slice(-19).concat(a.price).reduce((s,x)=>s+(x-m)**2,0)/19);
+                            a.bands.daily.upper = m + 2*sd; a.bands.daily.lower = m - 2*sd;
+                        }
+                    }
+                    const rE = await fetch(`${API_URL}/api/events/${a.ticker}`);
+                    if(rE.ok) { const e = await rE.json(); a.nextEarnings=e.nextEarnings||'--'; a.nextDividend=e.nextDividend||{datacom:'--'}; }
+                } catch(e) {}
+            }
+            render();
+        }
+        function render() {
+            const g = document.getElementById('assets-grid'); g.innerHTML = '';
+            for(const a of assetsData) {
+                const p = a.bands.daily.upper > a.bands.daily.lower ? Math.max(0, Math.min(100, ((a.price - a.bands.daily.lower) / (a.bands.daily.upper - a.bands.daily.lower)) * 100)) : 0;
+                const sc = p < 25 ? 'bg-emerald-500' : p > 75 ? 'bg-rose-500' : 'bg-brand';
+                const tc = a.change >= 0 ? 'text-emerald-400' : 'text-rose-400';
+                g.innerHTML += `
+                    <div class="glass-card p-6 rounded-2xl">
+                        <div class="flex justify-between mb-4">
+                            <div><h3 class="text-2xl font-mono font-bold text-white">${a.ticker}</h3><p class="text-[10px] text-gray-500 uppercase">${a.company}</p></div>
+                            <div class="text-right"><p class="text-lg font-mono font-bold">${fmtMoney(a.price)}</p><p class="text-xs font-mono \$\{tc\}">${a.change >= 0 ? '+' : ''}${a.change.toFixed(2)}%</p></div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-2 mb-4">
+                            <div class="p-2 rounded bg-dark-800 text-[10px]">BALAN&Ccedil;O: ${a.nextEarnings}</div>
+                            <div class="p-2 rounded bg-dark-800 text-[10px]">DATA-COM: ${a.nextDividend?.datacom || '--'}</div>
+                        </div>
+                        <div class="flex justify-between text-[10px] font-bold text-gray-500 mb-1 uppercase"><span>Banda Di&aacute;ria</span><span>${Math.round(p)}%</span></div>
+                        <div class="w-full h-1.5 bg-dark-800 rounded-full overflow-hidden border border-white/5">
+                            <div class="h-full ${sc} transition-all duration-1000" style="width: ${p}%"></div>
+                        </div>
+                        <button onclick="openChart('${a.ticker}')" class="w-full mt-6 py-2 bg-dark-800 border border-dark-600 rounded-xl text-[10px] font-bold uppercase tracking-widest text-gray-400 hover:text-white transition-all">Ver Gr&aacute;fico</button>
+                    </div>`;
+            }
+        }
+        function updateDTE() {
+            const el = document.getElementById('dte-counter');
+            const now = new Date(); let t = new Date(now.getFullYear(), now.getMonth(), 15);
+            while(t.getDay() !== 5) t.setDate(t.getDate() + 1);
+            if(now > t) { t = new Date(now.getFullYear(), now.getMonth()+1, 15); while(t.getDay() !== 5) t.setDate(t.getDate() + 1); }
+            if(el) el.textContent = Math.ceil((t - now) / 864e5);
+        }
+        async function toggleRadar() { 
+            const b=document.getElementById('btn-radar'); 
+            if(b.classList.toggle('active')) { const p=await Notification.requestPermission(); if(p!=='granted') b.classList.remove('active'); } 
+        }
+        function openChart(t) { document.getElementById('modal-ticker').textContent = t; document.getElementById('chart-modal').classList.remove('hidden'); document.getElementById('chart-modal').classList.add('flex'); loadChart(t); }
+        function closeChart() { document.getElementById('chart-modal').classList.add('hidden'); document.getElementById('chart-modal').classList.remove('flex'); }
+        async function loadChart(t) {
+            const c=document.getElementById('chart-container'); c.innerHTML='';
+            try {
+                const r=await fetch(`https://brapi.dev/api/quote/${t}?range=3mo&interval=1d&token=${BRAPI_TOKEN}`);
+                const d=await r.json(); const h=d.results[0].historicalDataPrice.map(x=>({time:x.date,open:x.open,high:x.high,low:x.low,close:x.close}));
+                const chart=LightweightCharts.createChart(c,{width:c.offsetWidth,height:400,layout:{background:{color:'transparent'},textColor:'#9ca3af'},grid:{vertLines:{color:'rgba(255,255,255,0.05)'},horzLines:{color:'rgba(255,255,255,0.05)'}}});
+                const s=chart.addCandlestickSeries({upColor:'#10b981',downColor:'#ef4444',borderVisible:false}); s.setData(h); chart.timeScale().fitContent();
+            } catch(e){}
+        }
+        updateDTE(); setInterval(updateDTE, 60000); updateData(); setInterval(updateData, 60000);
+    </script>
+</body>
+</html>
+"""
+
+with open('index.html', 'w', encoding='utf-8') as out:
+    out.write(content)
+print("SUCCESS: index.html updated via Python.")

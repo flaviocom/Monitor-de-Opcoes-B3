@@ -3,12 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Monitor de Op&ccedil;&otilde;es B3 PRO | Antigravity</title>
-    
+    <title>Monitor de Opções B3 PRO | Antigravity</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
-    
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lightweight-charts@4.1.3/dist/lightweight-charts.standalone.production.js"></script>
     <script>
@@ -16,410 +13,136 @@
             darkMode: 'class',
             theme: {
                 extend: {
-                    fontFamily: {
-                        sans: ['Inter', 'sans-serif'],
-                        mono: ['JetBrains Mono', 'monospace'],
-                    },
-                    colors: {
-                        dark: {
-                            900: '#030712',
-                            800: '#111827',
-                            700: '#1f2937',
-                            600: '#374151',
-                        },
-                        brand: {
-                            DEFAULT: '#3b82f6',
-                            purple: '#8b5cf6',
-                            gold: '#f59e0b',
-                        }
-                    },
-                    animation: {
-                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-                        'data-flash': 'flash 0.5s ease-out forwards',
-                    },
-                    keyframes: {
-                        flash: {
-                            '0%': { backgroundColor: 'rgba(59, 130, 246, 0.3)' },
-                            '100%': { backgroundColor: 'transparent' },
-                        }
-                    }
+                    fontFamily: { sans: ['Inter', 'sans-serif'], mono: ['JetBrains Mono', 'monospace'] },
+                    colors: { dark: { 900: '#030712', 800: '#111827', 700: '#1f2937' }, brand: { DEFAULT: '#3b82f6', purple: '#8b5cf6' } }
                 }
             }
         }
     </script>
-
     <style>
-        body {
-            background-color: theme('colors.dark.900');
-            background-image: radial-gradient(circle at top right, rgba(59, 130, 246, 0.08), transparent 40%),
-                              radial-gradient(circle at bottom left, rgba(139, 92, 246, 0.05), transparent 40%);
-            color: #f3f4f6;
-            min-height: 100vh;
-        }
-
-        .glass-card {
-            background: rgba(17, 24, 39, 0.65);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
-            transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
-        }
-
-        .glass-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
-            border-color: rgba(59, 130, 246, 0.2);
-        }
-
-        .badge-pro {
-            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-            -webkit-background-clip: text;
-            background-clip: text;
-            -webkit-text-fill-color: transparent;
-            font-weight: 700;
-        }
-
-        ::-webkit-scrollbar { width: 8px; height: 8px; }
-        ::-webkit-scrollbar-track { background: theme('colors.dark.900'); }
-        ::-webkit-scrollbar-thumb { background: theme('colors.dark.700'); border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: theme('colors.dark.600'); }
-        
-        .number-fmt { font-family: 'JetBrains Mono', monospace; font-variant-numeric: tabular-nums; }
-
-        #chart-modal {
-            display: none;
-            position: fixed;
-            inset: 0;
-            z-index: 999;
-            background: rgba(3, 7, 18, 0.85);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            align-items: center;
-            justify-content: center;
-            padding: 1rem;
-        }
-        #chart-modal.open { display: flex; }
-        #chart-modal-box {
-            background: rgba(17, 24, 39, 0.95);
-            border: 1px solid rgba(59, 130, 246, 0.25);
-            border-radius: 1rem;
-            box-shadow: 0 0 60px rgba(59, 130, 246, 0.12), 0 30px 80px rgba(0,0,0,0.6);
-            width: 100%;
-            max-width: 900px;
-            overflow: hidden;
-        }
-        #chart-container { width: 100%; height: 340px; }
-        #volume-container { width: 100%; height: 90px; }
-        .period-btn {
-            padding: 3px 10px;
-            border-radius: 6px;
-            font-size: 11px;
-            font-weight: 600;
-            font-family: 'JetBrains Mono', monospace;
-            cursor: pointer;
-            border: 1px solid rgba(255,255,255,0.1);
-            background: transparent;
-            color: #9ca3af;
-            transition: all 0.15s ease;
-        }
-        .period-btn:hover, .period-btn.active {
-            background: rgba(59, 130, 246, 0.2);
-            border-color: rgba(59, 130, 246, 0.5);
-            color: #60a5fa;
-        }
+        body { background-color: #030712; color: #f3f4f6; min-height: 100vh; font-family: 'Inter', sans-serif; }
+        .glass-card { background: rgba(17, 24, 39, 0.65); backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.05); }
     </style>
 </head>
-<body class="bg-[#030712] text-gray-200 antialiased selection:bg-brand selection:text-white min-h-screen">
-
+<body class="bg-[#030712]">
     <nav class="sticky top-0 z-50 glass-card border-b border-dark-700/50 px-6 py-4">
         <div class="max-w-7xl mx-auto flex justify-between items-center">
-            <div class="flex items-center gap-3">
-                <img src="logo.png" alt="Logotipo Plataforma" class="w-10 h-10 object-contain rounded-lg shadow-lg shadow-brand/20 border border-dark-700/50" />
-                <div>
-                    <h1 class="text-xl font-bold tracking-tight text-white flex items-center gap-2">
-                        <span id="platform-name">ThetaLens</span> <span class="badge-pro text-sm uppercase tracking-widest border border-brand-gold/30 px-2 py-0.5 rounded ml-1">PRO</span>
-                    </h1>
-                    <p class="text-xs text-gray-400">Terminal de Intelig&ecirc;ncia Quantitativa</p>
-                </div>
-            </div>
-            
-            <div class="flex items-center gap-3 sm:gap-6">
-                <div class="hidden md:flex items-center gap-4 text-sm font-medium text-gray-400">
-                    <span class="flex items-center gap-1.5 hover:text-white cursor-pointer transition-colors"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg> Screener</span>
-                    <span class="flex items-center gap-1.5 hover:text-white cursor-pointer transition-colors"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg> Estrat&eacute;gias</span>
-                </div>
-
-                <button id="btn-radar" onclick="toggleRadar()" class="flex items-center gap-2 px-3 py-1.5 rounded-md bg-dark-800/80 border border-dark-600 hover:border-brand transition-colors shadow-inner group cursor-pointer" title="Ativar Alertas Push do Navegador">
-                    <span class="w-2 h-2 rounded-full bg-gray-500 group-[.active]:bg-emerald-500 group-[.active]:shadow-[0_0_8px_#10b981] group-[.active]:animate-pulse" id="radar-led"></span>
-                    <span class="text-[11px] font-bold text-gray-400 group-[.active]:text-emerald-400 tracking-widest uppercase hidden sm:inline">Radar</span>
+            <h1 class="text-xl font-bold text-white flex items-center gap-2">ThetaLens <span class="text-xs bg-amber-500/10 text-amber-500 px-2 py-0.5 rounded border border-amber-500/20">PRO</span></h1>
+            <div class="flex items-center gap-4">
+                <button id="btn-radar" onclick="toggleRadar()" class="flex items-center gap-2 px-3 py-1.5 rounded-md bg-dark-800 border border-dark-700 group hover:border-brand">
+                    <span class="w-2 h-2 rounded-full bg-gray-500 group-[.active]:bg-emerald-500" id="radar-led"></span>
+                    <span class="text-[11px] font-bold uppercase hidden sm:inline">Radar</span>
                 </button>
-
-                <div class="flex items-center gap-2 px-3 py-1.5 rounded-md bg-dark-800/80 border border-brand-purple/30 shadow-inner">
-                    <span class="text-[11px] font-bold text-brand-purple tracking-widest uppercase flex items-center gap-1"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg> DTE: <span id="dte-counter" class="text-white font-mono ml-1">--</span></span>
+                <div class="px-3 py-1.5 rounded-md bg-dark-800 border border-brand-purple/30">
+                    <span class="text-[11px] font-bold text-brand-purple uppercase">DTE: <span id="dte-counter" class="text-white">--</span></span>
                 </div>
             </div>
         </div>
     </nav>
 
     <main class="max-w-7xl mx-auto px-6 py-8">
-        <div class="mb-6 p-4 rounded-xl border border-rose-500/30 bg-rose-500/10 flex items-center gap-4 shadow-lg shadow-rose-500/5">
-            <span class="text-2xl">⚠️</span>
-            <p class="text-sm text-gray-300 font-medium">
-                <strong class="text-rose-400">AVISO:</strong> Este painel &eacute; uma ferramenta de apoio educacional e acompanhamento quantitativo. N&atilde;o constitui recomenda&ccedil;&atilde;o de investimento. Decis&otilde;es financeiras devem ser baseadas em avalia&ccedil;&otilde;es pr&oacute;prias e profissionais.
-            </p>
+        <div class="mb-6 p-4 rounded-xl border border-rose-500/30 bg-rose-500/10 text-sm text-gray-300">
+            <strong class="text-rose-400 font-bold uppercase">Aviso:</strong> Este painel é educacional. Não é recomendação. Decisões próprias e profissionais.
         </div>
-
-        <div class="mb-8 glass-card rounded-xl p-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border-l-4 border-l-brand-purple">
-            <div>
-                <h2 class="text-gray-200 font-medium">Sinais de Volatilidade Detectados</h2>
-                <p class="text-sm text-gray-400 mt-1">An&aacute;lise baseada em Desvio Padr&atilde;o (Bollinger) e M&eacute;dias M&oacute;veis. Atualiza&ccedil;&atilde;o em tempo real.</p>
-            </div>
-            <div class="flex gap-2">
-                <span class="px-3 py-1 text-xs font-medium rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">IV Rank Favor&aacute;vel</span>
-                <span class="px-3 py-1 text-xs font-medium rounded-full bg-brand/10 text-brand border border-brand/20">Oportunidades de PUT</span>
-            </div>
-        </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-6" id="assets-grid"></div>
-
-        <div class="mt-12 text-center">
-            <p class="text-xs text-gray-500">&copy; 2026 Plataforma Monitor de Op&ccedil;&otilde;es B3 PRO. O conte&uacute;do aqui &eacute; puramente anal&iacute;tico e n&atilde;o configura call de compra ou venda.</p>
-        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="assets-grid"></div>
     </main>
 
-    <div id="chart-modal" onclick="if(event.target===this)closeChart()">
-        <div id="chart-modal-box">
-            <div class="flex flex-wrap items-center justify-between px-5 py-4 border-b border-dark-700/60 relative gap-y-3">
-                <div class="flex items-center flex-wrap gap-2 sm:gap-3 w-[calc(100%-40px)] sm:w-auto pr-2">
-                    <span class="text-white font-bold font-mono text-lg" id="modal-ticker">--</span>
-                    <span class="text-gray-400 text-sm hidden sm:inline" id="modal-company">--</span>
-                    <span id="modal-price" class="text-sm font-mono font-bold text-emerald-400"></span>
-                    <span id="modal-change" class="text-xs font-mono"></span>
-                </div>
-                <div class="flex gap-1 w-full sm:w-auto overflow-x-auto pb-1 sm:pb-0" id="period-buttons">
-                    <button class="period-btn" data-range="1mo" onclick="loadChart(currentChartTicker,'1mo')">1M</button>
-                    <button class="period-btn active" data-range="3mo" onclick="loadChart(currentChartTicker,'3mo')">3M</button>
-                    <button class="period-btn" data-range="6mo" onclick="loadChart(currentChartTicker,'6mo')">6M</button>
-                    <button class="period-btn" data-range="1y" onclick="loadChart(currentChartTicker,'1y')">1A</button>
-                </div>
-                <button onclick="closeChart()" class="absolute top-4 right-4 text-gray-400 hover:text-white transition-colors p-1.5 rounded-lg hover:bg-dark-700/50 bg-dark-800 sm:bg-transparent">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                </button>
-            </div>
-            <div class="flex items-center gap-4 px-5 py-2 bg-dark-800/40 border-b border-dark-700/30 text-[11px] font-mono">
-                <span class="flex items-center gap-1"><span class="w-3 h-0.5 bg-sky-400 inline-block"></span><span class="text-sky-400">SMA 20</span></span>
-                <span class="flex items-center gap-1"><span class="w-3 h-0.5 bg-amber-400 inline-block"></span><span class="text-amber-400">SMA 200</span></span>
-                <span id="modal-loading" class="ml-auto text-brand animate-pulse hidden">Carregando...</span>
-            </div>
-            <div id="chart-container"></div>
-            <div id="volume-container"></div>
-            <div class="px-5 py-2 border-t border-dark-700/30 flex justify-between items-center">
-                <span class="text-[10px] text-gray-500">Fonte: Brapi.dev &bull; Delay 15min</span>
-                <span class="text-[10px] text-gray-500" id="modal-last-update"></span>
-            </div>
+    <div id="chart-modal" onclick="if(event.target===this)closeChart()" class="hidden fixed inset-0 z-999 bg-black/80 backdrop-blur-md items-center justify-center p-4">
+        <div class="bg-[#111827] border border-gray-800 rounded-xl w-full max-w-4xl overflow-hidden shadow-2xl">
+           <div class="p-4 border-b border-gray-800 flex justify-between items-center"><h3 id="modal-ticker" class="text-xl font-bold text-white"></h3><button onclick="closeChart()" class="text-gray-400 hover:text-white">X</button></div>
+           <div id="chart-container" class="h-[400px]"></div>
         </div>
     </div>
 
     <script>
         const assetsData = [
-            { ticker: 'PETR4', company: 'Petrobras', nextEarnings: '--', price: 0, change: 0, bands: { daily: { upper: 0, lower: 0, label: 'Banda Di&aacute;ria' }, weekly: { upper: 0, lower: 0, label: 'Banda Semanal' } } },
-            { ticker: 'VALE3', company: 'Vale S.A.', nextEarnings: '--', price: 0, change: 0, bands: { daily: { upper: 0, lower: 0, label: 'Banda Di&aacute;ria' }, weekly: { upper: 0, lower: 0, label: 'Banda Semanal' } } },
-            { ticker: 'BBAS3', company: 'Banco do Brasil', nextEarnings: '--', price: 0, change: 0, bands: { daily: { upper: 0, lower: 0, label: 'Banda Di&aacute;ria' }, weekly: { upper: 0, lower: 0, label: 'Banda Semanal' } } },
-            { ticker: 'ITUB4', company: 'Ita&uacute; Unibanco', nextEarnings: '--', price: 0, change: 0, bands: { daily: { upper: 0, lower: 0, label: 'Banda Di&aacute;ria' }, weekly: { upper: 0, lower: 0, label: 'Banda Semanal' } } },
-            { ticker: 'BITH11', company: 'Hashdex Bitcoin', nextEarnings: '--', price: 0, change: 0, bands: { daily: { upper: 0, lower: 0, label: 'Banda Di&aacute;ria' }, weekly: { upper: 0, lower: 0, label: 'Banda Semanal' } } }
+            { ticker: 'PETR4', company: 'Petrobras', price: 0, change: 0, bands: { daily: { upper: 0, lower: 0 } } },
+            { ticker: 'VALE3', company: 'Vale S.A.', price: 0, change: 0, bands: { daily: { upper: 0, lower: 0 } } },
+            { ticker: 'BBAS3', company: 'Banco do Brasil', price: 0, change: 0, bands: { daily: { upper: 0, lower: 0 } } },
+            { ticker: 'ITUB4', company: 'Ita&uacute; Unibanco', price: 0, change: 0, bands: { daily: { upper: 0, lower: 0 } } }
         ];
 
-        const fmtMoney = (val) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(val);
+        const fmtMoney = (v) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v);
         const BRAPI_TOKEN = 'ip1K3nN5Z9vhEgZ8jbiyHT';
-        const API_BASE_URL = window.location.hostname === 'localhost' ? 'http://localhost:3000' : 'https://monitor-de-opcoes-b3.onrender.com';
-        let eventsLoaded = false;
-        let hvLoaded = false;
-        let currentChartTicker = '';
 
-        async function fetchHistoricalVolatility() {
-            if (hvLoaded) return;
-            for (const asset of assetsData) {
+        async function fetchPrices() {
+            for(const a of assetsData) {
                 try {
-                    const res = await fetch(`https://brapi.dev/api/quote/${asset.ticker}?range=1y&interval=1d&token=${BRAPI_TOKEN}`);
-                    const data = await res.json();
-                    if (data.results?.[0]?.historicalDataPrice) {
-                        const prices = data.results[0].historicalDataPrice.map(d => d.close).filter(p => p > 0);
-                        asset.historicalPrices = prices;
-                        if (prices.length > 21) {
-                            const returns = [];
-                            for(let i=1; i<prices.length; i++) returns.push(Math.log(prices[i]/prices[i-1]));
-                            const std = Math.sqrt(returns.slice(-21).reduce((s, x) => s + x*x, 0) / 20);
-                            asset.hv = (std * Math.sqrt(252) * 100).toFixed(1);
+                    const r = await fetch(`https://brapi.dev/api/quote/${a.ticker}?range=1mo&interval=1d&token=${BRAPI_TOKEN}`);
+                    const d = await r.json();
+                    if(d.results?.[0]) {
+                        const q = d.results[0];
+                        a.price = q.regularMarketPrice;
+                        a.change = q.regularMarketChangePercent;
+                        const h = q.historicalDataPrice.map(x => x.close).filter(x => x > 0);
+                        if(h.length >= 20) {
+                            const m = h.slice(-20).reduce((s, x) => s + x, 0) / 20;
+                            const sd = Math.sqrt(h.slice(-20).reduce((s, x) => s + (x-m)**2, 0) / 19);
+                            a.bands.daily.upper = m + 2*sd;
+                            a.bands.daily.lower = m - 2*sd;
                         }
                     }
                 } catch(e) {}
             }
-            hvLoaded = true;
+            render();
         }
 
-        async function fetchRealTimePrices() {
-            for (const asset of assetsData) {
-                try {
-                    const res = await fetch(`https://brapi.dev/api/quote/${asset.ticker}?token=${BRAPI_TOKEN}`);
-                    const data = await res.json();
-                    if (data.results?.[0]) {
-                        const q = data.results[0];
-                        asset.price = q.regularMarketPrice;
-                        asset.change = q.regularMarketChangePercent;
-                        recalculateBands(asset);
-                        if(asset.bands.daily.upper > 0) {
-                            const pos = ((asset.price - asset.bands.daily.lower) / (asset.bands.daily.upper - asset.bands.daily.lower)) * 100;
-                            checkAlerts(asset, pos);
-                        }
-                    }
-                } catch(e) {}
-
-                try {
-                    const resO = await fetch(`${API_BASE_URL}/api/options/${asset.ticker}`);
-                    if (resO.ok) {
-                        const oData = await resO.json();
-                        asset.dte = oData.dte;
-                        const calls = oData.options.filter(o => o.type === 'CALL' && o.strike > asset.price);
-                        if(calls.length) asset.call = calls[0];
-                        const puts = oData.options.filter(o => o.type === 'PUT' && o.strike < asset.price);
-                        if(puts.length) asset.put = puts[0];
-                    }
-                } catch(e) {}
-            }
-            if (!eventsLoaded) {
-                for (const asset of assetsData) {
-                    try {
-                        const resE = await fetch(`${API_BASE_URL}/api/events/${asset.ticker}`);
-                        if (resE.ok) {
-                            const eData = await resE.json();
-                            asset.nextEarnings = eData.nextEarnings || '--';
-                            asset.nextDividend = eData.nextDividend;
-                        }
-                    } catch(e) {}
-                }
-                eventsLoaded = true;
-            }
-            if(!hvLoaded) await fetchHistoricalVolatility();
-            renderAssets();
-            setTimeout(fetchRealTimePrices, 60000);
-        }
-
-        function recalculateBands(asset) {
-            if (!asset.historicalPrices || asset.historicalPrices.length < 19) return;
-            const prices = [...asset.historicalPrices.slice(-19), asset.price];
-            const m = prices.reduce((a, b) => a + b, 0) / 20;
-            const s = Math.sqrt(prices.reduce((a, b) => a + Math.pow(b - m, 2), 0) / 19);
-            asset.bands.daily.upper = m + (2 * s);
-            asset.bands.daily.lower = m - (2 * s);
-            asset.bands.weekly.upper = m + (3 * s);
-            asset.bands.weekly.lower = m - (3 * s);
-        }
-
-        function renderAssets() {
-            const grid = document.getElementById('assets-grid');
-            grid.innerHTML = '';
-            assetsData.forEach(asset => {
-                const renderBand = (band) => {
-                    const pos = Math.max(0, Math.min(100, ((asset.price - band.lower) / (band.upper - band.lower)) * 100));
-                    const color = pos <= 20 ? 'bg-emerald-400' : pos >= 80 ? 'bg-rose-400' : 'bg-brand';
-                    return `
+        function render() {
+            const g = document.getElementById('assets-grid'); g.innerHTML = '';
+            for(const a of assetsData) {
+                const p = a.bands.daily.upper > a.bands.daily.lower ? Math.max(0, Math.min(100, ((a.price - a.bands.daily.lower) / (a.bands.daily.upper - a.bands.daily.lower)) * 100)) : 0;
+                const statusColor = p < 20 ? 'bg-emerald-500' : p > 80 ? 'bg-rose-500' : 'bg-brand';
+                g.innerHTML += `
+                    <div class="glass-card p-6 rounded-2xl shadow-lg">
+                        <div class="flex justify-between mb-4">
+                            <div><h3 class="text-2xl font-bold text-white">${a.ticker}</h3><p class="text-xs text-gray-500">${a.company}</p></div>
+                            <div class="text-right"><p class="text-xl font-mono font-bold">${fmtMoney(a.price)}</p><p class="text-xs font-mono \$\{a.change >= 0 ? 'text-emerald-500' : 'text-rose-500'\}">${a.change >= 0 ? '+' : ''}${a.change.toFixed(2)}%</p></div>
+                        </div>
                         <div class="mt-4">
-                            <div class="flex justify-between mb-1 text-[10px] uppercase font-bold text-gray-500"><span>${band.label}</span><span>${pos.toFixed(0)}%</span></div>
-                            <div class="w-full h-1.5 bg-dark-800 rounded-full overflow-hidden border border-dark-700/30">
-                                <div class="h-full ${color} transition-all duration-500" style="width: ${pos}%"></div>
+                            <div class="flex justify-between text-[11px] mb-2 uppercase font-bold text-gray-500"><span>Banda Diária</span><span class="${statusColor.replace('bg-', 'text-')}">${Math.round(p)}%</span></div>
+                            <div class="w-full h-2 bg-gray-800 rounded-full overflow-hidden border border-gray-700/50">
+                                <div class="h-full ${statusColor} transition-all duration-1000" style="width: ${p}%"></div>
                             </div>
-                            <div class="flex justify-between mt-1 text-[10px] font-mono text-gray-500">
-                                <span>${fmtMoney(band.lower)}</span><span>${fmtMoney(band.upper)}</span>
-                            </div>
-                        </div>`;
-                };
-
-                let strategies = '<div class="mt-4 flex flex-col gap-2">';
-                if (asset.call) strategies += `<div class="p-2 rounded bg-brand/5 border border-brand/20 flex justify-between text-xs"><span>CALL ${asset.call.code} @ ${fmtMoney(asset.call.strike)}</span><span class="font-bold text-brand">${fmtMoney(asset.call.premium)}</span></div>`;
-                if (asset.put) strategies += `<div class="p-2 rounded bg-emerald-500/5 border border-emerald-500/20 flex justify-between text-xs"><span>PUT ${asset.put.code} @ ${fmtMoney(asset.put.strike)}</span><span class="font-bold text-emerald-400">${fmtMoney(asset.put.premium)}</span></div>`;
-                strategies += '</div>';
-
-                grid.innerHTML += `
-                    <div class="glass-card rounded-2xl p-5">
-                        <div class="flex justify-between items-start mb-4">
-                            <div><h3 class="text-xl font-bold text-white">${asset.ticker}</h3><p class="text-[10px] text-gray-400 uppercase tracking-tighter">${asset.company}</p></div>
-                            <div class="text-right"><p class="text-lg font-mono font-bold">${fmtMoney(asset.price)}</p><p class="text-xs font-mono ${asset.change>=0?'text-emerald-400':'text-rose-400'}">${asset.change>=0?'+':''}${asset.change.toFixed(2)}%</p></div>
                         </div>
-                        <div class="grid grid-cols-2 gap-2 text-[10px] mb-2">
-                            <div class="p-2 rounded bg-dark-800">BALAN&Ccedil;O: ${asset.nextEarnings}</div>
-                            <div class="p-2 rounded bg-dark-800">DATA-COM: ${asset.nextDividend?.datacom || '--'}</div>
-                        </div>
-                        ${renderBand(asset.bands.daily)}
-                        ${renderBand(asset.bands.weekly)}
-                        ${strategies}
-                        <button onclick="openChart('${asset.ticker}','${asset.company}')" class="w-full mt-4 py-2 rounded-lg bg-dark-800 border border-dark-700 hover:bg-dark-700 transition-colors text-xs font-bold uppercase tracking-widest text-gray-400">Ver Gr&aacute;fico</button>
+                        <button onclick="openChart('${a.ticker}')" class="w-full mt-6 py-2.5 bg-dark-800 border border-dark-700 rounded-xl text-xs font-bold uppercase tracking-widest text-gray-400 hover:text-white hover:border-brand transition-all">Análise Técnica</button>
                     </div>`;
-            });
-        }
-
-        function updateClock() {
-            const dte = document.getElementById('dte-counter');
-            if (dte) {
-                const now = new Date();
-                let target = new Date(now.getFullYear(), now.getMonth(), 1);
-                let count = 0; while(count < 3) { if(target.getDay() === 5) count++; if(count < 3) target.setDate(target.getDate()+1); }
-                if (now > target) { target = new Date(now.getFullYear(), now.getMonth()+1, 1); count=0; while(count<3){ if(target.getDay()===5) count++; if(count<3) target.setDate(target.getDate()+1); } }
-                dte.textContent = Math.ceil((target - now)/864e5);
             }
         }
 
-        const activeAlerts = new Set();
+        function updateDTE() {
+            const d = document.getElementById('dte-counter');
+            const now = new Date();
+            let t = new Date(now.getFullYear(), now.getMonth(), 15);
+            while(t.getDay() !== 5) t.setDate(t.getDate() + 1);
+            if(now > t) { t = new Date(now.getFullYear(), now.getMonth()+1, 15); while(t.getDay() !== 5) t.setDate(t.getDate() + 1); }
+            if(d) d.textContent = Math.ceil((t - now) / 864e5);
+        }
+
         async function toggleRadar() {
-            const btn = document.getElementById('btn-radar');
-            if (btn.classList.toggle('active')) {
+            const b = document.getElementById('btn-radar');
+            if(b.classList.toggle('active')) {
                 const p = await Notification.requestPermission();
-                if (p === 'granted') new Notification("Radar Ativado", { body: "Monitorando limites das bandas." });
-                else btn.classList.remove('active');
+                if(p === 'granted') new Notification("Radar ThetaLens PRO", { body: "Monitoramento de limites ativado." });
+                else b.classList.remove('active');
             }
         }
 
-        function checkAlerts(asset, pos) {
-            const btn = document.getElementById('btn-radar');
-            if (!btn.classList.contains('active') || activeAlerts.has(asset.ticker)) return;
-            if (pos <= 5 || pos >= 95) {
-                activeAlerts.add(asset.ticker);
-                new Notification(`Alerta ${asset.ticker}`, { body: `${asset.ticker} atingiu ${pos.toFixed(0)}% da banda!` });
-                setTimeout(() => activeAlerts.delete(asset.ticker), 600000);
-            }
-        }
-
-        let chart = null;
-        async function openChart(t, c) {
-            currentChartTicker = t;
-            document.getElementById('modal-ticker').textContent = t;
-            document.getElementById('modal-company').textContent = c;
-            document.getElementById('chart-modal').classList.add('open');
-            loadChart(t, '3mo');
-        }
-
-        function closeChart() { document.getElementById('chart-modal').classList.remove('open'); }
-
-        async function loadChart(t, r) {
-            const container = document.getElementById('chart-container');
-            container.innerHTML = '';
-            document.getElementById('modal-loading').classList.remove('hidden');
+        function openChart(t) { document.getElementById('modal-ticker').textContent = t; document.getElementById('chart-modal').classList.remove('hidden'); document.getElementById('chart-modal').classList.add('flex'); loadChart(t); }
+        function closeChart() { document.getElementById('chart-modal').classList.add('hidden'); document.getElementById('chart-modal').classList.remove('flex'); }
+        async function loadChart(t) {
+            const container = document.getElementById('chart-container'); container.innerHTML = '';
             try {
-                const res = await fetch(`https://brapi.dev/api/quote/${t}?range=${r}&interval=1d&token=${BRAPI_TOKEN}`);
-                const data = await res.json();
-                const h = data.results[0].historicalDataPrice;
-                const candles = h.map(d => ({ time: d.date, open: d.open, high: d.high, low: d.low, close: d.close }));
-                chart = LightweightCharts.createChart(container, { width: container.offsetWidth, height: 340, layout: { background: { color: 'transparent' }, textColor: '#ccc' }, grid: { vertLines: { color: '#222' }, horzLines: { color: '#222' } } });
-                const series = chart.addCandlestickSeries({ upColor: '#10b981', downColor: '#ef4444', borderVisible: false, wickUpColor: '#10b981', wickDownColor: '#ef4444' });
-                series.setData(candles);
+                const r = await fetch(`https://brapi.dev/api/quote/${t}?range=3mo&interval=1d&token=${BRAPI_TOKEN}`);
+                const d = await r.json();
+                const h = d.results[0].historicalDataPrice;
+                const chart = LightweightCharts.createChart(container, { width: container.offsetWidth, height: 400, layout: { background: { color: 'transparent' }, textColor: '#ccc' }, grid: { vertLines: { color: '#222' }, horzLines: { color: '#222' } } });
+                const s = chart.addCandlestickSeries({ upColor: '#10b981', downColor: '#ef4444', borderVisible: false });
+                s.setData(h.map(x => ({ time: x.date, open: x.open, high: x.high, low: x.low, close: x.close })));
                 chart.timeScale().fitContent();
             } catch(e) {}
-            document.getElementById('modal-loading').classList.add('hidden');
         }
 
-        setInterval(updateClock, 1000);
-        updateClock();
-        fetchRealTimePrices();
+        updateDTE(); setInterval(updateDTE, 60000); fetchPrices();
     </script>
 </body>
 </html>

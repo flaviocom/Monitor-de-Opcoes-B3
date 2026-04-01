@@ -510,7 +510,7 @@
             return `${base}${letter}${strikePrefix}0`; 
         }
 
-        function suggestOperation(type, ticker, strike, sma20, price, premium) {
+        async function suggestOperation(type, ticker, strike, sma20, price, premium) {
             const ops = loadOperations();
             const today = new Date().toISOString().split('T')[0];
             const duplicate = ops.find(o => o.ticker === ticker && o.tipo === type && o.dataEntrada.startsWith(today));
@@ -519,7 +519,19 @@
                 return;
             }
 
-            const estCode = estimateOptionTicker(ticker, type, strike);
+            let estCode = estimateOptionTicker(ticker, type, strike);
+            
+            try {
+                // Inteligência: Tenta buscar na grade exata via Robô Backend (server.js)
+                const res = await fetch(`http://localhost:3000/api/opcoesnet/${ticker}?strike=${strike}&type=${type}`);
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.bestMatch) estCode = data.bestMatch;
+                }
+            } catch(e) {
+                console.warn('Backend indisponível. Usando modelo estimado alfabeticamente.');
+            }
+
             const userCode = prompt(`Registrando ${type} (Strike próximo a R$ ${strike.toFixed(2)}).\nQual o CÓDIGO EXATO (Ticker) da opção que você armou na corretora?`, estCode);
             if (userCode === null) return; // Se cancelar o prompt
             const finalCode = userCode.trim().toUpperCase() || estCode;

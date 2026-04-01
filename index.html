@@ -172,6 +172,11 @@
                     <button id="radar-toggle" onclick="radarActive=!radarActive;this.classList.toggle('text-rose-400');this.classList.toggle('text-emerald-400');if(radarActive)Notification.requestPermission();" class="text-[11px] font-bold text-emerald-400 tracking-widest uppercase flex items-center gap-1 cursor-pointer hover:bg-white/5 px-2 py-0.5 rounded transition"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg> RADAR</button>
                     <div class="border-l border-dark-700/50 h-4 mx-1"></div>
                     <span class="text-[11px] font-bold text-brand-purple tracking-widest uppercase flex items-center gap-1"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg> DTE: <span id="dte-counter" class="text-white font-mono ml-1">--</span></span>
+                    <div class="border-l border-dark-700/50 h-4 mx-1"></div>
+                    <span id="market-status" class="text-[11px] font-bold text-gray-500 tracking-widest uppercase flex items-center gap-1">
+                        <span id="market-dot" class="w-2 h-2 rounded-full bg-gray-600 inline-block"></span>
+                        <span id="market-label">---</span>
+                    </span>
                 </div>
             </div>
         </div>
@@ -410,18 +415,9 @@
                                     asset.price = quote.regularMarketPrice;
                                     asset.change = quote.regularMarketChangePercent || 0;
                                     
-                                    // Bollinger Live Sync — 20 períodos (19 SMA + preço atual)
-                                    if (asset.bands && offset !== 0) {
-                                        const closes = Array(19).fill(asset.sma200);
-                                        closes.push(asset.price);
-                                        const mean = closes.reduce((a,b) => a+b) / 20;
-                                        asset.sma200 = mean;
-                                        const std = Math.sqrt(closes.map(x => Math.pow(x-mean,2)).reduce((a,b)=>a+b) / 20);
-                                        asset.bands.daily.upper = mean + 2*std;
-                                        asset.bands.daily.lower = mean - 2*std;
-                                        asset.bands.weekly.upper += offset;
-                                        asset.bands.weekly.lower += offset;
-                                        const pos = Math.max(0,Math.min(100,((asset.price-asset.bands.daily.lower)/(asset.bands.daily.upper-asset.bands.daily.lower))*100));
+                                    // Radar check com dados reais de BB (calculados pelo fetchBollingerBands)
+                                    if (asset.bands && asset.bands.daily.upper && asset.bands.daily.lower) {
+                                        const pos = Math.max(0, Math.min(100, ((asset.price - asset.bands.daily.lower) / (asset.bands.daily.upper - asset.bands.daily.lower)) * 100));
                                         checkRadarAlerts(asset, pos);
                                     }
                                 }
@@ -491,8 +487,8 @@
             } catch (error) {
                 console.error("Erro no Sync B3:", error);
             } finally {
-                // Schedule next call AFTER this one finishes (prevents interval pile-up and freezes)
-                setTimeout(fetchRealTimePrices, 5000);
+                // Refresh de preços a cada 60s (seguro para plano free do Brapi)
+                setTimeout(fetchRealTimePrices, 60000);
             }
         }
 
@@ -505,37 +501,55 @@
                 const changeColor = asset.change >= 0 ? 'text-emerald-400' : 'text-rose-400';
                 const changeIcon = asset.change >= 0 ? '↑' : '↓';
                 
-                // Helper para renderizar a barra de progresso (Banda de Bollinger)
+                // Helper para renderizar a barra de progresso (Banda de Bollinger REAL)
                 const renderBand = (band, isDaily) => {
-                    const pos = Math.max(0, Math.min(100, ((asset.price - band.lower) / (band.upper - band.lower)) * 100));
+                    const safeRange = (band.upper - band.lower) > 0 ? (band.upper - band.lower) : 1;
+                    const pos = Math.max(0, Math.min(100, ((asset.price - band.lower) / safeRange) * 100));
                     const fillColor = pos <= 25 ? 'bg-emerald-400' : pos >= 75 ? 'bg-rose-500' : 'bg-brand/80';
                     const markerGlow = pos <= 25 ? 'shadow-[0_0_10px_#34d399]' : pos >= 75 ? 'shadow-[0_0_10px_#f43f5e]' : 'shadow-[0_0_8px_white]';
+                    const posColor = pos <= 25 ? 'text-emerald-400' : pos >= 75 ? 'text-rose-400' : 'text-sky-400';
+                    const zoneLabel = pos <= 25 ? '\u2193 Sobrevendida' : pos >= 75 ? '\u2191 Sobrecomprada' : '\u2194 Neutra';
+
+                    // SMA20 (a linha verde do ProfitPro) — apenas na banda diária
+                    const sma20 = isDaily ? band.sma20 : null;
+                    const smaPos = sma20 ? Math.max(0, Math.min(100, ((sma20 - band.lower) / safeRange) * 100)) : null;
 
                     // Tooltip educativo (apenas na banda diária)
                     const tooltipBlock = isDaily ? `
-                        <div class="mt-3 p-2.5 rounded-lg bg-dark-800/70 border border-dark-600/50 text-[11px] text-gray-400 leading-relaxed">
+                        <div class="mt-2 p-2.5 rounded-lg bg-dark-800/70 border border-dark-600/50 text-[11px] text-gray-400 leading-relaxed">
                             <span class="font-bold text-gray-300 block mb-1 flex items-center gap-1">
                                 <svg class="w-3 h-3 text-brand" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                                Bandas de Retração
+                                Bollinger Bands (20, 2\u03c3) — idêntico ao ProfitPro
                             </span>
-                            <span class="text-gray-500">O preço oscila entre essas faixas. Extremos indicam prováveis reversões (sobrecomprado ou sobrevendido).</span>
+                            <span class="text-gray-500">Calculado com os \u00faltimos 20 fechamentos reais. Linha azul = SMA20 (linha verde do ProfitPro).</span>
                         </div>` : '';
 
                     return `
                         <div class="mt-4">
-                            <div class="flex justify-between items-end mb-2">
-                                <span class="text-xs font-semibold uppercase tracking-wider text-gray-400">${band.label}</span>
-                                <span class="text-xs font-mono text-gray-300">Vol ${asset.iv}% <span class="text-[10px] ml-1 px-1.5 py-0.5 rounded ${asset.ivRank > 50 ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-rose-500/20 text-rose-400 border border-rose-500/30'}">Rk: ${asset.ivRank}</span></span>
+                            <div class="flex justify-between items-center mb-1.5">
+                                <div class="flex items-center gap-1.5">
+                                    <span class="text-xs font-semibold uppercase tracking-wider text-gray-400">${band.label}</span>
+                                    <span class="text-[9px] font-bold text-brand/70 border border-brand/20 rounded px-1 py-0.5">BB 20,2\u03c3</span>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <span class="text-[9px] font-bold ${posColor} border border-current/30 rounded px-1 py-0.5">${zoneLabel}</span>
+                                    <span class="text-[11px] font-mono text-gray-400">IV ${asset.iv}% <span class="text-[10px] ml-1 px-1 py-0.5 rounded ${asset.ivRank > 50 ? 'bg-emerald-500/20 text-emerald-400' : 'bg-rose-500/20 text-rose-400'}">Rk${asset.ivRank}</span></span>
+                                </div>
                             </div>
-                            <div class="w-full h-2 bg-dark-700 rounded-full overflow-hidden relative">
-                                <div class="absolute top-0 left-0 h-full ${fillColor} opacity-80 transition-all duration-300" style="width: ${pos}%;"></div>
-                                <!-- Marcador do Preço Atual -->
-                                <div class="absolute top-0 h-full w-1 bg-white ${markerGlow} z-10 transition-all duration-500 ease-out" style="left: calc(${pos}% - 2px);"></div>
+                            <!-- Escala de preços real (como escala lateral do ProfitPro) -->
+                            <div class="flex justify-between items-center text-[11px] font-mono mb-1">
+                                <span class="text-emerald-400/90 font-bold">\u25bc ${fmtMoney(band.lower)}</span>
+                                ${sma20 ? `<span class="text-sky-400 font-medium">SMA20: ${fmtMoney(sma20)}</span>` : '<span></span>'}
+                                <span class="text-rose-400/90 font-bold">${fmtMoney(band.upper)} \u25b2</span>
                             </div>
-                            <div class="flex justify-between mt-1 text-[11px] font-mono text-gray-500">
-                                <span>Mín: ${fmtMoney(band.lower)}</span>
-                                <span class="text-gray-400">${pos.toFixed(0)}% da banda</span>
-                                <span>Máx: ${fmtMoney(band.upper)}</span>
+                            <!-- Barra de posição com marcador SMA20 -->
+                            <div class="w-full h-3 bg-dark-700 rounded-full overflow-hidden relative">
+                                <div class="absolute top-0 left-0 h-full ${fillColor} opacity-70 transition-all duration-700" style="width: ${pos}%;"></div>
+                                ${smaPos !== null ? `<div class="absolute top-0 h-full w-0.5 bg-sky-400/60 z-10" style="left: ${smaPos}%;"></div>` : ''}
+                                <div class="absolute top-0 h-full w-1 bg-white ${markerGlow} z-20 transition-all duration-500 ease-out" style="left: calc(${pos}% - 2px);"></div>
+                            </div>
+                            <div class="flex justify-center mt-1">
+                                <span class="text-[12px] font-mono font-bold ${posColor}">${pos.toFixed(0)}% da banda</span>
                             </div>
                             ${tooltipBlock}
                         </div>
@@ -726,6 +740,84 @@
             });
         }
 
+        // =======================================================
+        // MOTOR BOLLINGER REAL — Calcula BB(20, 2σ) com histórico real
+        // =======================================================
+        let bbLastFetch = 0;
+        const BB_REFRESH_MS = 5 * 60 * 1000; // 5 minutos
+
+        function isMarketOpen() {
+            const now = new Date();
+            const brt = new Date(now.toLocaleString('en-US', { timeZone: 'America/Sao_Paulo' }));
+            const h = brt.getHours(), m = brt.getMinutes(), day = brt.getDay();
+            if (day === 0 || day === 6) return false;
+            const t = h * 60 + m;
+            return t >= 10 * 60 && t <= 17 * 60 + 30;
+        }
+
+        function updateMarketStatusBadge() {
+            const dot = document.getElementById('market-dot');
+            const label = document.getElementById('market-label');
+            const status = document.getElementById('market-status');
+            if (!dot || !label) return;
+            if (isMarketOpen()) {
+                dot.className = 'w-2 h-2 rounded-full bg-emerald-400 inline-block animate-pulse';
+                label.textContent = 'AO VIVO';
+                if (status) { status.classList.remove('text-gray-500'); status.classList.add('text-emerald-400'); }
+            } else {
+                dot.className = 'w-2 h-2 rounded-full bg-gray-600 inline-block';
+                label.textContent = 'Fechado';
+                if (status) { status.classList.remove('text-emerald-400'); status.classList.add('text-gray-500'); }
+            }
+        }
+
+        async function fetchBollingerBands(force = false) {
+            const now = Date.now();
+            if (!force && now - bbLastFetch < BB_REFRESH_MS && bbLastFetch > 0) return;
+            console.log('🔵 ThetaLens BB: Calculando Bandas de Bollinger reais (20,2σ)...');
+            for (const asset of assetsData) {
+                try {
+                    const url = `https://brapi.dev/api/quote/${asset.ticker}?range=1mo&interval=1d&token=${BRAPI_TOKEN}`;
+                    const resp = await fetch(url);
+                    if (!resp.ok) { console.warn(`BB: ${asset.ticker} HTTP ${resp.status}`); continue; }
+                    const json = await resp.json();
+
+                    // Atualiza preço atual da resposta histórica
+                    const quote = json?.results?.[0];
+                    if (quote?.regularMarketPrice) {
+                        asset.price = quote.regularMarketPrice;
+                        asset.change = quote.regularMarketChangePercent || 0;
+                    }
+
+                    // Calcula BB(20, 2σ) com fechamentos reais
+                    const history = json?.results?.[0]?.historicalDataPrice;
+                    if (!history || history.length < 5) continue;
+                    const closes = history.filter(d => d.close && d.close > 0).map(d => d.close).slice(-20);
+                    if (closes.length < 5) continue;
+
+                    const n = closes.length;
+                    const mean = closes.reduce((a, b) => a + b) / n;
+                    const variance = closes.map(x => Math.pow(x - mean, 2)).reduce((a, b) => a + b) / n;
+                    const std = Math.sqrt(variance);
+
+                    asset.bands.daily.upper  = parseFloat((mean + 2 * std).toFixed(2));
+                    asset.bands.daily.lower  = parseFloat((mean - 2 * std).toFixed(2));
+                    asset.bands.daily.sma20  = parseFloat(mean.toFixed(2));
+
+                    const pos = Math.max(0, Math.min(100, ((asset.price - asset.bands.daily.lower) / (asset.bands.daily.upper - asset.bands.daily.lower)) * 100));
+                    console.log(`✅ ${asset.ticker} | Preço: ${fmtMoney(asset.price)} | BB\u25bc ${fmtMoney(asset.bands.daily.lower)} | SMA20 ${fmtMoney(asset.bands.daily.sma20)} | BB\u25b2 ${fmtMoney(asset.bands.daily.upper)} | Pos: ${pos.toFixed(0)}%`);
+                    checkRadarAlerts(asset, pos);
+
+                } catch(e) { console.warn(`BB fetch error ${asset.ticker}:`, e.message); }
+                await new Promise(r => setTimeout(r, 400));
+            }
+            bbLastFetch = Date.now();
+            initialLoad = false;
+            renderAssets();
+            console.log('✅ ThetaLens BB: Bandas atualizadas! Próxima atualização em 5 minutos.');
+            setTimeout(fetchBollingerBands, BB_REFRESH_MS);
+        }
+
         // Relógio Real-time simulando terminal quantitativo
         function updateClock() {
             const now = new Date();
@@ -760,9 +852,14 @@
         renderAssets();
         setInterval(updateClock, 1000);
         updateClock();
+        updateMarketStatusBadge();
+        setInterval(updateMarketStatusBadge, 30000);
 
-        // Dispara a busca inicial de preços com recursividade inteligente (evita travamentos)
-        fetchRealTimePrices();
+        // 1º) Motor BB Real — calcula bandas corretas com histórico (prioridade máxima)
+        fetchBollingerBands(true);
+
+        // 2º) Refresh de preços leve a cada 60s (após delay inicial para não sobrecarregar API)
+        setTimeout(fetchRealTimePrices, 8000);
 
         // ===================================================
         // GRÁFICO DE CANDLES — Lightweight Charts TradingView

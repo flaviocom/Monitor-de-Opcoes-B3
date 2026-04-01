@@ -244,29 +244,33 @@
 <body class="bg-[#030712] text-gray-200 antialiased selection:bg-brand selection:text-white min-h-screen">
 
     <!-- Top Navigation -->
-    <nav class="sticky top-0 z-50 glass-card border-b border-dark-700/50 px-6 py-4">
-        <div class="max-w-7xl mx-auto flex justify-between items-center">
-            <div class="flex items-center gap-3">
-                <img src="logo.png" alt="Logotipo Plataforma" class="w-10 h-10 object-contain rounded-lg shadow-lg shadow-brand/20 border border-dark-700/50" />
-                <div>
-                    <h1 class="text-xl font-bold tracking-tight text-white flex items-center gap-2">
-                        <span id="platform-name">ThetaLens</span> <span class="badge-pro text-sm uppercase tracking-widest border border-brand-gold/30 px-2 py-0.5 rounded ml-1">PRO</span>
-                    </h1>
-                    <p class="text-xs text-gray-400">Terminal de Inteligência Quantitativa</p>
+    <nav class="sticky top-0 z-50 glass-card border-b border-dark-700/50 px-4 py-3 md:px-6 md:py-4">
+        <div class="max-w-7xl mx-auto">
+            <!-- Linha principal: Logo + Controles -->
+            <div class="flex justify-between items-center">
+                <div class="flex items-center gap-3">
+                    <img src="logo.png" alt="Logotipo Plataforma" class="w-14 h-14 object-contain rounded-xl shadow-lg shadow-brand/20 border border-dark-700/50" />
+                    <div>
+                        <h1 class="text-xl font-bold tracking-tight text-white flex items-center gap-2">
+                            <span id="platform-name">ThetaLens</span> <span class="badge-pro text-sm uppercase tracking-widest border border-brand-gold/30 px-2 py-0.5 rounded ml-1">PRO</span>
+                        </h1>
+                        <p class="text-xs text-gray-400">Terminal de Inteligência Quantitativa</p>
+                    </div>
                 </div>
-            </div>
-            
-            <div class="flex items-center gap-6">
-                <div class="hidden md:flex items-center gap-4 text-sm font-medium text-gray-400">
-                    <span class="flex items-center gap-1.5 hover:text-white cursor-pointer transition-colors"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg> Screener</span>
-                    <span class="flex items-center gap-1.5 hover:text-white cursor-pointer transition-colors"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg> Estratégias</span>
-                </div>
-                <div class="flex items-center gap-2 px-3 py-1.5 rounded-md bg-dark-800/80 border border-brand-purple/30 shadow-inner">
-                    <button id="radar-toggle" onclick="radarActive=!radarActive;this.classList.toggle('text-rose-400');this.classList.toggle('text-emerald-400');if(radarActive)Notification.requestPermission();" class="text-[11px] font-bold text-emerald-400 tracking-widest uppercase flex items-center gap-1 cursor-pointer hover:bg-white/5 px-2 py-0.5 rounded transition"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg> RADAR</button>
-                    <div class="border-l border-dark-700/50 h-4 mx-1"></div>
-                    <span class="text-[11px] font-bold text-brand-purple tracking-widest uppercase flex items-center gap-1"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg> DTE: <span id="dte-counter" class="text-white font-mono ml-1">--</span></span>
-                    <div class="border-l border-dark-700/50 h-4 mx-1"></div>
-                    <span id="market-status" class="text-[11px] font-bold text-gray-500 tracking-widest uppercase flex items-center gap-1">
+                
+                <!-- Controles: visíveis em todas as telas, mas abaixo em mobile -->
+                <div class="flex items-center gap-2 px-2 py-1.5 rounded-md bg-dark-800/80 border border-brand-purple/30 shadow-inner text-[10px] md:text-[11px]">
+                    <button id="radar-toggle" onclick="radarActive=!radarActive;this.classList.toggle('text-rose-400');this.classList.toggle('text-emerald-400');if(radarActive)Notification.requestPermission();" class="font-bold text-emerald-400 tracking-widest uppercase flex items-center gap-1 cursor-pointer hover:bg-white/5 px-1.5 py-0.5 rounded transition" title="Ativar/desativar alertas push quando o preço tocar as Bandas de Bollinger">
+                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
+                        RADAR
+                    </button>
+                    <div class="border-l border-dark-700/50 h-4 mx-0.5"></div>
+                    <span class="font-bold text-brand-purple tracking-widest uppercase flex items-center gap-1" title="Dias para o Terraço (DTE): dias úteis até o vencimento das opções mensais da B3 (3ª sexta-feira do mês)">
+                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        DTE: <span id="dte-counter" class="text-white font-mono ml-0.5">--</span>
+                    </span>
+                    <div class="border-l border-dark-700/50 h-4 mx-0.5"></div>
+                    <span id="market-status" class="font-bold text-gray-500 tracking-widest uppercase flex items-center gap-1">
                         <span id="market-dot" class="w-2 h-2 rounded-full bg-gray-600 inline-block"></span>
                         <span id="market-label">---</span>
                     </span>
@@ -381,18 +385,19 @@
     </div>
 
     <script>
-        // Dados Mockados de Alta Fidelidade com "Greeks" e IV (Implied Volatility)
+        // Dados Mockados de Alta Fidelidade — Valores exibidos enquanto o backend carrega dados reais
         const assetsData = [
             {
                 ticker: 'PETR4',
                 company: 'Petrobras',
-                nextEarnings: '15 Mai 2026',
-                nextDividend: { label: 'DIVIDENDO', value: 1.15, datacom: '28 Fev 2026' },
+                nextEarnings: '13 Mai 2026',
+                nextDividend: { label: 'DIVIDENDO', value: 1.15, datacom: '22 Dez 2025', diasParaDataCom: -100 },
                 price: 38.45,
                 change: 1.25,
                 iv: 34.2,
                 ivRank: 82,
                 sma200: 35.15,
+                fundamentals: { vpa: 26.48, lpa: 5.82, grahamPrice: 58.73, dy: 12.4, pvp: 1.45 },
                 bands: {
                     daily: { upper: 40.50, lower: 36.10, label: 'Curto Prazo (Diário)' },
                     weekly: { upper: 42.20, lower: 33.90, label: 'Longo Prazo (Semanal)' }
@@ -403,13 +408,14 @@
             {
                 ticker: 'VALE3',
                 company: 'Vale S.A.',
-                nextEarnings: '25 Jul 2026',
-                nextDividend: { label: 'DIVIDENDO', value: 2.73, datacom: '15 Mar 2026' },
+                nextEarnings: '22 Jul 2026',
+                nextDividend: { label: 'DIVIDENDO', value: 2.73, datacom: '15 Mar 2026', diasParaDataCom: -17 },
                 price: 61.30,
                 change: -2.10,
                 iv: 29.8,
                 ivRank: 15,
                 sma200: 65.80,
+                fundamentals: { vpa: 54.12, lpa: 8.91, grahamPrice: 104.20, dy: 8.1, pvp: 1.13 },
                 bands: {
                     daily: { upper: 65.10, lower: 60.50, label: 'Curto Prazo (Diário)' },
                     weekly: { upper: 68.20, lower: 58.80, label: 'Longo Prazo (Semanal)' }
@@ -420,13 +426,14 @@
             {
                 ticker: 'BBAS3',
                 company: 'Banco do Brasil',
-                nextEarnings: '04 Ago 2026',
-                nextDividend: { label: 'JCP', value: 0.45, datacom: '03 Mar 2026' },
+                nextEarnings: '12 Ago 2026',
+                nextDividend: { label: 'JCP', value: 0.45, datacom: '03 Mar 2026', diasParaDataCom: -29 },
                 price: 23.00,
                 change: 2.68,
                 iv: 22.1,
                 ivRank: 45,
                 sma200: 25.50,
+                fundamentals: { vpa: 32.15, lpa: 4.80, grahamPrice: 59.07, dy: 11.2, pvp: 0.72 },
                 bands: {
                     daily: { upper: 24.35, lower: 21.65, label: 'Curto Prazo (Diário)' },
                     weekly: { upper: 25.85, lower: 19.85, label: 'Longo Prazo (Semanal)' }
@@ -437,13 +444,14 @@
             {
                 ticker: 'ITUB4',
                 company: 'Itaú Unibanco',
-                nextEarnings: '08 Ago 2026',
-                nextDividend: { label: 'JCP', value: 0.017, datacom: '29 Fev 2026' },
+                nextEarnings: '06 Ago 2026',
+                nextDividend: { label: 'JCP', value: 0.017, datacom: '29 Fev 2026', diasParaDataCom: -32 },
                 price: 34.22,
                 change: -0.15,
                 iv: 20.5,
                 ivRank: 38,
                 sma200: 31.90,
+                fundamentals: { vpa: 22.10, lpa: 4.22, grahamPrice: 45.82, dy: 3.8, pvp: 1.55 },
                 bands: {
                     daily: { upper: 35.98, lower: 32.39, label: 'Curto Prazo (Diário)' },
                     weekly: { upper: 36.20, lower: 30.80, label: 'Longo Prazo (Semanal)' }
@@ -461,6 +469,7 @@
                 iv: 65.4,
                 ivRank: 92,
                 sma200: 105.50,
+                fundamentals: null,
                 bands: {
                     daily: { upper: 145.20, lower: 125.10, label: 'Curto Prazo (Diário)' },
                     weekly: { upper: 155.00, lower: 110.50, label: 'Longo Prazo (Semanal)' }
@@ -1191,30 +1200,38 @@
                             </div>
                         </div>
 
-                        <!-- Eventos Corporativos -->
+                        <!-- Eventos Corporativos + IV Rank -->
                         <div class="grid grid-cols-2 gap-3 mb-4">
                             <!-- Balanço -->
-                            <div class="p-3 rounded-lg bg-dark-800 border-l-2 border-l-brand-purple border-t border-r border-b border-white/5 flex flex-col justify-center relative overflow-hidden group">
+                            <div class="p-3 rounded-lg bg-dark-800 border-l-2 border-l-brand-purple border-t border-r border-b border-white/5 flex flex-col justify-center relative overflow-hidden group" data-tooltip="Próximo resultado trimestral/anual da empresa. Divulgações de balanço podem causar forte volatilidade no ativo. Evite vender opções com vencimento APÓS o balanço sem proteção.">
                                 <div class="absolute -right-4 -top-4 w-12 h-12 bg-brand-purple/5 rounded-full group-hover:scale-150 transition-transform duration-500"></div>
                                 <span class="text-[10px] font-bold uppercase tracking-wider text-brand-purple/90 mb-1 flex items-center gap-1"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg> Próx. Balanço</span>
-                                <span class="text-sm font-mono font-medium text-gray-200">${asset.nextEarnings}</span>
+                                <span class="text-sm font-mono font-medium text-gray-200">${asset.nextEarnings || '--'}</span>
                             </div>
                             
-                            <!-- Dividendos (Data-Com via Investidor10) -->
-                            <div class="p-3 rounded-lg bg-dark-800 border-l-2 border-l-emerald-500 border-t border-r border-b border-white/5 flex flex-col justify-center relative overflow-hidden group hover:bg-emerald-500/5 transition-colors" data-tooltip="Data Com: último dia para ter direito ao dividendo. No dia seguinte (Ex), o valor é subtraído do preço de abertura. Atenção ao operar próximo desta data!">
-                                <div class="absolute -right-4 -top-4 w-12 h-12 bg-emerald-500/5 rounded-full group-hover:scale-150 transition-transform duration-500"></div>
-                                <span class="text-[10px] font-bold uppercase tracking-wider text-emerald-400 mb-1 flex items-center gap-1"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg> ${asset.nextDividend ? asset.nextDividend.label : 'DIVIDENDOS'}</span>
-                                <span class="flex flex-col">
-                                    <span class="text-sm font-mono font-bold text-emerald-400">${asset.nextDividend ? fmtMoney(asset.nextDividend.value) : 'R$ --'}</span>
-                                    ${asset.nextDividend && asset.nextDividend.datacom ? `
-                                        <span class="text-[9px] text-gray-400 uppercase tracking-widest mt-0.5">Com: ${asset.nextDividend.datacom}</span>
-                                        ${asset.nextDividend.diasParaDataCom !== undefined ? `
-                                            <span class="text-[9px] font-bold mt-1 ${asset.nextDividend.diasParaDataCom <= 10 ? 'text-rose-400' : 'text-amber-400'}">⏱ ${asset.nextDividend.diasParaDataCom > 0 ? `${asset.nextDividend.diasParaDataCom} dias` : 'Passou'}</span>
-                                        ` : ''}
-                                    ` : '<span class="text-[9px] text-gray-600 mt-0.5">Sem previsão declarada</span>'}
-                                </span>
+                            <!-- Dividendos (Data-Com) + IV Rank em linha -->
+                            <div class="flex flex-col gap-2">
+                                <!-- IV Rank -->
+                                <div class="px-2 py-1.5 rounded-lg bg-dark-800 border border-white/5 flex items-center gap-2" data-tooltip="IV Rank: compara a Volatilidade Implícita (IV) atual com os últimos 252 pregões. IV Rank > 50: prêmios GORDOS — ótimo para vender opções. IV Rank < 30: prêmios MAGROS — evite vender.">
+                                    <span class="text-[9px] font-bold uppercase tracking-widest text-gray-500">IV</span>
+                                    <span class="font-mono text-xs font-bold text-gray-300">${asset.iv}%</span>
+                                    <span class="text-[10px] font-bold uppercase ml-auto px-1.5 py-0.5 rounded ${asset.ivRank > 50 ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-rose-500/20 text-rose-400 border border-rose-500/30'}" data-tooltip="IV Rank ${asset.ivRank}%: ${asset.ivRank > 50 ? 'Favorável para venda de prêmio!' : 'Prêmios baixos, cuidado.'}">Rank ${asset.ivRank}</span>
+                                </div>
+                                <!-- Dividendos -->
+                                <div class="flex-1 px-2 py-1.5 rounded-lg bg-dark-800 border-l-2 border-l-emerald-500 border-t border-r border-b border-white/5 flex flex-col justify-center" data-tooltip="Data Com: último dia para ter direito ao dividendo. No dia seguinte (Ex-Dividendo), o valor é descontado do preço de abertura. ATENÇÃO: pode afetar opções ATM e ITM!">
+                                    <span class="text-[9px] font-bold uppercase tracking-wider text-emerald-400 mb-0.5 flex items-center gap-1"><svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>${asset.nextDividend ? asset.nextDividend.label : 'DIVIDENDO'}</span>
+                                    <span class="flex items-center gap-2 flex-wrap">
+                                        <span class="text-sm font-mono font-bold text-emerald-400">${asset.nextDividend ? fmtMoney(asset.nextDividend.value) : 'R$ --'}</span>
+                                        ${asset.nextDividend && asset.nextDividend.datacom ? `<span class="text-[8px] text-gray-500 uppercase">Com: ${asset.nextDividend.datacom}</span>` : '<span class="text-[8px] text-gray-600">Sem previsão</span>'}
+                                    </span>
+                                    ${asset.nextDividend && asset.nextDividend.diasParaDataCom !== undefined ? `
+                                        <span class="text-[8px] font-bold mt-0.5 ${asset.nextDividend.diasParaDataCom > 0 && asset.nextDividend.diasParaDataCom <= 10 ? 'text-rose-400' : asset.nextDividend.diasParaDataCom > 0 ? 'text-amber-400' : 'text-gray-600'}">
+                                            ${asset.nextDividend.diasParaDataCom > 0 ? `⏱ Em ${asset.nextDividend.diasParaDataCom} dias` : '✓ Data Com encerrada'}
+                                        </span>` : ''}
+                                </div>
                             </div>
                         </div>
+
 
                         <!-- Indicador Situação Preço Longo Prazo MM200 -->
                         <div class="flex items-center gap-2 mb-2 p-2 rounded bg-dark-800/50 border border-dark-700/50">

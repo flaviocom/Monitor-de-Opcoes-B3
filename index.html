@@ -5,10 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Monitor de Opções B3 PRO | Antigravity</title>
     
-    <!-- Fonts: Inter for clean UI, JetBrains Mono for numbers -->
+    <!-- Fonts: Inter for clean UI, JetBrains Mono for numbers, Outfit for UI/UX Pro Max titles -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Outfit:wght@400;500;700&display=swap" rel="stylesheet">
     
     <!-- Tailwind CSS (via CDN para prototipagem rápida e visual premium) -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -22,18 +22,19 @@
                     fontFamily: {
                         sans: ['Inter', 'sans-serif'],
                         mono: ['JetBrains Mono', 'monospace'],
+                        title: ['Outfit', 'sans-serif'],
                     },
                     colors: {
                         dark: {
-                            900: '#030712', // Background
-                            800: '#111827', // Cards
-                            700: '#1f2937', // Borders
-                            600: '#374151',
+                            900: '#0b0e11', // Background terminal
+                            800: '#161b22', // Cards
+                            700: '#30363d', // Borders
+                            600: '#848d95',
                         },
                         brand: {
-                            DEFAULT: '#3b82f6', // Premium Blue
-                            purple: '#8b5cf6',   // Pro accent
-                            gold: '#f59e0b',     // Premium tag
+                            DEFAULT: '#00c805', // Verde Premium
+                            purple: '#00c805',   // Extinto roxo, substituído por verde para o dark theme
+                            gold: '#2ecc71',     // Acentos esmeralda   
                         }
                     },
                     animation: {
@@ -54,25 +55,25 @@
     <style>
         /* ===== DESIGN TOKENS — SISTEMA DE TEMAS DUAL ===== */
         :root {
-            /* TEMA ESCURO: Verde Profundo & Marfim (Premium Financeiro) */
-            --bg-900: #060F09;
-            --bg-800: #0F2A1D;
-            --bg-700: #1A3D28;
-            --bg-600: #2A5C3F;
-            --accent:  #C2A878;
-            --accent-rgb: 194, 168, 120;
-            --text-primary: #F5F1E8;
-            --text-secondary: #8BA090;
-            --text-muted: #4A6055;
-            --card-bg: rgba(15, 42, 29, 0.72);
-            --border: rgba(194, 168, 120, 0.12);
-            --border-strong: rgba(194, 168, 120, 0.28);
+            /* TEMA ESCURO: Terminal Trading (Deep Green Dark) */
+            --bg-900: #0b0e11;
+            --bg-800: #161b22;
+            --bg-700: #30363d;
+            --bg-600: #848d95;
+            --accent: #00c805;
+            --accent-rgb: 0, 200, 5;
+            --text-primary: #ffffff;
+            --text-secondary: #848d95;
+            --text-muted: #5e6872;
+            --card-bg: rgba(22, 27, 34, 0.6);
+            --border: rgba(48, 54, 61, 0.4);
+            --border-strong: rgba(0, 200, 5, 0.4);
             --gain: #2ECC71;
             --loss: #E74C3C;
-            --brand: #3D9E71;
-            --nav-bg: rgba(6, 15, 9, 0.97);
-            --capital-bg: rgba(8, 18, 12, 0.93);
-            --modal-bg: rgba(6, 15, 9, 0.97);
+            --brand: #00c805;
+            --nav-bg: rgba(11, 14, 17, 0.85);
+            --capital-bg: rgba(22, 27, 34, 0.75);
+            --modal-bg: rgba(11, 14, 17, 0.95);
             --warning-bg: rgba(231, 76, 60, 0.08);
             --warning-border: rgba(231, 76, 60, 0.25);
         }
@@ -114,20 +115,29 @@
 
         .glass-card {
             background: var(--card-bg);
-            backdrop-filter: blur(18px);
-            -webkit-backdrop-filter: blur(18px);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
             border: 1px solid var(--border);
-            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.08);
-            transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+            border-left: 4px solid var(--brand); /* Destaque direcional verde pedido */
+            border-radius: 16px; /* Raios generosos do "ui-ux-pro-max" */
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.05); /* Sombra mais dissipada */
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         .glass-card:hover {
             transform: translateY(-2px);
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.12);
+            box-shadow: 0 10px 40px rgba(0, 200, 5, 0.05); /* Sombra que puxa pro verde claro ao sobrevoar */
             border-color: var(--border-strong);
+            border-left: 4px solid var(--accent);
         }
         html.light .glass-card {
+            border-left: 1px solid var(--border); /* No claro desativa borda verde lateral grossa, preserva elegância marrom */
+            border-radius: 12px;
             box-shadow: 0 2px 16px rgba(0,0,0,0.06), 0 1px 4px rgba(0,0,0,0.04);
+        }
+        html.light .glass-card:hover {
+            border-color: var(--border-strong);
+            border-left: 2px solid var(--accent);
         }
 
         .badge-pro {

@@ -427,7 +427,8 @@
             transition: max-height 0.4s cubic-bezier(0.4,0,0.2,1), opacity 0.3s ease, padding 0.3s ease;
         }
         .band-body.expanded {
-            max-height: 400px; /* Suficiente para a barra visual e tooltips */
+            max-height: 600px; /* Suficiente para a barra visual e tooltips */
+            overflow: visible; /* CRÍTICO: permite tooltip transbordar */
             opacity: 1;
             padding-bottom: 12px;
         }
@@ -459,9 +460,9 @@
             transition: max-height 0.4s cubic-bezier(0.4,0,0.2,1), opacity 0.3s ease, padding 0.3s ease;
         }
         .card-content-body.expanded {
-            max-height: 2500px;
+            max-height: 4000px;
             opacity: 1;
-            overflow: visible;
+            overflow: visible; /* CRÍTICO: permite tooltip transbordar para fora do card */
         }
         .main-chevron {
             transition: transform 0.3s cubic-bezier(0.4,0,0.2,1);
@@ -544,19 +545,19 @@
             color: var(--gain);
         }
 
-        /* ===== TOOLTIP — Previne ativação dupla em badges dentro de spans ===== */
+        /* ===== TOOLTIP — Global z-index elevado para nunca ser cortado ===== */
         [data-tooltip] { position: relative; cursor: help; }
         [data-tooltip]::before {
-            content: ''; position: absolute;
-            bottom: calc(100% + 2px); left: 50%; transform: translateX(-50%);
+            content: ''; position: fixed; /* fixed para sair de qualquer overflow:hidden */
             border: 6px solid transparent;
             border-top-color: rgba(var(--accent-rgb), 0.6);
             pointer-events: none; opacity: 0;
-            transition: opacity 0.2s ease; z-index: 1101;
+            transition: opacity 0.2s ease; z-index: 9999;
         }
         [data-tooltip]::after {
             content: attr(data-tooltip);
-            position: absolute; bottom: calc(100% + 12px); left: 50%; transform: translateX(-50%);
+            position: fixed; /* fixed para nunca ser clipado por overflow:hidden */
+            transform: translateX(-50%) translateY(-100%) translateY(-14px);
             background: var(--nav-bg);
             backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
             border: 1px solid var(--border-strong);
@@ -564,11 +565,24 @@
             color: var(--text-primary); white-space: pre-wrap;
             width: max-content; max-width: min(300px, calc(100vw - 40px));
             line-height: 1.6; pointer-events: none; opacity: 0;
-            transition: opacity 0.2s ease; z-index: 1100;
+            transition: opacity 0.2s ease; z-index: 9998;
             box-shadow: 0 20px 50px rgba(0,0,0,0.5);
             font-family: 'Inter', sans-serif;
         }
         [data-tooltip]:hover::after, [data-tooltip]:hover::before { opacity: 1; }
+        /* Posicionamento via JS via hover é complexo com ::after fixed/absolute.
+           Usaremos a abordagem de ancoragem por left:50% herdado do elemento.
+           Para isso, voltamos a absolute mas garantimos que os pais tenham overflow:visible */
+        [data-tooltip]::before {
+            position: absolute;
+            bottom: calc(100% + 2px); left: 50%; transform: translateX(-50%);
+            z-index: 9999;
+        }
+        [data-tooltip]::after {
+            position: absolute;
+            bottom: calc(100% + 12px); left: 50%; transform: translateX(-50%);
+            z-index: 9998;
+        }
         .tt-left::after { left: 0; transform: none; }
         .tt-left::before { left: 10px; transform: none; }
         .tt-right::after { left: auto; right: 0; transform: none; }
@@ -886,7 +900,7 @@
             <!-- Main Dashboard Area -->
             <main class="p-4 lg:p-8" id="dashboard">
                 <div class="mb-4">
-                    <h1 class="text-2xl font-black text-white tracking-tighter uppercase">Monitor de Volatilidade</h1>
+                    <h1 class="text-2xl font-black tracking-tighter uppercase" style="color:var(--text-primary);">Monitor de Volatilidade</h1>
                     <p class="text-xs text-[var(--text-secondary)] font-medium">Quantitativo B3 · Bandas de Bollinger 20,2σ</p>
                 </div>
 
@@ -895,16 +909,16 @@
                 </div>
 
                 <!-- Painel de Operações Monitoradas -->
-                <div class="mt-12 mb-8 glass-card rounded-xl p-6 border-t border-brand/20 shadow-lg" id="active-operations">
+                <div class="mt-12 mb-8 glass-card rounded-xl p-6 shadow-lg" style="border-top:1px solid var(--border-strong);" id="active-operations">
                     <div class="flex items-center justify-between mb-6">
                         <div>
-                            <h2 class="text-xl font-bold text-white flex items-center gap-2">
-                                <svg class="w-5 h-5 text-brand" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path></svg>
+                            <h2 class="text-xl font-bold flex items-center gap-2" style="color:var(--text-primary);">
+                                <svg class="w-5 h-5" style="color:var(--accent);" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path></svg>
                                 Operações Ativas
                             </h2>
-                            <p class="text-sm text-gray-400 mt-1" id="monitor-subtitle">Nenhuma operação acompanhada no momento.</p>
+                            <p class="text-sm mt-1" style="color:var(--text-muted);" id="monitor-subtitle">Nenhuma operação acompanhada no momento.</p>
                         </div>
-                        <button onclick="clearOperations()" class="text-[10px] uppercase font-bold text-gray-500 hover:text-rose-400 transition-colors border border-dark-600 px-2 py-1 rounded">Limpar Histórico</button>
+                        <button onclick="clearOperations()" class="text-[10px] uppercase font-bold hover:text-rose-400 transition-colors border px-2 py-1 rounded" style="color:var(--text-muted);border-color:var(--border-strong);">Limpar Histórico</button>
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="operations-grid">
                         <!-- Cards de operações gerados via JS -->
@@ -932,8 +946,8 @@
                 <!-- Linha 1: Ticker + Preço + Períodos -->
                 <div id="chart-modal-header-top" class="flex items-center justify-between px-4 py-3 gap-2">
                     <div class="modal-info-group flex items-center gap-2 flex-wrap min-w-0">
-                        <span class="text-white font-bold font-mono text-base" id="modal-ticker">PETR4</span>
-                        <span class="text-gray-400 text-xs hidden sm:inline" id="modal-company">Petrobras</span>
+                        <span class="font-bold font-mono text-base" style="color:var(--text-primary);" id="modal-ticker">PETR4</span>
+                        <span class="text-xs hidden sm:inline" style="color:var(--text-muted);" id="modal-company">Petrobras</span>
                         <span id="modal-price" class="text-sm font-mono font-bold text-emerald-400"></span>
                         <span id="modal-change" class="text-xs font-mono"></span>
                     </div>
@@ -945,7 +959,7 @@
                     </div>
                 </div>
                 <!-- Linha 2: Legenda dos Indicadores -->
-                <div class="flex items-center gap-3 px-4 py-1.5 bg-dark-800/40 text-[10px] font-mono overflow-x-auto">
+                <div class="flex items-center gap-3 px-4 py-1.5 text-[10px] font-mono overflow-x-auto" style="background:var(--bg-800);border-top:1px solid var(--border);">
                     <span class="flex items-center gap-1 whitespace-nowrap"><span class="w-3 h-0.5 bg-sky-400 inline-block"></span><span class="text-sky-400">SMA 20</span></span>
                     <span class="flex items-center gap-1 whitespace-nowrap"><span class="w-3 h-0.5 bg-amber-400 inline-block"></span><span class="text-amber-400">SMA 200</span></span>
                     <span class="flex items-center gap-1 whitespace-nowrap"><span class="w-3 h-0.5 bg-emerald-400 inline-block"></span><span class="text-emerald-400">SuperTrend ↑</span></span>
@@ -958,9 +972,9 @@
             <!-- Volume -->
             <div id="volume-container"></div>
             <!-- Rodapé com fonte -->
-            <div class="px-5 py-2 border-t border-dark-700/30 flex justify-between items-center">
-                <span class="text-[10px] text-gray-500">Terminal Quantitativo PRO · Dados com delay de 15min</span>
-                <span class="text-[10px] text-gray-500" id="modal-last-update"></span>
+            <div class="px-5 py-2 flex justify-between items-center" style="border-top:1px solid var(--border);">
+                <span class="text-[10px]" style="color:var(--text-muted);">Terminal Quantitativo PRO · Dados com delay de 15min</span>
+                <span class="text-[10px]" style="color:var(--text-muted);" id="modal-last-update"></span>
             </div>
         </div>
     </div>
@@ -1385,20 +1399,20 @@
                 const cardOpacity = isClosed ? 'opacity-50 grayscale' : 'opacity-100';
 
                 grid.innerHTML += `
-                    <div class="rounded-xl border border-${bg}/20 bg-dark-800/80 p-4 ${cardOpacity} relative overflow-hidden transition-all">
-                        ${isClosed ? '<div class="absolute inset-0 bg-dark-900/60 flex items-center justify-center z-10"><span class="bg-dark-800 border-2 border-dark-600 px-4 py-2 rounded-full text-sm font-bold tracking-widest text-gray-400 transform -rotate-12">ENCERRADA</span></div>' : ''}
+                    <div class="rounded-xl border border-${bg}/20 p-4 ${cardOpacity} relative overflow-hidden transition-all" style="background:var(--card-bg);">
+                        ${isClosed ? `<div class="absolute inset-0 flex items-center justify-center z-10" style="background:var(--bg-900);opacity:0.6;"><span class="border-2 px-4 py-2 rounded-full text-sm font-bold tracking-widest transform -rotate-12" style="background:var(--bg-800);border-color:var(--border-strong);color:var(--text-muted);">ENCERRADA</span></div>` : ''}
                         
                         <div class="flex justify-between items-start mb-3">
                             <div>
-                                <h4 class="font-bold text-lg text-white font-mono flex items-center gap-2">
+                                <h4 class="font-bold text-lg font-mono flex items-center gap-2" style="color:var(--text-primary);">
                                     ${op.optionCode || op.ticker}
                                     ${!isClosed && op.alertType ? `<span class="relative flex h-2 w-2" title="${op.alertType}"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span><span class="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span></span>` : ''}
                                 </h4>
-                                <span class="text-[10px] font-bold uppercase tracking-wider text-${color} border border-${bg}/30 bg-${bg}/5 px-1.5 py-0.5 rounded">${op.tipo} ${op.optionCode ? `<span class="text-gray-500 ml-1">em ${op.ticker}</span>` : ''}</span>
+                                <span class="text-[10px] font-bold uppercase tracking-wider text-${color} border border-${bg}/30 bg-${bg}/5 px-1.5 py-0.5 rounded">${op.tipo} ${op.optionCode ? `<span style="color:var(--text-muted);" class="ml-1">em ${op.ticker}</span>` : ''}</span>
                             </div>
                             <div class="text-right">
-                                <span class="text-[10px] text-gray-500 uppercase tracking-widest block">DTE</span>
-                                <span class="font-mono ${opDte <= 7 && !isClosed ? 'text-rose-400' : 'text-white'} font-bold">${opDte} <span class="text-[10px] text-gray-400 font-sans">dias</span></span>
+                                <span class="text-[10px] uppercase tracking-widest block" style="color:var(--text-muted);">DTE</span>
+                                <span class="font-mono ${opDte <= 7 && !isClosed ? 'text-rose-400' : ''} font-bold" style="${opDte <= 7 && !isClosed ? '' : 'color:var(--text-primary);'}">${opDte} <span class="text-[10px] font-sans" style="color:var(--text-muted);">dias</span></span>
                             </div>
                         </div>
                         
@@ -1408,28 +1422,28 @@
                             </div>
                         ` : ''}
                         
-                        <div class="grid grid-cols-2 gap-2 text-sm text-gray-300 font-mono text-[11px] mb-4 p-2.5 bg-dark-900/70 rounded-lg border border-white/5">
+                        <div class="grid grid-cols-2 gap-2 font-mono text-[11px] mb-4 p-2.5 rounded-lg border" style="background:var(--bg-700);border-color:var(--border);">
                             <div>
-                                <span class="text-gray-500 block text-[9px] uppercase font-sans">Strike Alvo</span>
-                                <span class="${isClosed ? 'text-gray-400' : 'text-gray-200'} font-bold">${fmtMoney(op.strike)}</span>
+                                <span class="block text-[9px] uppercase font-sans" style="color:var(--text-muted);">Strike Alvo</span>
+                                <span class="font-bold" style="color:${isClosed ? 'var(--text-muted)' : 'var(--text-primary)'};">${fmtMoney(op.strike)}</span>
                             </div>
                             <div>
-                                <span class="text-gray-500 block text-[9px] uppercase font-sans">Prêmio Coletado</span>
+                                <span class="block text-[9px] uppercase font-sans" style="color:var(--text-muted);">Prêmio Coletado</span>
                                 <span class="text-${color} font-bold">+${fmtMoney(op.premioEstimado)}</span>
                             </div>
                             <div>
-                                <span class="text-gray-500 block text-[9px] uppercase font-sans">Abertura</span>
-                                <span class="text-gray-400">${dataStr}</span>
+                                <span class="block text-[9px] uppercase font-sans" style="color:var(--text-muted);">Abertura</span>
+                                <span style="color:var(--text-secondary);">${dataStr}</span>
                             </div>
                             <div>
-                                <span class="text-gray-500 block text-[9px] uppercase font-sans">SMA20 ref.</span>
+                                <span class="block text-[9px] uppercase font-sans" style="color:var(--text-muted);">SMA20 ref.</span>
                                 <span class="text-sky-400/80">${fmtMoney(op.sma20Entrada)}</span>
                             </div>
                         </div>
                         
                         ${!isClosed ? `
                         <div class="flex gap-2 relative z-20">
-                            <button onclick="closeOperation('${op.id}')" class="flex-1 py-1.5 rounded-lg border border-dark-500 hover:border-dark-400 hover:bg-dark-600 hover:text-white text-gray-400 text-[10px] font-bold uppercase tracking-widest transition-colors">Encerrar Manualmente</button>
+                            <button onclick="closeOperation('${op.id}')" class="flex-1 py-1.5 rounded-lg border text-[10px] font-bold uppercase tracking-widest transition-colors hover:text-rose-400" style="border-color:var(--border-strong);color:var(--text-muted);background:transparent;">Encerrar Manualmente</button>
                         </div>
                         ` : ''}
                     </div>
@@ -1521,9 +1535,9 @@
             const dispId  = `lots-disp-${ticker}-${type}`;
             const metaId  = `lots-meta-${ticker}-${type}`;
             return `
-                <div class="mt-2 p-2 rounded-lg bg-dark-900/70 border ${borderCls} flex items-center justify-between transition-colors" id="${panelId}">
+                <div class="mt-2 p-2 rounded-lg border ${borderCls} flex items-center justify-between transition-colors" style="background:var(--bg-700);" id="${panelId}">
                     <div>
-                        <span class="text-[9px] uppercase font-bold ${isAllocated?'text-gray-300':'text-gray-500'} tracking-widest block">${isAllocated?'Alocação Fixada':'Sua capacidade'}</span>
+                        <span class="text-[9px] uppercase font-bold tracking-widest block" style="color:${isAllocated?'var(--text-primary)':'var(--text-muted)'}">${isAllocated?'Alocação Fixada':'Sua capacidade'}</span>
                         <span id="${dispId}"
                             class="font-mono font-bold ${colorCls} text-base cursor-pointer select-none"
                             title="Duplo clique para editar quantidade ou 0 para desalocar"
@@ -1531,8 +1545,8 @@
                         >${acoes.toLocaleString('pt-BR')} ações</span>
                     </div>
                     <div class="text-right">
-                        <span class="font-mono text-xs text-gray-300" id="${metaId}-val">${new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(comprometido)}</span>
-                        <span class="text-[9px] font-mono text-gray-600 block" id="${metaId}-pct">${((comprometido/globalCapital)*100).toFixed(0)}% do capital</span>
+                        <span class="font-mono text-xs" style="color:var(--text-secondary);" id="${metaId}-val">${new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(comprometido)}</span>
+                        <span class="text-[9px] font-mono block" style="color:var(--text-muted);" id="${metaId}-pct">${((comprometido/globalCapital)*100).toFixed(0)}% do capital</span>
                     </div>
                 </div>
             `;
@@ -1819,8 +1833,8 @@
                 
                 // Helper para renderizar a barra BB CENTRALIZADA na SMA20 (-100 / 0 / +100)
                 const renderBand = (band, isDaily) => {
-                    // Centro = SMA20 (diária) ou midpoint (semanal)
-                    const sma20 = isDaily ? band.sma20 : null;
+                    // Centro = SMA20 (disponível tanto para diário quanto semanal após fetch)
+                    const sma20 = band.sma20 || null;
                     const center = sma20 || ((band.upper + band.lower) / 2);
                     const safeUp   = (band.upper - center) > 0 ? (band.upper - center) : 1;
                     const safeDn   = (center - band.lower) > 0 ? (center - band.lower) : 1;
@@ -1850,21 +1864,21 @@
                     const fillOpacity = Math.abs(pos) < 15 ? 0.45 : 0.78;
 
                     // Tooltip informativo
-                    const tooltipBlock = isDaily ? `
+                    const tooltipBlock = `
                         <div class="mt-2 p-2.5 rounded-lg border text-[11px] leading-relaxed" style="background:var(--bg-800);border-color:var(--border);">
                             <span class="font-bold mb-1 flex items-center gap-1" style="color:var(--text-primary);">
                                 <svg class="w-3 h-3" style="color:var(--accent)" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                                BB (20, 2\u03c3) — Centro = SMA20 (\u22120 no ProfitPro)
+                                BB (20, 2\u03c3) — Centro = SMA20 ${isDaily ? '(Diária)' : '(Semanal)'}
                             </span>
-                            <span style="color:var(--text-muted);">Escala simétrica: −100 = Banda Inferior · 0 = SMA20 · +100 = Banda Superior</span>
-                        </div>` : '';
+                            <span style="color:var(--text-muted);">Escala simétrica: −100 = Banda Inferior · 0 = ${isDaily ? 'SMA20 Diária' : 'SMA20 Semanal'} · +100 = Banda Superior</span>
+                        </div>`;
 
-                    const smaDisplay = isDaily && sma20
-                        ? `<span class="font-bold" style="color:var(--accent);">SMA20 ${fmtMoney(sma20)}</span>`
+                    const smaDisplay = sma20
+                        ? `<span class="font-bold" style="color:var(--accent);">${isDaily ? 'SMA20' : 'SMA20w'} ${fmtMoney(sma20)}</span>`
                         : `<span></span>`;
 
                     return `
-                        <div class="mt-3 border border-[var(--border)] rounded-xl bg-[var(--bg-800)] overflow-hidden">
+                        <div class="mt-3 border border-[var(--border)] rounded-xl bg-[var(--bg-800)]" style="overflow:visible;">
                             <button class="band-toggle-btn hover:bg-[var(--sidebar-item-hover)] transition-colors" onclick="toggleBand(this)">
                                 <div class="flex items-center gap-2">
                                     <span class="text-[11px] font-bold uppercase tracking-wider" style="color:var(--text-secondary);">${band.label}</span>
@@ -1961,16 +1975,16 @@
                             </div>
                             <div class="flex justify-between items-end mb-4">
                                 <div>
-                                    <p class="text-[10px] font-medium text-gray-500 uppercase tracking-wider mb-0.5">Stk Alvo (BB Resist.)</p>
+                                    <p class="text-[10px] font-medium uppercase tracking-wider mb-0.5" style="color:var(--text-muted);">Stk Alvo (BB Resist.)</p>
                                     <div class="flex items-center gap-2 flex-wrap">
                                         <p class="font-mono text-xl font-bold text-[var(--text-primary)]">${fmtMoney(bbUpper)}</p>
                                         <div class="flex items-center gap-1">
                                             <span id="opt-call-${asset.ticker}"
                                                 class="text-[9px] font-mono bg-[var(--bg-700)]/50 text-[var(--text-secondary)] px-1.5 py-0.5 rounded border border-[var(--border)] cursor-pointer"
                                                 title="Duplo clique para editar o código da opção"
-                                                data-tooltip="Código estimado da opção. Duplo clique para editar manualmente antes de copiar."
+                                                data-tooltip="${asset.call && asset.call.volume === 'Real' ? 'Ticker REAL obtido do opcoes.net.br. Duplo clique para editar manualmente.' : 'Código estimado da opção. Duplo clique para editar manualmente antes de copiar.'}"
                                                 ondblclick="editOptCode(this)"
-                                            >${estimateOptionTicker(asset.ticker, 'CALL', bbUpper)}</span>
+                                            >${asset.call && asset.call.code && asset.call.volume === 'Real' ? asset.call.code : estimateOptionTicker(asset.ticker, 'CALL', bbUpper)}</span>
                                             <span class="text-[9px] font-mono text-gray-500">${asset.call && asset.call.dte ? `(${asset.call.dte} dias)` : `(${calcDTEReal()} dias)`}</span>
                                             <button onclick="copyTicker('opt-call-${asset.ticker}', this)" class="copy-btn" data-tooltip="Copiar ticker da opção">
                                                 <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
@@ -2004,17 +2018,18 @@
                             </div>
                             <div class="flex justify-between items-end mb-4">
                                 <div>
-                                    <p class="text-[10px] font-medium text-gray-500 uppercase tracking-wider mb-0.5">Stk Alvo (BB Sup.)</p>
+                                    <p class="text-[10px] font-medium uppercase tracking-wider mb-0.5" style="color:var(--text-muted);">Stk Alvo (BB Sup.)</p>
                                     <div class="flex items-center gap-2 flex-wrap">
-                                        <p class="font-mono text-xl font-bold text-gray-200">${fmtMoney(bbLower)}</p>
+                                        <p class="font-mono text-xl font-bold" style="color:var(--text-primary);">${fmtMoney(bbLower)}</p>
                                         <div class="flex items-center gap-1">
                                             <span id="opt-put-${asset.ticker}"
-                                                class="text-[9px] font-mono bg-dark-700/50 text-gray-400 px-1.5 py-0.5 rounded border border-white/5 cursor-pointer"
+                                                class="text-[9px] font-mono px-1.5 py-0.5 rounded border cursor-pointer"
+                                                style="background:var(--bg-700);color:var(--text-secondary);border-color:var(--border);"
                                                 title="Duplo clique para editar o código da opção"
-                                                data-tooltip="Código estimado da opção. Duplo clique para editar manualmente antes de copiar."
+                                                data-tooltip="${asset.put && asset.put.volume === 'Real' ? 'Ticker REAL obtido do opcoes.net.br. Duplo clique para editar manualmente.' : 'Código estimado da opção. Duplo clique para editar manualmente antes de copiar.'}"
                                                 ondblclick="editOptCode(this)"
-                                            >${estimateOptionTicker(asset.ticker, 'PUT', bbLower)}</span>
-                                            <span class="text-[9px] font-mono text-gray-500">${asset.put && asset.put.dte ? `(${asset.put.dte} dias)` : `(${calcDTEReal()} dias)`}</span>
+                                            >${asset.put && asset.put.code && asset.put.volume === 'Real' ? asset.put.code : estimateOptionTicker(asset.ticker, 'PUT', bbLower)}</span>
+                                            <span class="text-[9px] font-mono" style="color:var(--text-muted);">${asset.put && asset.put.dte ? `(${asset.put.dte} dias)` : `(${calcDTEReal()} dias)`}</span>
                                             <button onclick="copyTicker('opt-put-${asset.ticker}', this)" class="copy-btn" data-tooltip="Copiar ticker da opção">
                                                 <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
                                             </button>
@@ -2023,7 +2038,7 @@
                                     ${capitalLots(asset.ticker, 'PUT', bbLower)}
                                 </div>
                                 <div class="text-right">
-                                    <p class="text-[10px] font-medium text-gray-500 uppercase tracking-wider mb-0.5">Prêmio Est.</p>
+                                    <p class="text-[10px] font-medium uppercase tracking-wider mb-0.5" style="color:var(--text-muted);">Prêmio Est.</p>
                                     <p class="font-mono text-lg font-bold text-emerald-400">+${fmtMoney(premioEst)}</p>
                                 </div>
                             </div>
@@ -2209,46 +2224,85 @@
             }
         }
 
+        // Função auxiliar para calcular BB(20, 2σ) a partir de array de fechamentos
+        function calcBB20(closes) {
+            const arr = closes.slice(-20);
+            if (arr.length < 5) return null;
+            const n = arr.length;
+            const mean = arr.reduce((a, b) => a + b, 0) / n;
+            const variance = arr.map(x => Math.pow(x - mean, 2)).reduce((a, b) => a + b, 0) / n;
+            const std = Math.sqrt(variance);
+            return {
+                upper: parseFloat((mean + 2 * std).toFixed(2)),
+                lower: parseFloat((mean - 2 * std).toFixed(2)),
+                sma20: parseFloat(mean.toFixed(2))
+            };
+        }
+
         async function fetchBollingerBands(force = false) {
             const now = Date.now();
             if (!force && now - bbLastFetch < BB_REFRESH_MS && bbLastFetch > 0) return;
-            console.log('🔵 ThetaLens BB: Calculando Bandas de Bollinger reais (20,2σ)...');
+            console.log('🔵 ThetaLens BB: Calculando BB Diário (20,2σ) e BB Semanal (20,2σ) reais...');
+
             for (const asset of assetsData) {
                 try {
-                    const url = `https://brapi.dev/api/quote/${asset.ticker}?range=1mo&interval=1d&token=${BRAPI_TOKEN}`;
-                    const resp = await fetch(url);
-                    if (!resp.ok) { console.warn(`BB: ${asset.ticker} HTTP ${resp.status}`); continue; }
-                    const json = await resp.json();
+                    // ── BB DIÁRIO: últimos 3 meses, candles de 1 dia ──
+                    const urlDaily = `https://brapi.dev/api/quote/${asset.ticker}?range=3mo&interval=1d&token=${BRAPI_TOKEN}`;
+                    const respDaily = await fetch(urlDaily);
+                    if (!respDaily.ok) { console.warn(`BB Diário: ${asset.ticker} HTTP ${respDaily.status}`); }
+                    else {
+                        const jsonD = await respDaily.json();
+                        const quoteD = jsonD?.results?.[0];
 
-                    // Atualiza preço atual da resposta histórica
-                    const quote = json?.results?.[0];
-                    if (quote?.regularMarketPrice) {
-                        asset.price = quote.regularMarketPrice;
-                        asset.change = quote.regularMarketChangePercent || 0;
+                        // Atualiza preço atual
+                        if (quoteD?.regularMarketPrice) {
+                            asset.price  = quoteD.regularMarketPrice;
+                            asset.change = quoteD.regularMarketChangePercent || 0;
+                        }
+
+                        const histD = quoteD?.historicalDataPrice;
+                        if (histD && histD.length >= 5) {
+                            const closesD = histD.filter(d => d.close && d.close > 0).map(d => d.close);
+                            const bbD = calcBB20(closesD);
+                            if (bbD) {
+                                asset.bands.daily.upper = bbD.upper;
+                                asset.bands.daily.lower = bbD.lower;
+                                asset.bands.daily.sma20 = bbD.sma20;
+                                console.log(`✅ [DIÁRIO] ${asset.ticker} | Preço: ${fmtMoney(asset.price)} | BB▼ ${fmtMoney(bbD.lower)} | SMA20 ${fmtMoney(bbD.sma20)} | BB▲ ${fmtMoney(bbD.upper)}`);
+                            }
+                        }
+                    }
+                    await new Promise(r => setTimeout(r, 350)); // respeita rate limit
+
+                    // ── BB SEMANAL: últimos 2 anos, candles de 1 semana ──
+                    const urlWeekly = `https://brapi.dev/api/quote/${asset.ticker}?range=2y&interval=1wk&token=${BRAPI_TOKEN}`;
+                    const respWeekly = await fetch(urlWeekly);
+                    if (!respWeekly.ok) { console.warn(`BB Semanal: ${asset.ticker} HTTP ${respWeekly.status}`); }
+                    else {
+                        const jsonW = await respWeekly.json();
+                        const histW = jsonW?.results?.[0]?.historicalDataPrice;
+                        if (histW && histW.length >= 5) {
+                            const closesW = histW.filter(d => d.close && d.close > 0).map(d => d.close);
+                            const bbW = calcBB20(closesW);
+                            if (bbW) {
+                                asset.bands.weekly.upper = bbW.upper;
+                                asset.bands.weekly.lower = bbW.lower;
+                                asset.bands.weekly.sma20 = bbW.sma20; // SMA20 semanal
+                                console.log(`✅ [SEMANAL] ${asset.ticker} | BB▼ ${fmtMoney(bbW.lower)} | SMA20w ${fmtMoney(bbW.sma20)} | BB▲ ${fmtMoney(bbW.upper)}`);
+                            }
+                        }
                     }
 
-                    // Calcula BB(20, 2σ) com fechamentos reais
-                    const history = json?.results?.[0]?.historicalDataPrice;
-                    if (!history || history.length < 5) continue;
-                    const closes = history.filter(d => d.close && d.close > 0).map(d => d.close).slice(-20);
-                    if (closes.length < 5) continue;
-
-                    const n = closes.length;
-                    const mean = closes.reduce((a, b) => a + b) / n;
-                    const variance = closes.map(x => Math.pow(x - mean, 2)).reduce((a, b) => a + b) / n;
-                    const std = Math.sqrt(variance);
-
-                    asset.bands.daily.upper  = parseFloat((mean + 2 * std).toFixed(2));
-                    asset.bands.daily.lower  = parseFloat((mean - 2 * std).toFixed(2));
-                    asset.bands.daily.sma20  = parseFloat(mean.toFixed(2));
-
-                    const pos = Math.max(0, Math.min(100, ((asset.price - asset.bands.daily.lower) / (asset.bands.daily.upper - asset.bands.daily.lower)) * 100));
-                    console.log(`✅ ${asset.ticker} | Preço: ${fmtMoney(asset.price)} | BB\u25bc ${fmtMoney(asset.bands.daily.lower)} | SMA20 ${fmtMoney(asset.bands.daily.sma20)} | BB\u25b2 ${fmtMoney(asset.bands.daily.upper)} | Pos: ${pos.toFixed(0)}%`);
-                    checkRadarAlerts(asset, pos);
+                    // Radar check com BB diário
+                    if (asset.bands.daily.upper && asset.bands.daily.lower) {
+                        const pos = Math.max(0, Math.min(100, ((asset.price - asset.bands.daily.lower) / (asset.bands.daily.upper - asset.bands.daily.lower)) * 100));
+                        checkRadarAlerts(asset, pos);
+                    }
 
                 } catch(e) { console.warn(`BB fetch error ${asset.ticker}:`, e.message); }
-                await new Promise(r => setTimeout(r, 400));
+                await new Promise(r => setTimeout(r, 350));
             }
+
             bbLastFetch = Date.now();
             initialLoad = false;
             renderAssets();

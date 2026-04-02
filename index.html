@@ -1722,15 +1722,17 @@
                                     asset.put = null;
                                     asset.call = null;
 
+                                    const minPremio = asset.price * 0.01; // Prêmio mínimo: 1% do preço
+
                                     const targetPut = asset.price * 0.95; // Busca PUT ~5% OTM
-                                    const puts = optData.options.filter(o => o.type === 'PUT' && o.strike < asset.price);
+                                    const puts = optData.options.filter(o => o.type === 'PUT' && o.strike < asset.price && o.premium >= minPremio);
                                     if (puts.length > 0) {
                                         const bestPut = puts.reduce((prev, curr) => Math.abs(curr.strike - targetPut) < Math.abs(prev.strike - targetPut) ? curr : prev);
                                         asset.put = { code: bestPut.code, strike: bestPut.strike, premium: bestPut.premium, expiration: bestPut.expiration, dte: optData.dte, delta: '~0.30', theta: '~-0.02', gamma: '~0.04', volume: 'Real' };
                                     }
 
                                     const targetCall = asset.price * 1.05; // Busca CALL ~5% OTM
-                                    const calls = optData.options.filter(o => o.type === 'CALL' && o.strike > asset.price);
+                                    const calls = optData.options.filter(o => o.type === 'CALL' && o.strike > asset.price && o.premium >= minPremio);
                                     if (calls.length > 0) {
                                         const bestCall = calls.reduce((prev, curr) => Math.abs(curr.strike - targetCall) < Math.abs(prev.strike - targetCall) ? curr : prev);
                                         asset.call = { code: bestCall.code, strike: bestCall.strike, premium: bestCall.premium, expiration: bestCall.expiration, dte: optData.dte, delta: '~0.30', theta: '~-0.02', gamma: '~0.04', volume: 'Real' };

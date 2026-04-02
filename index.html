@@ -369,8 +369,8 @@
         /* ===== BOTÃO X FLUTUANTE SOBRE O GRÁFICO ===== */
         #chart-close-float {
             position: absolute;
-            top: 12px;
-            right: 12px;
+            top: -50px;
+            right: 0px;
             z-index: 60;
             width: 36px; height: 36px;
             display: flex; align-items: center; justify-content: center;
@@ -555,8 +555,6 @@
                     <span class="flex items-center gap-1 whitespace-nowrap"><span class="w-3 h-0.5 bg-amber-400 inline-block"></span><span class="text-amber-400">SMA 200</span></span>
                     <span class="flex items-center gap-1 whitespace-nowrap"><span class="w-3 h-0.5 bg-emerald-400 inline-block"></span><span class="text-emerald-400">SuperTrend ↑</span></span>
                     <span class="flex items-center gap-1 whitespace-nowrap"><span class="w-3 h-0.5 bg-rose-400 inline-block"></span><span class="text-rose-400">SuperTrend ↓</span></span>
-                    <span class="flex items-center gap-1 whitespace-nowrap"><span class="w-2 h-2 bg-emerald-500 rounded-sm inline-block"></span><span class="text-emerald-400">Alta</span></span>
-                    <span class="flex items-center gap-1 whitespace-nowrap"><span class="w-2 h-2 bg-rose-500 rounded-sm inline-block"></span><span class="text-rose-400">Baixa</span></span>
                     <span id="modal-loading" class="ml-auto text-brand animate-pulse hidden whitespace-nowrap">Carregando...</span>
                 </div>
             </div>
@@ -996,12 +994,29 @@
         // ================================================================
         // POSITION SIZING — Capital & Lotes
         // ================================================================
-        let globalCapital = 0;
+        let globalCapital = parseFloat(localStorage.getItem('thetalens_capital')) || 0;
+        let globalAllocations = JSON.parse(localStorage.getItem('thetalens_allocations') || '{}');
 
         function onCapitalChange() {
             const input = document.getElementById('capital-input');
             globalCapital = parseFloat(input.value) || 0;
+            localStorage.setItem('thetalens_capital', globalCapital);
             renderAssets(); // re-render para atualizar badges de lote
+        }
+
+        // Calcula capital usado por todas as ações ALOCADAS (exceto a si mesma se for editar)
+        function getUsedCapital(excludeKey = null) {
+            let used = 0;
+            for (let key in globalAllocations) {
+                if (key === excludeKey) continue;
+                const alloc = globalAllocations[key];
+                used += (alloc.lotes * alloc.strike * 100);
+            }
+            return used;
+        }
+
+        function getAvailableCapital(excludeKey = null) {
+            return Math.max(0, globalCapital - getUsedCapital(excludeKey));
         }
 
         // Calcula lotes (múltiplos de 100) dado capital e strike
@@ -1016,24 +1031,42 @@
         // Retorna HTML do painel de capacidade/margem — exibe ações e permite edição por duplo clique
         function capitalLots(ticker, type, strike) {
             if (!globalCapital || globalCapital <= 0) return '';
-            const maxLotes = calcLotes(globalCapital, strike);
-            if (maxLotes === 0) return `<span class="text-[9px] text-rose-400/70 font-mono mt-1 block">Capital insuficiente para 1 lote</span>`;
-            const acoes = maxLotes * 100;
-            const comprometido = maxLotes * strike * 100;
+            
+            const key = `${ticker}-${type}`;
+            const alloc = globalAllocations[key];
+            const isAllocated = !!alloc;
+            
+            const freeCap = getAvailableCapital(isAllocated ? key : null);
+            const theoryMax = calcLotes(freeCap, strike);
+            
+            const lotes = isAllocated ? alloc.lotes : theoryMax;
+            
+            if (theoryMax === 0 && !isAllocated) return `<span class="text-[9px] text-rose-400/70 font-mono mt-1 block">Nenhum capital restante no pool geral.</span>`;
+            
+            const acoes = lotes * 100;
+            const comprometido = lotes * strike * 100;
             const colorCls = type === 'CALL' ? 'text-brand'      : 'text-emerald-400';
             const colorHex = type === 'CALL' ? 'var(--accent)'   : '#34d399';
-            const borderCls = type === 'CALL' ? 'border-brand/30' : 'border-emerald-500/30';
+            
+            // Se estiver "travado/alocado", damos um destaque
+            let borderCls = '';
+            if (isAllocated) {
+                borderCls = type === 'CALL' ? 'border-brand/60 bg-brand/10' : 'border-emerald-500/60 bg-emerald-500/10';
+            } else {
+                borderCls = type === 'CALL' ? 'border-brand/30' : 'border-emerald-500/30';
+            }
+            
             const panelId = `lots-panel-${ticker}-${type}`;
             const dispId  = `lots-disp-${ticker}-${type}`;
             const metaId  = `lots-meta-${ticker}-${type}`;
             return `
-                <div class="mt-2 p-2 rounded-lg bg-dark-900/70 border ${borderCls} flex items-center justify-between" id="${panelId}">
+                <div class="mt-2 p-2 rounded-lg bg-dark-900/70 border ${borderCls} flex items-center justify-between transition-colors" id="${panelId}">
                     <div>
-                        <span class="text-[9px] uppercase font-bold text-gray-500 tracking-widest block">Sua capacidade / Margem usada</span>
+                        <span class="text-[9px] uppercase font-bold ${isAllocated?'text-gray-300':'text-gray-500'} tracking-widest block">${isAllocated?'Alocação Fixada':'Sua capacidade'}</span>
                         <span id="${dispId}"
                             class="font-mono font-bold ${colorCls} text-base cursor-pointer select-none"
-                            title="Duplo clique para editar quantidade"
-                            ondblclick="editLots('${ticker}','${type}',${strike},${maxLotes},this)"
+                            title="Duplo clique para editar quantidade ou 0 para desalocar"
+                            ondblclick="editLots('${ticker}','${type}',${strike},this)"
                         >${acoes.toLocaleString('pt-BR')} ações</span>
                     </div>
                     <div class="text-right">
@@ -1045,38 +1078,49 @@
         }
 
         // Edição inline de quantidade de ações (duplo clique)
-        function editLots(ticker, type, strike, maxLotes, span) {
+        function editLots(ticker, type, strike, span) {
+            const key = `${ticker}-${type}`;
+            const alloc = globalAllocations[key];
+            const freeCap = getAvailableCapital(key);
+            const theoryMax = calcLotes(freeCap, strike); // máximo aceitável (free + self)
+
             const raw = span.textContent.replace(/[^0-9]/g, '');
-            const curAcoes = parseInt(raw) || maxLotes * 100;
+            const curAcoes = parseInt(raw) || (alloc ? alloc.lotes * 100 : theoryMax * 100);
+            const curLotes = curAcoes / 100;
+
             const colorHex = type === 'CALL' ? 'var(--accent)' : '#34d399';
 
             const inp = document.createElement('input');
             inp.type = 'number';
-            inp.value = curAcoes / 100;      // mostra em lotes para facilitar
-            inp.min = 1; inp.max = maxLotes; inp.step = 1;
+            inp.value = curLotes;
+            inp.min = 0; inp.max = theoryMax; inp.step = 1;
             inp.style.cssText = `width:6rem;font-family:monospace;font-size:1rem;font-weight:700;color:${colorHex};background:transparent;border:none;border-bottom:2px solid ${colorHex};outline:none;text-align:center;`;
             span.replaceWith(inp);
             inp.focus(); inp.select();
 
             const commit = () => {
-                let lotes = Math.round(parseInt(inp.value) || 1);
-                lotes = Math.max(1, Math.min(maxLotes, lotes));
-                const acoes = lotes * 100;
-                const comprometido = lotes * strike * 100;
-                const pct = ((comprometido / globalCapital) * 100).toFixed(0);
-
-                span.textContent = `${acoes.toLocaleString('pt-BR')} ações`;
-                inp.replaceWith(span);
-
-                const valEl = document.getElementById(`lots-meta-${ticker}-${type}-val`);
-                const pctEl = document.getElementById(`lots-meta-${ticker}-${type}-pct`);
-                if (valEl) valEl.textContent = new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(comprometido);
-                if (pctEl) pctEl.textContent = `${pct}% do capital`;
+                let parsedVal = Math.round(parseInt(inp.value) || 0); // 0 desaloca
+                
+                if (parsedVal > theoryMax) {
+                    showToast(`Capital insuficiente. Remova alocação de outra ação. Limite para esta: ${theoryMax} lotes.`, 'info');
+                    parsedVal = theoryMax;
+                }
+                
+                let lotes = parsedVal;
+                if (lotes <= 0) {
+                    delete globalAllocations[key]; // Desaloca e libera margem
+                } else {
+                    globalAllocations[key] = { lotes: lotes, strike: strike }; // Salva e trava
+                }
+                localStorage.setItem('thetalens_allocations', JSON.stringify(globalAllocations));
+                
+                // Forçamos o re-render de todo o grid para atualizar o saldo pool para os demais cards
+                renderAssets();
             };
             inp.addEventListener('blur', commit);
             inp.addEventListener('keydown', e => {
                 if (e.key === 'Enter') { inp.blur(); }
-                if (e.key === 'Escape') { inp.replaceWith(span); }
+                if (e.key === 'Escape') { renderAssets(); } // desfaz
             });
         }
 
@@ -1459,6 +1503,7 @@
                                                 data-tooltip="Código estimado da opção. Duplo clique para editar manualmente antes de copiar."
                                                 ondblclick="editOptCode(this)"
                                             >${estimateOptionTicker(asset.ticker, 'CALL', bbUpper)}</span>
+                                            <span class="text-[9px] font-mono text-gray-500">${asset.call && asset.call.dte ? `(${asset.call.dte} dias)` : `(${calcDTEReal()} dias)`}</span>
                                             <button onclick="copyTicker('opt-call-${asset.ticker}', this)" class="copy-btn" data-tooltip="Copiar ticker da opção">
                                                 <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
                                             </button>
@@ -1501,6 +1546,7 @@
                                                 data-tooltip="Código estimado da opção. Duplo clique para editar manualmente antes de copiar."
                                                 ondblclick="editOptCode(this)"
                                             >${estimateOptionTicker(asset.ticker, 'PUT', bbLower)}</span>
+                                            <span class="text-[9px] font-mono text-gray-500">${asset.put && asset.put.dte ? `(${asset.put.dte} dias)` : `(${calcDTEReal()} dias)`}</span>
                                             <button onclick="copyTicker('opt-put-${asset.ticker}', this)" class="copy-btn" data-tooltip="Copiar ticker da opção">
                                                 <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
                                             </button>
@@ -1571,10 +1617,10 @@
                             <!-- Dividendos (Data-Com) + IV Rank em linha -->
                             <div class="flex flex-col gap-2">
                                 <!-- IV Rank -->
-                                <div class="px-2 py-1.5 rounded-lg bg-dark-800 border border-white/5 flex items-center gap-2 tt-right" data-tooltip="IV Rank: compara a Volatilidade Implícita (IV) atual com os últimos 252 pregões. IV Rank > 50: prêmios GORDOS — ótimo para vender opções. IV Rank < 30: prêmios MAGROS — evite vender.">
-                                    <span class="text-[9px] font-bold uppercase tracking-widest text-gray-600">IV</span>
-                                    <span class="font-mono text-xs font-bold text-gray-400">${asset.iv}%</span>
-                                    <span class="text-[10px] font-bold uppercase ml-auto px-1.5 py-0.5 rounded ${asset.ivRank > 50 ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-rose-500/20 text-rose-400 border border-rose-500/30'}" data-tooltip="IV Rank ${asset.ivRank}%: ${asset.ivRank > 50 ? 'Favorável para venda de prêmio!' : 'Prêmios baixos, cuidado.'}">Rank ${asset.ivRank}</span>
+                                <div class="px-2 py-1.5 rounded-lg bg-dark-800 border border-white/5 flex items-center gap-2 tt-right">
+                                    <span class="text-[9px] font-bold uppercase tracking-widest text-gray-600" data-tooltip="IV = Volatilidade Implícita\u000aIndica o quanto o mercado precifica a oscilação do ativo.\u000aQuanto maior, mais caro é o prêmio.">IV</span>
+                                    <span class="font-mono text-xs font-bold text-gray-400" data-tooltip="IV de ${asset.iv}%">${asset.iv}%</span>
+                                    <span class="text-[10px] font-bold uppercase ml-auto px-1.5 py-0.5 rounded ${asset.ivRank > 50 ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-rose-500/20 text-rose-400 border border-rose-500/30'}" data-tooltip="IV Rank = ${asset.ivRank}%:\u000aCompara a IV atual com 1 ano.\u000a${asset.ivRank > 50 ? '✅ Rank > 50: PRÊMIOS GORDOS!' : '⚠️ Rank < 50: Prêmios magros, evite vender.'}">Rank ${asset.ivRank}</span>
                                 </div>
                                 <!-- Dividendos -->
                                 <div class="flex-1 px-2 py-1.5 rounded-lg bg-dark-800 border-l-2 border-l-emerald-500 border-t border-r border-b border-white/5 flex flex-col justify-center tt-right" data-tooltip="Data Com: último dia para ter direito ao dividendo. No dia seguinte (Ex-Dividendo), o valor é descontado do preço de abertura. ATENÇÃO: pode afetar opções ATM e ITM!">
@@ -2078,12 +2124,19 @@
             if (sun)  sun.classList.toggle('hidden', !isLight);
         }
 
-        // Aplica tema persistido imediatamente (antes da renderização)
+        // Aplica tema persistido e Capital inicial
         (function initTheme() {
             const saved = localStorage.getItem('thetalens_theme') || 'dark';
             if (saved === 'light') {
                 document.documentElement.classList.add('light');
                 updateThemeIcon(true);
+            }
+            
+            // Re-aplica capital salvo na UI
+            const savedCapital = parseFloat(localStorage.getItem('thetalens_capital')) || 0;
+            if (savedCapital > 0) {
+                const el = document.getElementById('capital-input');
+                if (el) el.value = savedCapital;
             }
         })();
     </script>

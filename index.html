@@ -274,7 +274,6 @@
 
         /* ===== TOOLTIP — Previne ativação dupla em badges dentro de spans ===== */
         [data-tooltip] { position: relative; cursor: help; }
-        [data-tooltip] * { pointer-events: none; } /* badges internos não disparam hover próprio */
         [data-tooltip]::before {
             content: ''; position: absolute;
             bottom: calc(100% + 2px); left: 50%; transform: translateX(-50%);
@@ -367,7 +366,38 @@
             #nav-badge-group { flex-shrink: 0; }
         }
 
-        /* ===== CHART MODAL MOBILE ===== */
+        /* ===== BOTÃO X FLUTUANTE SOBRE O GRÁFICO ===== */
+        #chart-close-float {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            z-index: 60;
+            width: 36px; height: 36px;
+            display: flex; align-items: center; justify-content: center;
+            border-radius: 50%;
+            background: rgba(20, 20, 30, 0.82);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255,255,255,0.18);
+            color: #e2e8f0;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+        }
+        #chart-close-float:hover {
+            background: rgba(239, 68, 68, 0.85);
+            border-color: rgba(239,68,68,0.5);
+            color: white;
+            transform: scale(1.08);
+        }
+        html.light #chart-close-float {
+            background: rgba(245, 241, 232, 0.92);
+            border-color: rgba(0,0,0,0.2);
+            color: #2C1A0E;
+        }
+        html.light #chart-close-float:hover {
+            background: rgba(192, 57, 43, 0.85);
+            color: white;
+        }
         @media (max-width: 640px) {
             #chart-modal-header-top { flex-wrap: wrap; gap: 8px; }
             #chart-modal-header-top .modal-info-group { min-width: 0; flex: 1; }
@@ -495,10 +525,16 @@
 
     <!-- MODAL DO GRÁFICO DE CANDLES -->
     <div id="chart-modal" onclick="if(event.target===this)closeChart()">
-        <div id="chart-modal-box">
+        <div id="chart-modal-box" style="position:relative;">
+
+            <!-- Botão X flutuante sobre o gráfico -->
+            <button id="chart-close-float" onclick="closeChart()" title="Fechar gráfico (ESC)" aria-label="Fechar">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
+
             <!-- Header do Modal - Responsivo Mobile -->
             <div class="border-b border-dark-700/60">
-                <!-- Linha 1: Ticker + Preço + Fechar -->
+                <!-- Linha 1: Ticker + Preço + Períodos -->
                 <div id="chart-modal-header-top" class="flex items-center justify-between px-4 py-3 gap-2">
                     <div class="modal-info-group flex items-center gap-2 flex-wrap min-w-0">
                         <span class="text-white font-bold font-mono text-base" id="modal-ticker">PETR4</span>
@@ -506,20 +542,14 @@
                         <span id="modal-price" class="text-sm font-mono font-bold text-emerald-400"></span>
                         <span id="modal-change" class="text-xs font-mono"></span>
                     </div>
-                    <div class="flex items-center gap-2 flex-shrink-0">
-                        <!-- Botões de Período -->
-                        <div class="flex gap-1" id="period-buttons">
-                            <button class="period-btn" data-range="1mo" onclick="loadChart(currentChartTicker,'1mo')">1M</button>
-                            <button class="period-btn active" data-range="3mo" onclick="loadChart(currentChartTicker,'3mo')">3M</button>
-                            <button class="period-btn" data-range="6mo" onclick="loadChart(currentChartTicker,'6mo')">6M</button>
-                            <button class="period-btn" data-range="1y" onclick="loadChart(currentChartTicker,'1y')">1A</button>
-                        </div>
-                        <button onclick="closeChart()" class="text-gray-400 hover:text-white transition-colors p-1.5 rounded-lg hover:bg-dark-700/50 flex-shrink-0" title="Fechar gráfico (ESC)">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                        </button>
+                    <div class="flex items-center gap-1 flex-shrink-0" id="period-buttons">
+                        <button class="period-btn" data-range="1mo" onclick="loadChart(currentChartTicker,'1mo')">1M</button>
+                        <button class="period-btn active" data-range="3mo" onclick="loadChart(currentChartTicker,'3mo')">3M</button>
+                        <button class="period-btn" data-range="6mo" onclick="loadChart(currentChartTicker,'6mo')">6M</button>
+                        <button class="period-btn" data-range="1y" onclick="loadChart(currentChartTicker,'1y')">1A</button>
                     </div>
                 </div>
-                <!-- Linha 2: Legenda dos Indicadores (mais compacta no mobile) -->
+                <!-- Linha 2: Legenda dos Indicadores -->
                 <div class="flex items-center gap-3 px-4 py-1.5 bg-dark-800/40 text-[10px] font-mono overflow-x-auto">
                     <span class="flex items-center gap-1 whitespace-nowrap"><span class="w-3 h-0.5 bg-sky-400 inline-block"></span><span class="text-sky-400">SMA 20</span></span>
                     <span class="flex items-center gap-1 whitespace-nowrap"><span class="w-3 h-0.5 bg-amber-400 inline-block"></span><span class="text-amber-400">SMA 200</span></span>
@@ -983,28 +1013,93 @@
             return Math.max(0, lotesBrutos);
         }
 
-        // Retorna HTML da badge de lotes para os cards
+        // Retorna HTML do painel de capacidade/margem — exibe ações e permite edição por duplo clique
         function capitalLots(ticker, type, strike) {
             if (!globalCapital || globalCapital <= 0) return '';
-            const lotes = calcLotes(globalCapital, strike);
-            if (lotes === 0) return `<span class="text-[9px] text-rose-400/70 font-mono mt-1 block">Capital insuficiente para 1 lote</span>`;
-            const comprometido = lotes * strike * 100;
-            const color = type === 'CALL' ? 'text-brand' : 'text-emerald-400';
-            const borderColor = type === 'CALL' ? 'border-brand/30' : 'border-emerald-500/30';
+            const maxLotes = calcLotes(globalCapital, strike);
+            if (maxLotes === 0) return `<span class="text-[9px] text-rose-400/70 font-mono mt-1 block">Capital insuficiente para 1 lote</span>`;
+            const acoes = maxLotes * 100;
+            const comprometido = maxLotes * strike * 100;
+            const colorCls = type === 'CALL' ? 'text-brand'      : 'text-emerald-400';
+            const colorHex = type === 'CALL' ? 'var(--accent)'   : '#34d399';
+            const borderCls = type === 'CALL' ? 'border-brand/30' : 'border-emerald-500/30';
+            const panelId = `lots-panel-${ticker}-${type}`;
+            const dispId  = `lots-disp-${ticker}-${type}`;
+            const metaId  = `lots-meta-${ticker}-${type}`;
             return `
-                <div class="mt-2 p-2 rounded-lg bg-dark-900/70 border ${borderColor} flex items-center justify-between">
+                <div class="mt-2 p-2 rounded-lg bg-dark-900/70 border ${borderCls} flex items-center justify-between" id="${panelId}">
                     <div>
-                        <span class="text-[9px] uppercase font-bold text-gray-500 tracking-widest block">Sua capacidade</span>
-                        <span class="font-mono font-bold ${color} text-base">${lotes.toLocaleString('pt-BR')} lotes</span>
-                        <span class="text-[9px] font-mono text-gray-600 block">${(lotes * 100).toLocaleString('pt-BR')} ações</span>
+                        <span class="text-[9px] uppercase font-bold text-gray-500 tracking-widest block">Sua capacidade / Margem usada</span>
+                        <span id="${dispId}"
+                            class="font-mono font-bold ${colorCls} text-base cursor-pointer select-none"
+                            title="Duplo clique para editar quantidade"
+                            ondblclick="editLots('${ticker}','${type}',${strike},${maxLotes},this)"
+                        >${acoes.toLocaleString('pt-BR')} ações</span>
                     </div>
                     <div class="text-right">
-                        <span class="text-[9px] uppercase font-bold text-gray-500 tracking-widest block">Margem usada</span>
-                        <span class="font-mono text-xs text-gray-300">${new Intl.NumberFormat('pt-BR', {style:'currency',currency:'BRL'}).format(comprometido)}</span>
-                        <span class="text-[9px] font-mono text-gray-600 block">${((comprometido / globalCapital) * 100).toFixed(0)}% do capital</span>
+                        <span class="font-mono text-xs text-gray-300" id="${metaId}-val">${new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(comprometido)}</span>
+                        <span class="text-[9px] font-mono text-gray-600 block" id="${metaId}-pct">${((comprometido/globalCapital)*100).toFixed(0)}% do capital</span>
                     </div>
                 </div>
             `;
+        }
+
+        // Edição inline de quantidade de ações (duplo clique)
+        function editLots(ticker, type, strike, maxLotes, span) {
+            const raw = span.textContent.replace(/[^0-9]/g, '');
+            const curAcoes = parseInt(raw) || maxLotes * 100;
+            const colorHex = type === 'CALL' ? 'var(--accent)' : '#34d399';
+
+            const inp = document.createElement('input');
+            inp.type = 'number';
+            inp.value = curAcoes / 100;      // mostra em lotes para facilitar
+            inp.min = 1; inp.max = maxLotes; inp.step = 1;
+            inp.style.cssText = `width:6rem;font-family:monospace;font-size:1rem;font-weight:700;color:${colorHex};background:transparent;border:none;border-bottom:2px solid ${colorHex};outline:none;text-align:center;`;
+            span.replaceWith(inp);
+            inp.focus(); inp.select();
+
+            const commit = () => {
+                let lotes = Math.round(parseInt(inp.value) || 1);
+                lotes = Math.max(1, Math.min(maxLotes, lotes));
+                const acoes = lotes * 100;
+                const comprometido = lotes * strike * 100;
+                const pct = ((comprometido / globalCapital) * 100).toFixed(0);
+
+                span.textContent = `${acoes.toLocaleString('pt-BR')} ações`;
+                inp.replaceWith(span);
+
+                const valEl = document.getElementById(`lots-meta-${ticker}-${type}-val`);
+                const pctEl = document.getElementById(`lots-meta-${ticker}-${type}-pct`);
+                if (valEl) valEl.textContent = new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(comprometido);
+                if (pctEl) pctEl.textContent = `${pct}% do capital`;
+            };
+            inp.addEventListener('blur', commit);
+            inp.addEventListener('keydown', e => {
+                if (e.key === 'Enter') { inp.blur(); }
+                if (e.key === 'Escape') { inp.replaceWith(span); }
+            });
+        }
+
+        // Edição inline do código da opção (duplo clique)
+        function editOptCode(span) {
+            const original = span.textContent.trim();
+            const inp = document.createElement('input');
+            inp.type = 'text';
+            inp.value = original;
+            inp.maxLength = 12;
+            inp.style.cssText = 'width:7rem;font-family:monospace;font-size:0.7rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;background:#1a1f2e;color:#a5b4fc;border:1px solid rgba(139,92,246,0.5);border-radius:4px;padding:1px 4px;outline:none;text-align:center;';
+            span.replaceWith(inp);
+            inp.focus(); inp.select();
+            const commit = () => {
+                const newVal = inp.value.trim().toUpperCase() || original;
+                span.textContent = newVal;
+                inp.replaceWith(span);
+            };
+            inp.addEventListener('blur', commit);
+            inp.addEventListener('keydown', e => {
+                if (e.key === 'Enter') { inp.blur(); }
+                if (e.key === 'Escape') { inp.replaceWith(span); }
+            });
         }
 
         // ================================================================
@@ -1272,7 +1367,16 @@
                                 </div>
                                 <div class="flex items-center gap-2">
                                     <span class="text-[9px] font-bold border border-current/30 rounded px-1 py-0.5 ${posColor}">${zoneLabel}</span>
-                                    <span class="text-[11px] font-mono tt-right" style="color:var(--text-secondary);" data-tooltip="IV (Volatilidade Implícita): estimativa do mercado sobre a oscilação futura do ativo.\nIV Rank > 50 = prêmios GORDOS, ótimo para vender. Rank < 30 = prêmios MAGROS, evite vender.">IV ${asset.iv}% <span class="text-[10px] ml-1 px-1 py-0.5 rounded ${asset.ivRank > 50 ? 'bg-emerald-500/20 text-emerald-400' : 'bg-rose-500/20 text-rose-400'}">Rk${asset.ivRank}</span></span>
+                                    <span
+                                        class="text-[11px] font-mono tt-right"
+                                        style="color:var(--text-secondary);cursor:help;"
+                                        data-tooltip="IV = Volatilidade Implícita\u000aIndica o quanto o mercado 'precifica' a oscilação futura do ativo.\u000a\u000a${asset.iv}% ao ano ≈ ${(asset.iv / Math.sqrt(12)).toFixed(1)}% por mês de variação esperada.\u000a\u000aQuanto maior a IV, mais caro é o prêmio da opção.\u000aVender em IV alta = prêmio gordo. Vender em IV baixa = risco não compensado."
+                                    >IV ${asset.iv}%</span>
+                                    <span
+                                        class="text-[10px] font-bold px-1.5 py-0.5 rounded ${asset.ivRank > 50 ? 'bg-emerald-500/20 text-emerald-400' : 'bg-rose-500/20 text-rose-400'}"
+                                        style="cursor:help;"
+                                        data-tooltip="IV Rank = ${asset.ivRank}\u000aCompara a IV atual (${asset.iv}%) com o histórico dos últimos 252 pregões (1 ano).\u000a\u000aEscala: 0 = IV no mínimo histórico | 100 = IV no máximo histórico\u000a\u000a${asset.ivRank > 50 ? '✅ Rank > 50 → PRÊMIOS GORDOS\u000aÓtimo momento para VENDER opções (PUT ou CALL coberta).' : '⚠️ Rank < 50 → PRÊMIOS MAGROS\u000aEvite vender: o prêmio não compensa o risco.'}"
+                                    >RANK ${asset.ivRank}</span>
                                 </div>
                             </div>
 
@@ -1349,7 +1453,12 @@
                                     <div class="flex items-center gap-2 flex-wrap">
                                         <p class="font-mono text-xl font-bold text-gray-200">${fmtMoney(bbUpper)}</p>
                                         <div class="flex items-center gap-1">
-                                            <span id="opt-call-${asset.ticker}" class="text-[9px] font-mono bg-dark-700/50 text-gray-400 px-1.5 py-0.5 rounded border border-white/5" data-tooltip="Código estimado da opção para o vencimento atual. Confirme com sua corretora antes de operar.">${estimateOptionTicker(asset.ticker, 'CALL', bbUpper)}</span>
+                                            <span id="opt-call-${asset.ticker}"
+                                                class="text-[9px] font-mono bg-dark-700/50 text-gray-400 px-1.5 py-0.5 rounded border border-white/5 cursor-pointer"
+                                                title="Duplo clique para editar o código da opção"
+                                                data-tooltip="Código estimado da opção. Duplo clique para editar manualmente antes de copiar."
+                                                ondblclick="editOptCode(this)"
+                                            >${estimateOptionTicker(asset.ticker, 'CALL', bbUpper)}</span>
                                             <button onclick="copyTicker('opt-call-${asset.ticker}', this)" class="copy-btn" data-tooltip="Copiar ticker da opção">
                                                 <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
                                             </button>
@@ -1386,7 +1495,12 @@
                                     <div class="flex items-center gap-2 flex-wrap">
                                         <p class="font-mono text-xl font-bold text-gray-200">${fmtMoney(bbLower)}</p>
                                         <div class="flex items-center gap-1">
-                                            <span id="opt-put-${asset.ticker}" class="text-[9px] font-mono bg-dark-700/50 text-gray-400 px-1.5 py-0.5 rounded border border-white/5" data-tooltip="Código estimado da opção para o vencimento atual. Confirme com sua corretora antes de operar.">${estimateOptionTicker(asset.ticker, 'PUT', bbLower)}</span>
+                                            <span id="opt-put-${asset.ticker}"
+                                                class="text-[9px] font-mono bg-dark-700/50 text-gray-400 px-1.5 py-0.5 rounded border border-white/5 cursor-pointer"
+                                                title="Duplo clique para editar o código da opção"
+                                                data-tooltip="Código estimado da opção. Duplo clique para editar manualmente antes de copiar."
+                                                ondblclick="editOptCode(this)"
+                                            >${estimateOptionTicker(asset.ticker, 'PUT', bbLower)}</span>
                                             <button onclick="copyTicker('opt-put-${asset.ticker}', this)" class="copy-btn" data-tooltip="Copiar ticker da opção">
                                                 <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
                                             </button>

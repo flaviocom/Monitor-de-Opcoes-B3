@@ -26,15 +26,16 @@
                     },
                     colors: {
                         dark: {
-                            900: '#0b0e11', // Background terminal
-                            800: '#161b22', // Cards
-                            700: '#30363d', // Borders
-                            600: '#848d95',
+                            900: '#0B0B09',
+                            800: '#131210',
+                            700: '#1E1C18',
+                            600: '#2A2720',
+                            500: '#3A3730',
                         },
                         brand: {
-                            DEFAULT: '#00c805', // Verde Premium
-                            purple: '#00c805',   // Extinto roxo, substituído por verde para o dark theme
-                            gold: '#2ecc71',     // Acentos esmeralda   
+                            DEFAULT: '#C8A84B',
+                            purple: '#C8A84B',
+                            gold: '#C8A84B',
                         }
                     },
                     animation: {
@@ -43,7 +44,7 @@
                     },
                     keyframes: {
                         flash: {
-                            '0%': { backgroundColor: 'rgba(59, 130, 246, 0.3)' },
+                            '0%': { backgroundColor: 'rgba(200, 168, 75, 0.2)' },
                             '100%': { backgroundColor: 'transparent' },
                         }
                     }
@@ -53,56 +54,286 @@
     </script>
 
     <style>
-        /* ===== DESIGN TOKENS — SISTEMA DE TEMAS DUAL ===== */
+        /* ===== DESIGN TOKENS — ZEEX GOLD & CHARCOAL SYSTEM ===== */
         :root {
-            /* TEMA ESCURO: Terminal Trading (Deep Green Dark) */
-            --bg-900: #0b0e11;
-            --bg-800: #161b22;
-            --bg-700: #30363d;
-            --bg-600: #848d95;
-            --accent: #00c805;
-            --accent-rgb: 0, 200, 5;
-            --text-primary: #ffffff;
-            --text-secondary: #848d95;
-            --text-muted: #5e6872;
-            --card-bg: rgba(22, 27, 34, 0.6);
-            --border: rgba(48, 54, 61, 0.4);
-            --border-strong: rgba(0, 200, 5, 0.4);
-            --gain: #2ECC71;
-            --loss: #E74C3C;
-            --brand: #00c805;
-            --nav-bg: rgba(11, 14, 17, 0.85);
-            --capital-bg: rgba(22, 27, 34, 0.75);
-            --modal-bg: rgba(11, 14, 17, 0.95);
-            --warning-bg: rgba(231, 76, 60, 0.08);
-            --warning-border: rgba(231, 76, 60, 0.25);
+            /* TEMA ESCURO: Zeex Trading (Gold & Charcoal) */
+            --bg-900: #0B0B09;
+            --bg-800: #131210;
+            --bg-700: #1E1C18;
+            --bg-600: #2A2720;
+            --accent: #C8A84B;
+            --accent-rgb: 200, 168, 75;
+            --text-primary: #F0EDE6;
+            --text-secondary: #9A9690;
+            --text-muted: #5C5A54;
+            --card-bg: rgba(19, 18, 16, 0.92);
+            --border: rgba(200, 168, 75, 0.12);
+            --border-strong: rgba(200, 168, 75, 0.30);
+            --gain: #27C183;
+            --loss: #F05252;
+            --brand: #C8A84B;
+            --nav-bg: rgba(10, 10, 8, 0.97);
+            --sidebar-bg: #0D0C0A;
+            --sidebar-item-hover: rgba(200, 168, 75, 0.07);
+            --sidebar-item-active: rgba(200, 168, 75, 0.12);
+            --capital-bg: rgba(19, 18, 16, 0.90);
+            --modal-bg: rgba(10, 10, 8, 0.97);
+            --warning-bg: rgba(240, 82, 82, 0.08);
+            --warning-border: rgba(240, 82, 82, 0.22);
         }
 
-        html.light {
-            /* TEMA CLARO: Marrom + Verde Musgo (Old Money) */
-            --bg-900: #F5F1E8;
-            --bg-800: #EDE8DC;
-            --bg-700: #D4C9B0;
-            --bg-600: #C5B89A;
-            --accent: #5C7A4E;
-            --accent-rgb: 92, 122, 78;
-            --text-primary: #2C1A0E;
-            --text-secondary: #6B5744;
-            --text-muted: #9E8B70;
-            --card-bg: rgba(255, 255, 255, 0.82);
-            --border: rgba(92, 122, 78, 0.18);
-            --border-strong: rgba(92, 122, 78, 0.38);
-            --gain: #27AE60;
-            --loss: #C0392B;
-            --brand: #5C7A4E;
-            --nav-bg: rgba(45, 28, 18, 0.97); /* marrom escuro premium */
-            --capital-bg: rgba(237, 232, 220, 0.97);
-            --modal-bg: rgba(245, 241, 232, 0.98);
-            --warning-bg: rgba(192, 57, 43, 0.06);
-            --warning-border: rgba(192, 57, 43, 0.22);
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        :root {
+          font-family: 'Inter', sans-serif;
+        }
+        h1, h2, h3, h4, .font-title { font-family: 'Outfit', sans-serif; }
+        .font-mono { font-family: 'JetBrains Mono', monospace; }
+
+        /* App Shell Layout */
+        .app-shell {
+            display: flex;
+            min-height: 100vh;
         }
 
-        /* ===== BASE ===== */
+        /* ===== SIDEBAR ===== */
+        .sidebar {
+            width: 220px;
+            min-width: 220px;
+            background: var(--sidebar-bg);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100vh;
+            z-index: 200;
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            overflow-y: auto;
+        }
+        .sidebar::-webkit-scrollbar { width: 4px; }
+        .sidebar::-webkit-scrollbar-thumb { background: var(--bg-600); border-radius: 2px; }
+
+        .sidebar-logo {
+            padding: 20px 18px 16px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 11px;
+        }
+        .sidebar-logo img {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            border: 1px solid var(--border-strong);
+            object-fit: contain;
+            flex-shrink: 0;
+        }
+        .sidebar-logo-text {
+            display: flex;
+            flex-direction: column;
+        }
+        .sidebar-logo-name {
+            font-family: 'Outfit', sans-serif;
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--text-primary);
+            line-height: 1.1;
+            letter-spacing: -0.02em;
+        }
+        .sidebar-logo-badge {
+            font-size: 9px;
+            font-weight: 800;
+            letter-spacing: 0.12em;
+            background: linear-gradient(135deg, var(--accent), rgba(var(--accent-rgb), 0.6));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-transform: uppercase;
+        }
+
+        .sidebar-nav {
+            padding: 12px 10px;
+            flex: 1;
+        }
+        .sidebar-section-label {
+            font-size: 9px;
+            font-weight: 700;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            padding: 8px 10px 6px;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 9px 12px;
+            border-radius: 10px;
+            color: var(--text-secondary);
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            text-decoration: none;
+            border-left: 2px solid transparent;
+            margin-bottom: 2px;
+        }
+        .nav-item:hover {
+            background: var(--sidebar-item-hover);
+            color: var(--text-primary);
+            border-left-color: rgba(var(--accent-rgb), 0.3);
+        }
+        .nav-item.active {
+            background: var(--sidebar-item-active);
+            color: var(--accent);
+            border-left-color: var(--accent);
+            font-weight: 600;
+        }
+        .nav-item svg {
+            width: 16px;
+            height: 16px;
+            flex-shrink: 0;
+            opacity: 0.7;
+        }
+        .nav-item.active svg { opacity: 1; }
+        .nav-item:hover svg { opacity: 0.9; }
+
+        .nav-item-badge {
+            margin-left: auto;
+            font-size: 9px;
+            font-weight: 700;
+            padding: 1px 6px;
+            border-radius: 20px;
+            background: rgba(var(--accent-rgb), 0.15);
+            color: var(--accent);
+            border: 1px solid rgba(var(--accent-rgb), 0.25);
+        }
+
+        .sidebar-divider {
+            height: 1px;
+            background: var(--border);
+            margin: 8px 10px;
+        }
+
+        .sidebar-bottom {
+            padding: 12px 10px;
+            border-top: 1px solid var(--border);
+        }
+
+        /* ===== MAIN CONTENT AREA ===== */
+        .main-content {
+            flex: 1;
+            margin-left: 220px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* ===== TOP BAR ===== */
+        .top-bar {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: var(--nav-bg);
+            border-bottom: 1px solid var(--border);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            padding: 0 24px;
+            height: 58px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+        }
+        .top-bar-left {
+            display: flex;
+            flex-direction: column;
+        }
+        .top-bar-greeting {
+            font-family: 'Outfit', sans-serif;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-primary);
+            line-height: 1.1;
+        }
+        .top-bar-subtitle {
+            font-size: 10px;
+            color: var(--text-muted);
+            margin-top: 1px;
+        }
+        .top-bar-controls {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .top-bar-badge {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 5px 10px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background: rgba(var(--accent-rgb), 0.05);
+            font-size: 10px;
+        }
+
+        /* ===== HERO SECTION ===== */
+        .hero-section {
+            padding: 20px 24px 0;
+        }
+        .hero-welcome {
+            font-family: 'Outfit', sans-serif;
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--text-primary);
+            letter-spacing: -0.02em;
+        }
+
+        /* ===== STATS STRIP ===== */
+        .stats-strip {
+            display: flex;
+            gap: 12px;
+            padding: 16px 24px;
+            border-bottom: 1px solid var(--border);
+            overflow-x: auto;
+        }
+        .stats-strip::-webkit-scrollbar { display: none; }
+        .stat-card {
+            flex-shrink: 0;
+            padding: 12px 16px;
+            border-radius: 12px;
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            min-width: 140px;
+            transition: border-color 0.2s ease, transform 0.2s ease;
+        }
+        .stat-card:hover {
+            border-color: var(--border-strong);
+            transform: translateY(-1px);
+        }
+        .stat-card-label {
+            font-size: 9px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--text-muted);
+            margin-bottom: 5px;
+        }
+        .stat-card-value {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--text-primary);
+            line-height: 1;
+        }
+        .stat-card-sub {
+            font-size: 10px;
+            color: var(--text-muted);
+            margin-top: 3px;
+        }
+
         body {
             background-color: var(--bg-900);
             background-image:
@@ -111,34 +342,24 @@
             color: var(--text-primary);
             min-height: 100vh;
             transition: background-color 0.4s ease, color 0.4s ease;
+            overflow-x: hidden;
         }
 
+        /* ===== ZEEX FLAT CARD (substitui glass-card) ===== */
         .glass-card {
             background: var(--card-bg);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
             border: 1px solid var(--border);
-            border-left: 4px solid var(--brand); /* Destaque direcional verde pedido */
-            border-radius: 16px; /* Raios generosos do "ui-ux-pro-max" */
-            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.05); /* Sombra mais dissipada */
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border-radius: 14px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.25);
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
         }
 
         .glass-card:hover {
             z-index: 50;
             transform: translateY(-2px);
-            box-shadow: 0 10px 40px rgba(0, 200, 5, 0.05); /* Sombra que puxa pro verde claro ao sobrevoar */
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), 0 0 15px rgba(var(--accent-rgb), 0.1);
             border-color: var(--border-strong);
-            border-left: 4px solid var(--accent);
-        }
-        html.light .glass-card {
-            border-left: 1px solid var(--border); /* No claro desativa borda verde lateral grossa, preserva elegância marrom */
-            border-radius: 12px;
-            box-shadow: 0 2px 16px rgba(0,0,0,0.06), 0 1px 4px rgba(0,0,0,0.04);
-        }
-        html.light .glass-card:hover {
-            border-color: var(--border-strong);
-            border-left: 2px solid var(--accent);
         }
 
         .badge-pro {
@@ -224,57 +445,6 @@
         #theme-toggle:hover { background: rgba(var(--accent-rgb), 0.2); transform: scale(1.08); }
         #theme-toggle:active { transform: scale(0.92); }
 
-        /* ===== OVERRIDES LIGHT THEME ===== */
-        html.light .text-white { color: var(--text-primary) !important; }
-        html.light .text-gray-200 { color: #3A2415 !important; }
-        html.light .text-gray-300 { color: #5A3D26 !important; }
-        html.light .text-gray-400 { color: #7A5A40 !important; }
-        html.light .text-gray-500 { color: #9E8065 !important; }
-        html.light .text-gray-600 { color: #BBA080 !important; }
-        html.light .bg-dark-800 { background-color: rgba(0,0,0,0.04) !important; }
-        html.light .bg-dark-800\/60 { background-color: rgba(0,0,0,0.04) !important; }
-        html.light .bg-dark-800\/80 { background-color: rgba(255,255,255,0.65) !important; }
-        html.light .bg-dark-800\/40 { background-color: rgba(0,0,0,0.03) !important; }
-        html.light .bg-dark-900\/70 { background-color: rgba(0,0,0,0.04) !important; }
-        html.light .bg-dark-700 { background-color: rgba(0,0,0,0.08) !important; }
-        html.light .border-white\/5 { border-color: rgba(0,0,0,0.08) !important; }
-        html.light .border-dark-700\/50 { border-color: rgba(0,0,0,0.10) !important; }
-        html.light .border-dark-600 { border-color: rgba(0,0,0,0.13) !important; }
-        html.light .border-dark-500 { border-color: rgba(0,0,0,0.15) !important; }
-        html.light #nav-controls { background: rgba(61,43,31,0.12) !important; border-color: rgba(92,122,78,0.35) !important; }
-        html.light #nav-controls .text-emerald-400 { color: #27AE60 !important; }
-        html.light #nav-controls .text-brand-purple { color: #5C7A4E !important; }
-        html.light #nav-controls span#market-status { color: #8B7A6A !important; }
-        html.light .text-brand-purple { color: var(--accent) !important; }
-        html.light .border-brand-purple\/30 { border-color: rgba(92,122,78,0.3) !important; }
-        html.light .bg-dark-800\/50 { background-color: rgba(0,0,0,0.04) !important; }
-        html.light .bg-dark-700\/50 { background-color: rgba(0,0,0,0.06) !important; }
-        html.light .text-brand { color: #3D7A5C !important; }
-        html.light .border-brand\/20 { border-color: rgba(61,122,92,0.25) !important; }
-        html.light .bg-brand\/5 { background-color: rgba(61,122,92,0.06) !important; }
-        html.light .bg-brand\/10 { background-color: rgba(61,122,92,0.10) !important; }
-        html.light .bg-brand\/25 { background-color: rgba(61,122,92,0.18) !important; }
-        html.light .text-brand-gold { color: #8B6914 !important; }
-        html.light .border-brand-gold\/30 { border-color: rgba(139,105,20,0.3) !important; }
-
-        /* ===== NAVBAR: mantém texto claro em ambos os temas (header sempre escuro) ===== */
-        nav.site-nav h1,
-        nav.site-nav #platform-name,
-        nav.site-nav .badge-pro { color: #F5F1E8 !important; -webkit-text-fill-color: unset; }
-        nav.site-nav .badge-pro {
-            -webkit-text-fill-color: transparent;
-            background: linear-gradient(135deg, var(--accent) 0%, rgba(var(--accent-rgb), 0.7) 100%);
-            -webkit-background-clip: text;
-            background-clip: text;
-        }
-        nav.site-nav .nav-subtitle { color: rgba(200, 190, 175, 0.7) !important; }
-        html.light nav.site-nav .text-white { color: #F5F1E8 !important; }
-        html.light nav.site-nav .text-gray-400 { color: rgba(200, 190, 175, 0.7) !important; }
-        html.light nav.site-nav .text-emerald-400 { color: #48D68A !important; }
-        html.light nav.site-nav .text-brand-purple { color: #C2A878 !important; }
-        html.light nav.site-nav .text-gray-500 { color: #A8A098 !important; }
-        html.light nav.site-nav #dte-counter { color: #F5F1E8 !important; }
-        
         .number-fmt { font-family: 'JetBrains Mono', monospace; font-variant-numeric: tabular-nums; }
 
         /* ===== PAINEL DE CAPITAL (Position Sizing) ===== */
@@ -289,7 +459,7 @@
             align-items: center;
             gap: 16px;
             position: sticky;
-            top: 73px;
+            top: 58px;
             z-index: 90;
             transition: background 0.4s ease;
         }
@@ -388,7 +558,6 @@
             border-radius: 1px; transition: left 0.5s ease;
             box-shadow: 0 0 6px white;
         }
-        html.light .bb-price-marker { background: #2C1A0E; box-shadow: 0 0 6px rgba(44,26,14,0.5); }
 
         /* ===== MODAL DO GRÁFICO ===== */
         #chart-modal {
@@ -406,7 +575,6 @@
             box-shadow: 0 0 60px rgba(var(--accent-rgb), 0.1), 0 30px 80px rgba(0,0,0,0.5);
             width: 100%; max-width: 900px; overflow: hidden;
         }
-        html.light #chart-modal-box { background: #F5F1E8; }
         #chart-container { width: 100%; height: 340px; background: transparent; }
         #volume-container { width: 100%; height: 90px; background: transparent; }
         .period-btn {
@@ -422,11 +590,52 @@
             color: var(--accent);
         }
 
-        /* ===== NAVBAR MOBILE FIX ===== */
+        /* ===== MOBILE RESPONSIVE ===== */
+        @media (max-width: 1024px) {
+            .sidebar {
+                transform: translateX(-100%);
+                width: 240px;
+            }
+            .sidebar.mobile-open {
+                transform: translateX(0);
+                box-shadow: 8px 0 40px rgba(0,0,0,0.5);
+            }
+            .main-content {
+                margin-left: 0;
+            }
+            .sidebar-mobile-overlay {
+                display: block;
+            }
+        }
+        .sidebar-mobile-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.6);
+            z-index: 199;
+            backdrop-filter: blur(4px);
+        }
+        .mobile-menu-btn {
+            display: none;
+            align-items: center;
+            justify-content: center;
+            width: 34px; height: 34px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background: rgba(var(--accent-rgb), 0.07);
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .mobile-menu-btn:hover { background: rgba(var(--accent-rgb), 0.15); color: var(--accent); }
+        @media (max-width: 1024px) {
+            .mobile-menu-btn { display: flex; }
+            #capital-panel { top: 58px; }
+        }
         @media (max-width: 600px) {
-            #navbar-inner { flex-wrap: wrap; gap: 6px 0; align-items: center; }
-            #nav-controls-wrap { width: 100%; display: flex; justify-content: flex-end; align-items: center; }
-            #nav-badge-group { flex-shrink: 0; }
+            .stats-strip { padding: 12px 16px; gap: 8px; }
+            .hero-section { padding: 14px 16px 0; }
+            .top-bar { padding: 0 16px; }
         }
 
         /* ===== BOTÃO X FLUTUANTE SOBRE O GRÁFICO ===== */
@@ -478,113 +687,194 @@
 </head>
 <body class="antialiased min-h-screen">
 
-    <!-- Top Navigation -->
-    <nav class="site-nav sticky top-0 z-[100] px-4 py-3 md:px-6 md:py-3" style="background:var(--nav-bg);border-bottom:1px solid var(--border-strong); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);">
-        <div class="max-w-7xl mx-auto">
-            <div id="navbar-inner" class="flex justify-between items-center">
+    <!-- Overlay Mobile para fechar sidebar -->
+    <div class="sidebar-mobile-overlay" id="sidebar-overlay" onclick="toggleSidebar()"></div>
 
-                <!-- Logo + Título -->
-                <div id="nav-badge-group" class="flex items-center gap-3">
-                    <img src="logo.png" alt="ThetaLens" class="w-12 h-12 md:w-14 md:h-14 object-contain rounded-xl border" style="border-color:var(--border-strong);" />
-                    <div>
-                        <h1 class="text-xl font-bold tracking-tight text-white flex items-center gap-2">
-                            <span id="platform-name">ThetaLens</span>
-                            <span class="badge-pro text-sm uppercase tracking-widest px-2 py-0.5 rounded border" style="border-color:rgba(var(--accent-rgb),0.35);">PRO</span>
-                        </h1>
-                        <p class="nav-subtitle text-xs text-gray-400">Terminal de Inteligência Quantitativa</p>
-                    </div>
+    <!-- App Shell -->
+    <div class="app-shell">
+
+        <!-- ===== SIDEBAR ===== -->
+        <aside class="sidebar" id="sidebar">
+
+            <!-- Logo -->
+            <div class="sidebar-logo">
+                <img src="logo.png" alt="ThetaLens" />
+                <div class="sidebar-logo-text">
+                    <span class="sidebar-logo-name">ThetaLens</span>
+                    <span class="sidebar-logo-badge">PRO Terminal</span>
+                </div>
+            </div>
+
+            <!-- Nav -->
+            <nav class="sidebar-nav">
+                <div class="sidebar-section-label">Principal</div>
+
+                <a class="nav-item active" href="#" onclick="scrollToSection('dashboard'); return false;">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+                    Dashboard
+                </a>
+                
+                <a class="nav-item" href="#" onclick="scrollToSection('active-operations'); return false;" id="nav-operations">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012-2"/></svg>
+                    Operações Ativas
+                    <span class="nav-item-badge" id="sidebar-ops-count">0</span>
+                </a>
+
+                <a class="nav-item" href="#" onclick="scrollToSection('active-operations'); return false;" id="nav-portfolio">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7h16M4 12h10M4 17h6"/></svg>
+                    Histórico
+                </a>
+
+                <div class="sidebar-section-label" style="margin-top: 6px;">Mercado</div>
+
+                <a class="nav-item" href="#" onclick="return false;">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"/></svg>
+                    Mercado & Análise
+                </a>
+
+                <a class="nav-item" href="#" onclick="return false;">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+                    Bandas de Bollinger
+                </a>
+
+                <div class="sidebar-divider"></div>
+
+                <a class="nav-item" href="#" onclick="radarActive=!radarActive;this.classList.toggle('active');if(radarActive)Notification.requestPermission(); return false;" id="nav-radar" title="Ativar/desativar alertas push">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
+                    Radar de Alertas
+                    <span class="nav-item-badge">ON</span>
+                </a>
+            </nav>
+
+            <!-- Bottom: Status -->
+            <div class="sidebar-bottom">
+                <div class="sidebar-divider" style="margin: 0 0 10px;"></div>
+
+                <!-- DTE Badge -->
+                <div class="nav-item" style="cursor:default; user-select:none; opacity: 0.7;">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width:14px;height:14px;color:var(--accent);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    <span style="font-size:11px;color:var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em;">Vencimento</span>
+                    <span id="dte-counter" class="nav-item-badge" style="font-size:10px; background: rgba(var(--accent-rgb), 0.15); color: var(--accent);">--</span>
+                </div>
+            </div>
+        </aside>
+
+        <!-- ===== MAIN CONTENT ===== -->
+        <div class="main-content">
+
+            <!-- Top Bar -->
+            <div class="top-bar site-nav">
+                <!-- Botão hamburger mobile -->
+                <button class="mobile-menu-btn" onclick="toggleSidebar()" aria-label="Menu" style="margin-right: 8px;">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+                </button>
+
+                <!-- Saudação + Clock -->
+                <div class="top-bar-left">
+                    <span class="top-bar-greeting">Bem-vindo, Trader! 👋</span>
+                    <span class="top-bar-subtitle">Terminal Quantitativo B3 · <span id="clock" class="text-emerald-400" style="font-family:'JetBrains Mono',monospace;font-size:10px;">--:--:--</span></span>
                 </div>
 
-                <!-- Controles + Botão Tema -->
-                <div id="nav-controls-wrap" class="flex items-center gap-2">
-                    <div id="nav-controls" class="flex items-center gap-2 px-2 py-1.5 rounded-md border shadow-inner text-[10px] md:text-[11px]" style="background:rgba(var(--accent-rgb),0.06);border-color:var(--border-strong);">
-                        <button id="radar-toggle" onclick="radarActive=!radarActive;this.classList.toggle('text-rose-400');this.classList.toggle('text-emerald-400');if(radarActive)Notification.requestPermission();" class="font-bold text-emerald-400 tracking-widest uppercase flex items-center gap-1 cursor-pointer hover:bg-white/5 px-1.5 py-0.5 rounded transition" title="Ativar/desativar alertas push">
-                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
-                            RADAR
-                        </button>
-                        <div class="border-l border-dark-700/50 h-4 mx-0.5"></div>
-                        <span class="font-bold text-brand-purple tracking-widest uppercase flex items-center gap-1" title="Dias para o Vencimento (3ª Sexta-feira do mês)">
-                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                            DTE:<span id="dte-counter" class="text-white font-mono ml-0.5">--</span>
-                        </span>
-                        <div class="border-l border-dark-700/50 h-4 mx-0.5"></div>
-                        <span id="market-status" class="font-bold text-gray-500 tracking-widest uppercase flex items-center gap-1">
-                            <span id="market-dot" class="w-2 h-2 rounded-full bg-gray-600 inline-block"></span>
-                            <span id="market-label">---</span>
-                        </span>
+                <!-- Controles -->
+                <div class="top-bar-controls">
+                    <!-- Status Mercado -->
+                    <div class="top-bar-badge">
+                        <span id="market-dot" class="w-2 h-2 rounded-full bg-gray-600 inline-block"></span>
+                        <span id="market-label" style="font-weight:700;letter-spacing:0.08em;color:var(--text-muted);">---</span>
                     </div>
 
-                    <!-- Botão Alternar Tema Sol/Lua -->
-                    <button id="theme-toggle" onclick="toggleTheme()" title="Alternar tema escuro/claro" aria-label="Alternar tema">
-                        <svg id="theme-icon-moon" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>
-                        <svg id="theme-icon-sun" class="w-4 h-4 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+                    <!-- Radar toggle compacto -->
+                    <button id="radar-toggle" onclick="radarActive=!radarActive;this.classList.toggle('text-rose-400');this.classList.toggle('text-emerald-400');if(radarActive)Notification.requestPermission();"
+                        class="top-bar-badge font-bold text-emerald-400 tracking-widest uppercase flex items-center gap-1 cursor-pointer hover:border-current transition"
+                        title="Ativar/desativar alertas push">
+                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
+                        RADAR
                     </button>
                 </div>
-
             </div>
-        </div>
-    </nav>
 
-    <!-- Painel de Dimensionamento de Capital (Position Sizing) -->
-    <div id="capital-panel">
-        <div class="max-w-7xl mx-auto flex items-center gap-3 flex-wrap">
-            <svg class="w-4 h-4 text-brand-gold flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3"/></svg>
-            <span class="text-xs font-bold text-gray-400 uppercase tracking-widest">Capital Disponível</span>
-            <div class="relative">
-                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm font-mono">R$</span>
-                <input
-                    id="capital-input"
-                    type="number"
-                    min="0"
-                    step="1000"
-                    placeholder="ex: 20000"
-                    style="padding-left: 32px;"
-                    oninput="onCapitalChange()"
-                    title="Informe o patrimônio disponível para calcular automaticamente o lote máximo de contratos que pode operar em cada ativo"
-                />
-            </div>
-            <span class="text-[11px] text-gray-500">→ Os cards mostrarão quantos lotes você pode vender</span>
-            <span id="capital-helper" class="ml-auto text-[10px] font-mono text-gray-600 hidden"></span>
-        </div>
-    </div>
-
-    <!-- Main Content -->
-    <main class="max-w-7xl mx-auto px-6 py-8">
-        
-        <!-- Aviso Educacional (Exigido CVM/Regulamentação) -->
-        <div class="mb-6 p-4 rounded-xl border border-rose-500/30 bg-rose-500/10 flex items-center gap-4 shadow-lg shadow-rose-500/5">
-            <span class="text-2xl">⚠️</span>
-            <p class="text-sm text-gray-300 font-medium">
-                <strong class="text-rose-400">AVISO:</strong> Este painel é uma ferramenta de apoio educacional e acompanhamento quantitativo. Não constitui recomendação de investimento. Decisões financeiras devem ser baseadas em avaliações próprias e profissionais.
-            </p>
-        </div>
-
-        <!-- Grid de Ativos -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-6" id="assets-grid">
-            <!-- Renderizado via JS -->
-        </div>
-
-        <!-- Painel de Operações Monitoradas -->
-        <div class="mt-12 mb-8 glass-card rounded-xl p-6 border-t border-brand/20 shadow-lg" id="monitor-container">
-            <div class="flex items-center justify-between mb-6">
-                <div>
-                    <h2 class="text-xl font-bold text-white flex items-center gap-2">
-                        <svg class="w-5 h-5 text-brand" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path></svg>
-                        Operações Ativas
-                    </h2>
-                    <p class="text-sm text-gray-400 mt-1" id="monitor-subtitle">Nenhuma operação acompanhada no momento.</p>
+            <!-- Capital Panel -->
+            <div id="capital-panel">
+                <div class="max-w-7xl mx-auto flex items-center gap-3 flex-wrap">
+                    <svg class="w-4 h-4 text-brand-gold flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3"/></svg>
+                    <span class="text-xs font-bold text-gray-400 uppercase tracking-widest">Capital Disponível</span>
+                    <div class="relative">
+                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm font-mono">R$</span>
+                        <input
+                            id="capital-input"
+                            type="number"
+                            min="0"
+                            step="1000"
+                            placeholder="ex: 20000"
+                            style="padding-left: 32px;"
+                            oninput="onCapitalChange()"
+                            title="Informe o patrimônio disponível para calcular automaticamente o lote máximo de contratos que pode operar em cada ativo"
+                        />
+                    </div>
+                    <span class="text-[11px] text-gray-500">→ Os cards mostrarão quantos lotes você pode vender</span>
+                    <span id="capital-helper" class="ml-auto text-[10px] font-mono text-gray-600 hidden"></span>
                 </div>
-                <button onclick="clearOperations()" class="text-[10px] uppercase font-bold text-gray-500 hover:text-rose-400 transition-colors border border-dark-600 px-2 py-1 rounded">Limpar Histórico</button>
             </div>
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="operations-grid">
-                <!-- Cards de operações gerados via JS -->
-            </div>
-        </div>
 
-        <div class="mt-12 text-center pb-8 border-t border-dark-700/30 pt-4">
-            <p class="text-xs text-gray-500">© 2026 Plataforma Monitor de Opções B3 PRO. O conteúdo aqui é puramente analítico e não configura call de compra ou venda.</p>
-        </div>
-    </main>
+            <!-- Stats Strip -->
+            <div class="stats-strip">
+                <div class="stat-card">
+                    <div class="stat-card-label">📈 Ativos Monitorados</div>
+                    <div class="stat-card-value">5</div>
+                    <div class="stat-card-sub">PETR4, VALE3, BBAS3...</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-card-label">🎯 DTE (Vencimento)</div>
+                    <div class="stat-card-value"><span id="dte-strip" style="color:var(--accent);">--</span></div>
+                    <div class="stat-card-sub">3ª Sexta-feira do mês</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-card-label">📡 Última Atualização</div>
+                    <div class="stat-card-value" id="last-update-strip" style="font-size:12px;color:var(--text-secondary);">--:--</div>
+                    <div class="stat-card-sub">Brapi.dev · delay 15min</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-card-label">⚠️ Aviso Legal</div>
+                    <div class="stat-card-value" style="font-size:11px; color:var(--loss);">Educacional</div>
+                    <div class="stat-card-sub">Não é recomendação</div>
+                </div>
+            </div>
+
+            <!-- Main Content -->
+            <!-- Main Dashboard Area -->
+            <main class="p-4 lg:p-8" id="dashboard">
+                <div class="mb-4">
+                    <h1 class="text-2xl font-black text-white tracking-tighter uppercase">Monitor de Volatilidade</h1>
+                    <p class="text-xs text-[var(--text-secondary)] font-medium">Quantitativo B3 · Bandas de Bollinger 20,2σ</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-6" id="assets-grid">
+                    <!-- Renderizado via JS -->
+                </div>
+
+                <!-- Painel de Operações Monitoradas -->
+                <div class="mt-12 mb-8 glass-card rounded-xl p-6 border-t border-brand/20 shadow-lg" id="active-operations">
+                    <div class="flex items-center justify-between mb-6">
+                        <div>
+                            <h2 class="text-xl font-bold text-white flex items-center gap-2">
+                                <svg class="w-5 h-5 text-brand" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path></svg>
+                                Operações Ativas
+                            </h2>
+                            <p class="text-sm text-gray-400 mt-1" id="monitor-subtitle">Nenhuma operação acompanhada no momento.</p>
+                        </div>
+                        <button onclick="clearOperations()" class="text-[10px] uppercase font-bold text-gray-500 hover:text-rose-400 transition-colors border border-dark-600 px-2 py-1 rounded">Limpar Histórico</button>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="operations-grid">
+                        <!-- Cards de operações gerados via JS -->
+                    </div>
+                </div>
+
+                <div class="mt-10 text-center pb-8 border-t pt-4" style="border-color:var(--border);">
+                    <p class="text-xs" style="color:var(--text-muted);">© 2026 ThetaLens PRO · Terminal de Inteligência Quantitativa B3 · Conteúdo puramente analítico e educacional.</p>
+                </div>
+            </main>
+        </div><!-- /main-content -->
+    </div><!-- /app-shell -->
 
     <!-- MODAL DO GRÁFICO DE CANDLES -->
     <div id="chart-modal" onclick="if(event.target===this)closeChart()">
@@ -634,6 +924,54 @@
     </div>
 
     <script>
+        // ===================================================
+        // SIDEBAR — Controle Mobile
+        // ===================================================
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebar-overlay');
+            if (sidebar) sidebar.classList.toggle('mobile-open');
+            if (overlay) overlay.classList.toggle('active');
+        }
+
+        function scrollToSection(id) {
+            const el = document.getElementById(id);
+            if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            // Fecha sidebar no mobile após navegar
+            if (window.innerWidth <= 1024) toggleSidebar();
+        }
+
+        function syncSidebarOpsCount() {
+            const ops = loadOperations ? loadOperations() : [];
+            const active = ops.filter(o => o.status === 'ATIVA').length;
+            const badge = document.getElementById('sidebar-ops-count');
+            if (badge) badge.textContent = active;
+        }
+
+        function syncStatsStrip() {
+            // Sincroniza DTE strip
+            const dte = document.getElementById('dte-counter');
+            const strip = document.getElementById('dte-strip');
+            if (dte && strip) strip.textContent = dte.textContent;
+            // Last update
+            const upd = document.getElementById('last-update-strip');
+            if (upd) upd.textContent = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+        }
+
+        // Fecha sidebar ao clicar fora (overlay)
+        document.addEventListener('click', function(e) {
+            const sidebar = document.getElementById('sidebar');
+            if (!sidebar) return;
+            if (window.innerWidth > 1024) return;
+            if (sidebar.classList.contains('mobile-open') &&
+                !sidebar.contains(e.target) &&
+                e.target.id !== 'sidebar-overlay') {
+                sidebar.classList.remove('mobile-open');
+                const overlay = document.getElementById('sidebar-overlay');
+                if (overlay) overlay.classList.remove('active');
+            }
+        });
+
         // Dados Mockados de Alta Fidelidade — Valores exibidos enquanto o backend carrega dados reais
         const assetsData = [
             {
@@ -982,6 +1320,9 @@
             const activeCount = ops.filter(o => o.status === 'ATIVA').length;
             const subtitle = document.getElementById('monitor-subtitle');
             if(subtitle) subtitle.textContent = activeCount === 0 ? 'Nenhuma operação ativa no momento.' : `${activeCount} operação(ões) ativa(s).`;
+            // Sincroniza badge da sidebar
+            const sidebarBadge = document.getElementById('sidebar-ops-count');
+            if (sidebarBadge) sidebarBadge.textContent = activeCount;
             
             grid.innerHTML = '';
             
@@ -1466,8 +1807,8 @@
                         : `<span></span>`;
 
                     return `
-                        <div class="mt-3 border border-dark-700/50 rounded-xl bg-dark-800/30 overflow-hidden">
-                            <button class="band-toggle-btn hover:bg-dark-700/30 transition-colors" onclick="toggleBand(this)">
+                        <div class="mt-3 border border-[var(--border)] rounded-xl bg-[var(--bg-800)]/40 overflow-hidden">
+                            <button class="band-toggle-btn hover:bg-[var(--sidebar-item-hover)] transition-colors" onclick="toggleBand(this)">
                                 <div class="flex items-center gap-2">
                                     <span class="text-[11px] font-bold uppercase tracking-wider" style="color:var(--text-secondary);">${band.label}</span>
                                     <span class="text-[8px] font-bold border rounded px-1 py-0.5" style="color:var(--accent);border-color:var(--border);">BB 20,2\u03c3</span>
@@ -1479,8 +1820,8 @@
                             </button>
                             <div class="band-body px-3">
                                 <!-- Info de IV acima da banda interna -->
-                                <div class="flex justify-between items-center mb-1 pb-1 border-b border-white/5">
-                                    <span class="text-[10px] font-mono" style="color:var(--text-secondary);">Análise Numérica</span>
+                                <div class="flex justify-between items-center mb-1 pb-1 border-b border-[var(--border)]">
+                                    <span class="text-[10px] font-mono" style="color:var(--text-muted);">Análise Numérica</span>
                                     <span
                                         class="text-[11px] font-mono tt-right font-bold"
                                         style="color:var(--text-muted);cursor:help;"
@@ -1565,10 +1906,10 @@
                                 <div>
                                     <p class="text-[10px] font-medium text-gray-500 uppercase tracking-wider mb-0.5">Stk Alvo (BB Resist.)</p>
                                     <div class="flex items-center gap-2 flex-wrap">
-                                        <p class="font-mono text-xl font-bold text-gray-200">${fmtMoney(bbUpper)}</p>
+                                        <p class="font-mono text-xl font-bold text-[var(--text-primary)]">${fmtMoney(bbUpper)}</p>
                                         <div class="flex items-center gap-1">
                                             <span id="opt-call-${asset.ticker}"
-                                                class="text-[9px] font-mono bg-dark-700/50 text-gray-400 px-1.5 py-0.5 rounded border border-white/5 cursor-pointer"
+                                                class="text-[9px] font-mono bg-[var(--bg-700)]/50 text-[var(--text-secondary)] px-1.5 py-0.5 rounded border border-[var(--border)] cursor-pointer"
                                                 title="Duplo clique para editar o código da opção"
                                                 data-tooltip="Código estimado da opção. Duplo clique para editar manualmente antes de copiar."
                                                 ondblclick="editOptCode(this)"
@@ -1710,10 +2051,10 @@
                                             <span class="text-[9px] font-bold uppercase tracking-wider text-emerald-400 mb-0.5 flex items-center gap-1"><svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>${asset.nextDividend ? asset.nextDividend.label : 'DIVIDENDO'}</span>
                                             <span class="flex items-center gap-2 flex-wrap">
                                                 <span class="text-sm font-mono font-bold text-emerald-400">${asset.nextDividend && asset.nextDividend.value ? fmtMoney(asset.nextDividend.value) : 'R$ --'}</span>
-                                                ${asset.nextDividend && asset.nextDividend.datacom ? `<span class="text-[8px] text-gray-400 uppercase font-bold">Com: ${asset.nextDividend.datacom}</span>` : '<span class="text-[8px] text-gray-600 font-medium italic">Sem previsão</span>'}
+                                                ${asset.nextDividend && asset.nextDividend.datacom ? `<span class="text-[8px] text-[var(--text-secondary)] uppercase font-bold">Com: ${asset.nextDividend.datacom}</span>` : '<span class="text-[8px] text-[var(--text-secondary)] font-medium italic">Sem previsão</span>'}
                                             </span>
                                             ${asset.nextDividend && asset.nextDividend.diasParaDataCom !== undefined ? `
-                                                <span class="text-[8px] font-bold mt-0.5 ${asset.nextDividend.diasParaDataCom > 0 && asset.nextDividend.diasParaDataCom <= 10 ? 'text-rose-400' : asset.nextDividend.diasParaDataCom > 0 ? 'text-amber-400' : 'text-gray-500'}">
+                                                <span class="text-[8px] font-bold mt-0.5 ${asset.nextDividend.diasParaDataCom > 0 && asset.nextDividend.diasParaDataCom <= 10 ? 'text-rose-400' : asset.nextDividend.diasParaDataCom > 0 ? 'text-amber-400' : 'text-[var(--text-secondary)]'}">
                                                     ${asset.nextDividend.diasParaDataCom > 0 ? `⏱ Em ${asset.nextDividend.diasParaDataCom} dias` : '✓ Data Com encerrada'}
                                                 </span>` : ''}
                                         </div>
@@ -1910,7 +2251,9 @@
 
         renderAssets();
         renderOperations();
+        syncStatsStrip(); // Sincroniza stats strip com DTE e horário
         setInterval(updateClock, 1000);
+        setInterval(syncStatsStrip, 5000); // Sincroniza DTE + last-update a cada 5s
         updateClock();
         updateMarketStatusBadge();
         setInterval(updateMarketStatusBadge, 30000);
@@ -2213,31 +2556,27 @@
         document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeChart(); });
 
         // ======================================================
-        // SISTEMA DE TEMAS — Dark (Verde Profundo) / Light (Old Money)
+        // SOMENTE DARK MODE — Zeex Gold & Charcoal
         // ======================================================
         function toggleTheme() {
-            const isLight = document.documentElement.classList.toggle('light');
-            localStorage.setItem('thetalens_theme', isLight ? 'light' : 'dark');
-            updateThemeIcon(isLight);
-            // Re-renderiza para aplicar cores dinâmicas no JS (ex: fmtMoney colors)
-            renderAssets();
+            // Interface exclusivamente dark — sem alternância de tema
+            // Mantido para compatibilidade com botão na sidebar (sem operação)
         }
 
-        function updateThemeIcon(isLight) {
+        function updateThemeIcon() {
+            // Dark permanente — ícone de tema oculto
             const moon = document.getElementById('theme-icon-moon');
             const sun  = document.getElementById('theme-icon-sun');
-            if (moon) moon.classList.toggle('hidden', isLight);
-            if (sun)  sun.classList.toggle('hidden', !isLight);
+            if (moon) moon.classList.remove('hidden');
+            if (sun)  sun.classList.add('hidden');
         }
 
-        // Aplica tema persistido e Capital inicial
+        // Aplica Capital inicial salvo
         (function initTheme() {
-            const saved = localStorage.getItem('thetalens_theme') || 'dark';
-            if (saved === 'light') {
-                document.documentElement.classList.add('light');
-                updateThemeIcon(true);
-            }
-            
+            // Garante dark mode (remove qualquer classe 'light' persistida)
+            document.documentElement.classList.remove('light');
+            localStorage.setItem('thetalens_theme', 'dark');
+
             // Re-aplica capital salvo na UI
             const savedCapital = parseFloat(localStorage.getItem('thetalens_capital')) || 0;
             if (savedCapital > 0) {

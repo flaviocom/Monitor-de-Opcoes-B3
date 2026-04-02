@@ -1627,13 +1627,13 @@
                 const card = `
                     <div class="glass-card rounded-2xl p-5 flex flex-col">
                         <!-- Header do Ativo (sempre visível) -->
-                        <button class="accordion-toggle-btn" onclick="toggleCard(this)">
+                        <div class="accordion-toggle-btn" onclick="toggleCard(this)" role="button" tabindex="0">
                             <div class="flex items-start gap-3 w-full">
                                 <!-- Lado esquerdo: ticker + empresa -->
                                 <div class="flex-1 text-left">
                                     <div class="flex items-center gap-2.5 flex-wrap">
                                         <h3 class="text-3xl font-black tracking-tighter text-white drop-shadow-[0_0_12px_rgba(0,200,5,0.15)]">${asset.ticker}</h3>
-                                        <button onclick="event.stopPropagation(); openChart('${asset.ticker}','${asset.company}')" data-tooltip="Ver Gráfico Analítico" class="flex items-center gap-1.5 text-[10px] font-bold text-brand border border-brand/30 hover:border-brand/60 hover:bg-brand/10 px-2 py-1 rounded-lg transition-all active:scale-95 shadow-sm">
+                                        <button onclick="event.stopPropagation(); openChart('${asset.ticker}','${asset.company}')" data-tooltip="Ver Gráfico Analítico" class="flex items-center gap-1.5 text-[10px] font-bold text-brand border border-brand/30 hover:border-brand/60 hover:bg-brand/10 px-2 py-1 rounded-lg transition-all active:scale-95 shadow-sm relative z-10">
                                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
                                             GRÁFICO
                                         </button>
@@ -1650,17 +1650,15 @@
                                 <!-- Sinalização rápida + chevron -->
                                 <div class="flex flex-col items-end justify-between gap-2 flex-shrink-0">
                                     ${priceAboveSMA ? `<span class="text-[9px] font-black tracking-widest px-1.5 py-0.5 rounded bg-brand/15 text-brand border border-brand/30">CALL</span>` : priceBelowSMA ? `<span class="text-[9px] font-black tracking-widest px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">PUT</span>` : `<span class="text-[9px] font-black tracking-widest px-1.5 py-0.5 rounded bg-gray-700/40 text-gray-500 border border-white/5">—</span>`}
-                                    <svg class="chevron w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/></svg>
+                                    <svg class="chevron w-4 h-4 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/></svg>
                                 </div>
                             </div>
-                        </button>
-
-                        <!-- Linha separadora sutil -->
-                        <div class="border-t border-white/5 mt-4"></div>
+                        </div>
 
                         <!-- Corpo colapsável (Accordion) -->
                         <div class="card-body">
-                            <div class="pt-4 flex flex-col gap-0">
+                            <!-- Linha separadora sutil interna ao body para ocultar quando fechado -->
+                            <div class="border-t border-white/5 mt-4 pt-4 flex flex-col gap-0">
                                 <!-- Eventos Corporativos + IV Rank -->
                                 <div class="grid grid-cols-2 gap-3 mb-4">
                                     <!-- Balanço -->

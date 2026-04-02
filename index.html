@@ -80,24 +80,25 @@
             --modal-bg: rgba(10, 10, 8, 0.97);
             --warning-bg: rgba(240, 82, 82, 0.08);
             --warning-border: rgba(240, 82, 82, 0.22);
+            --ticker-color: #FFFFFF;
         }
 
         html.light {
             /* TEMA CLARO: Zeex Sand (Muted Warm) */
             --bg-900: #F2EEE6;
-            --bg-800: #E8E3D8;
-            --bg-700: #D8D0C0;
-            --bg-600: #C4BAA6;
+            --bg-800: #D2C4B0; /* Mais marrom/areia conforme solicitado */
+            --bg-700: #C5B7A0; /* Tom de marrom intermediário */
+            --bg-600: #B7A991; 
             --accent: #8B6E1A;
             --accent-rgb: 139, 110, 26;
-            --text-primary: #1E1A12;
-            --text-secondary: #5A5040;
-            --text-muted: #8A7D65;
+            --text-primary: #3E2723; /* Marrom escuro para texto principal */
+            --text-secondary: #5D4037; /* Marrom médio para subtítulos */
+            --text-muted: #8D6E63;
             --card-bg: rgba(255, 252, 245, 0.90);
             --border: rgba(139, 110, 26, 0.15);
             --border-strong: rgba(139, 110, 26, 0.32);
-            --gain: #1A8A58;
-            --loss: #C0392B;
+            --gain: #1A8A58; 
+            --loss: #C0392B; 
             --brand: #8B6E1A;
             --nav-bg: rgba(255, 252, 245, 0.98);
             --sidebar-bg: #E8E3D8;
@@ -107,6 +108,7 @@
             --modal-bg: rgba(242, 238, 230, 0.99);
             --warning-bg: rgba(192, 57, 43, 0.06);
             --warning-border: rgba(192, 57, 43, 0.22);
+            --ticker-color: #3E2723; /* Ticker em marrom escuro no modo claro */
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -833,16 +835,12 @@
                     <svg class="w-4 h-4 text-brand-gold flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3"/></svg>
                     <span class="text-xs font-bold text-gray-400 uppercase tracking-widest">Capital Disponível</span>
                     <div class="relative">
-                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm font-mono">R$</span>
                         <input
                             id="capital-input"
-                            type="number"
-                            min="0"
-                            step="1000"
-                            placeholder="ex: 20000"
-                            style="padding-left: 32px;"
-                            oninput="onCapitalChange()"
-                            title="Informe o patrimônio disponível para calcular automaticamente o lote máximo de contratos que pode operar em cada ativo"
+                            type="text"
+                            placeholder="R$ 0,00"
+                            oninput="onCapitalChange(this)"
+                            title="Patrimônio disponível para cálculo de lotes"
                         />
                     </div>
                     <span class="text-[11px] text-gray-500">→ Os cards mostrarão quantos lotes você pode vender</span>
@@ -865,7 +863,7 @@
                 <div class="stat-card">
                     <div class="stat-card-label">📡 Última Atualização</div>
                     <div class="stat-card-value" id="last-update-strip" style="font-size:12px;color:var(--text-secondary);">--:--</div>
-                    <div class="stat-card-sub">Brapi.dev · delay 15min</div>
+                    <div class="stat-card-sub">Dados em tempo real</div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-card-label">⚠️ Aviso Legal</div>
@@ -951,7 +949,7 @@
             <div id="volume-container"></div>
             <!-- Rodapé com fonte -->
             <div class="px-5 py-2 border-t border-dark-700/30 flex justify-between items-center">
-                <span class="text-[10px] text-gray-500">Fonte: Brapi.dev • Dados com delay de 15min • Apenas último pregão</span>
+                <span class="text-[10px] text-gray-500">Terminal Quantitativo PRO · Dados com delay de 15min</span>
                 <span class="text-[10px] text-gray-500" id="modal-last-update"></span>
             </div>
         </div>
@@ -1435,11 +1433,26 @@
         let globalCapital = parseFloat(localStorage.getItem('thetalens_capital')) || 0;
         let globalAllocations = JSON.parse(localStorage.getItem('thetalens_allocations') || '{}');
 
-        function onCapitalChange() {
-            const input = document.getElementById('capital-input');
-            globalCapital = parseFloat(input.value) || 0;
+        function formatCurrencyBRL(value) {
+            if (!value) return "R$ 0,00";
+            let v = value.toString().replace(/\D/g, "");
+            v = (v / 100).toFixed(2).replace(".", ",");
+            v = v.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+            return "R$ " + v;
+        }
+
+        function onCapitalChange(el) {
+            let val = el.value.replace(/\D/g, "");
+            if (val === "") {
+                el.value = "";
+                globalCapital = 0;
+            } else {
+                const numeric = parseFloat(val) / 100;
+                el.value = formatCurrencyBRL(val);
+                globalCapital = numeric;
+            }
             localStorage.setItem('thetalens_capital', globalCapital);
-            renderAssets(); // re-render para atualizar badges de lote
+            renderAssets(); // re-render para atualizar os lotes computados
         }
 
         // Calcula capital usado por todas as ações ALOCADAS (exceto a si mesma se for editar)
@@ -1828,7 +1841,7 @@
 
                     // Tooltip informativo
                     const tooltipBlock = isDaily ? `
-                        <div class="mt-2 p-2.5 rounded-lg border text-[11px] leading-relaxed" style="background:rgba(var(--accent-rgb),0.06);border-color:var(--border);">
+                        <div class="mt-2 p-2.5 rounded-lg border text-[11px] leading-relaxed" style="background:var(--bg-800);border-color:var(--border);">
                             <span class="font-bold mb-1 flex items-center gap-1" style="color:var(--text-primary);">
                                 <svg class="w-3 h-3" style="color:var(--accent)" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                                 BB (20, 2\u03c3) — Centro = SMA20 (\u22120 no ProfitPro)
@@ -1841,7 +1854,7 @@
                         : `<span></span>`;
 
                     return `
-                        <div class="mt-3 border border-[var(--border)] rounded-xl bg-[var(--bg-800)]/40 overflow-hidden">
+                        <div class="mt-3 border border-[var(--border)] rounded-xl bg-[var(--bg-800)] overflow-hidden">
                             <button class="band-toggle-btn hover:bg-[var(--sidebar-item-hover)] transition-colors" onclick="toggleBand(this)">
                                 <div class="flex items-center gap-2">
                                     <span class="text-[11px] font-bold uppercase tracking-wider" style="color:var(--text-secondary);">${band.label}</span>
@@ -2016,11 +2029,11 @@
                     const pctToCall = (((asset.bands.daily.upper) - asset.price) / asset.price * 100).toFixed(1);
                     const pctToPut  = ((asset.price - (asset.bands.daily.lower)) / asset.price * 100).toFixed(1);
                     strategyHTML += `
-                        <div class="rounded-lg p-4 border border-dark-600/60 bg-dark-800/40 text-center flex flex-col items-center justify-center m-auto">
-                            <div class="w-8 h-8 rounded-full bg-dark-700 flex items-center justify-center mb-2">
+                        <div class="rounded-lg p-4 border border-[var(--border)] bg-[var(--bg-800)] text-center flex flex-col items-center justify-center m-auto">
+                            <div class="w-8 h-8 rounded-full bg-[var(--bg-700)] flex items-center justify-center mb-2">
                                 <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                             </div>
-                            <p class="text-xs text-gray-400 leading-relaxed font-medium">Aguardando definição clara de tendência em relação à SMA20.</p>
+                            <p class="text-xs text-[var(--text-muted)] leading-relaxed font-medium">Aguardando definição clara de tendência em relação à SMA20.</p>
                         </div>
                     `;
                 }
@@ -2039,7 +2052,7 @@
                             <!-- Lado esquerdo: ticker + empresa -->
                             <div class="flex-1 text-left">
                                 <div class="flex items-center gap-2.5 flex-wrap">
-                                    <h3 class="text-3xl font-black tracking-tighter text-white drop-shadow-[0_0_12px_rgba(0,200,5,0.15)]">${asset.ticker}</h3>
+                                    <h3 class="text-3xl font-black tracking-tighter drop-shadow-[0_0_12px_rgba(var(--accent-rgb),0.15)]" style="color:var(--ticker-color);">${asset.ticker}</h3>
                                     <button onclick="event.stopPropagation(); openChart('${asset.ticker}','${asset.company}')" data-tooltip="Ver Gráfico Analítico" class="flex items-center gap-1.5 text-[10px] font-bold text-brand border border-brand/30 hover:border-brand/60 hover:bg-brand/10 px-2 py-1 rounded-lg transition-all active:scale-95 shadow-sm relative z-10">
                                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
                                         GRÁFICO
@@ -2049,14 +2062,14 @@
                             </div>
                             <!-- Lado direito: preço + variação -->
                             <div class="text-right flex-shrink-0 ${initialLoad ? 'opacity-40 blur-sm animate-pulse' : 'opacity-100'} transition-all duration-700">
-                                <div class="text-2xl font-mono font-black text-white leading-none tracking-tight">${fmtMoney(asset.price)}</div>
+                                <div class="text-2xl font-mono font-black leading-none tracking-tight" style="color:var(--text-primary);">${fmtMoney(asset.price)}</div>
                                 <div class="text-[13px] font-mono font-bold ${changeColor} flex items-center justify-end gap-1 mt-1 opacity-90">
                                     ${changeIcon} ${Math.abs(asset.change).toFixed(2)}%
                                 </div>
                             </div>
                             <!-- Sinalização rápida + Chevron principal -->
                             <div class="flex flex-col items-end justify-between gap-2 flex-shrink-0 mt-1">
-                                ${priceAboveSMA ? `<span class="text-[9px] font-black tracking-widest px-1.5 py-0.5 rounded bg-brand/15 text-brand border border-brand/30">CALL</span>` : priceBelowSMA ? `<span class="text-[9px] font-black tracking-widest px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">PUT</span>` : `<span class="text-[9px] font-black tracking-widest px-1.5 py-0.5 rounded bg-gray-700/40 text-gray-500 border border-white/5">—</span>`}
+                                ${priceAboveSMA ? `<span class="text-[9px] font-black tracking-widest px-1.5 py-0.5 rounded bg-brand/15 text-brand border border-brand/30">CALL</span>` : priceBelowSMA ? `<span class="text-[9px] font-black tracking-widest px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">PUT</span>` : `<span class="text-[9px] font-black tracking-widest px-1.5 py-0.5 rounded bg-[var(--bg-700)] text-[var(--text-muted)] border border-[var(--border)]">—</span>`}
                                 <svg class="main-chevron w-4 h-4 mt-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/></svg>
                             </div>
                         </div>
@@ -2066,22 +2079,22 @@
                                 <!-- Eventos Corporativos + IV Rank -->
                                 <div class="grid grid-cols-2 gap-3 mb-4">
                                     <!-- Balanço -->
-                                    <div class="p-3 rounded-lg bg-dark-800 border-l-2 border-l-brand border-t border-r border-b border-white/5 flex flex-col justify-center relative overflow-hidden group" data-tooltip="Próximo resultado trimestral/anual da empresa. Divulgações de balanço podem causar forte volatilidade no ativo. Evite vender opções com vencimento APÓS o balanço sem proteção.">
+                                    <div class="p-3 rounded-lg border-l-2 border-l-brand border-t border-r border-b border-[var(--border)] flex flex-col justify-center relative overflow-hidden group" style="background:var(--bg-800);" data-tooltip="Próximo resultado trimestral/anual da empresa.">
                                         <div class="absolute -right-4 -top-4 w-12 h-12 bg-brand/5 rounded-full group-hover:scale-150 transition-transform duration-500"></div>
                                         <span class="text-[10px] font-bold uppercase tracking-wider text-brand/90 mb-1 flex items-center gap-1"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg> Próx. Balanço</span>
-                                        <span class="text-sm font-mono font-medium text-gray-200">${asset.nextEarnings || '--'}</span>
+                                        <span class="text-sm font-mono font-medium text-[var(--text-primary)]">${asset.nextEarnings || '--'}</span>
                                     </div>
 
                                     <!-- Dividendos (Data-Com) + IV Rank em linha -->
                                     <div class="flex flex-col gap-2">
                                         <!-- IV Rank -->
-                                        <div class="px-2 py-1.5 rounded-lg bg-dark-800 border border-white/5 flex items-center gap-2 tt-right">
-                                            <span class="text-[9px] font-bold uppercase tracking-widest text-gray-600" data-tooltip="IV = Volatilidade Implícita\u000aIndica o quanto o mercado precifica a oscilação do ativo.\u000aQuanto maior, mais caro é o prêmio.">IV</span>
-                                            <span class="font-mono text-xs font-bold text-gray-400" data-tooltip="IV de ${asset.iv}%">${asset.iv}%</span>
+                                        <div class="px-2 py-1.5 rounded-lg border border-[var(--border)] flex items-center gap-2 tt-right" style="background:var(--bg-800);">
+                                            <span class="text-[9px] font-bold uppercase tracking-widest text-[var(--text-muted)]" data-tooltip="IV = Volatilidade Implícita\u000aIndica o quanto o mercado precifica a oscilação do ativo.\u000aQuanto maior, mais caro é o prêmio.">IV</span>
+                                            <span class="font-mono text-xs font-bold text-[var(--text-secondary)]" data-tooltip="IV de ${asset.iv}%">${asset.iv}%</span>
                                             <span class="text-[10px] font-bold uppercase ml-auto px-1.5 py-0.5 rounded ${asset.ivRank > 50 ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-rose-500/20 text-rose-400 border border-rose-500/30'}" data-tooltip="IV Rank = ${asset.ivRank}%:\u000aCompara a IV atual com 1 ano.\u000a${asset.ivRank > 50 ? '✅ Rank > 50: PRÊMIOS GORDOS!' : '⚠️ Rank < 50: Prêmios magros, evite vender.'}">Rank ${asset.ivRank}</span>
                                         </div>
                                         <!-- Dividendos -->
-                                        <div class="flex-1 px-2 py-1.5 rounded-lg bg-dark-800 border-l-2 border-l-emerald-500 border-t border-r border-b border-white/5 flex flex-col justify-center tt-right" data-tooltip="Data Com: último dia para ter direito ao dividendo. No dia seguinte (Ex-Dividendo), o valor é descontado do preço de abertura. ATENÇÃO: pode afetar opções ATM e ITM!">
+                                        <div class="flex-1 px-2 py-1.5 rounded-lg border-l-2 border-l-emerald-500 border-t border-r border-b border-[var(--border)] flex flex-col justify-center tt-right" style="background:var(--bg-800);" data-tooltip="Data Com: último dia para ter direito ao dividendo.">
                                             <span class="text-[9px] font-bold uppercase tracking-wider text-emerald-400 mb-0.5 flex items-center gap-1"><svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>${asset.nextDividend ? asset.nextDividend.label : 'DIVIDENDO'}</span>
                                             <span class="flex items-center gap-2 flex-wrap">
                                                 <span class="text-sm font-mono font-bold text-emerald-400">${asset.nextDividend && asset.nextDividend.value ? fmtMoney(asset.nextDividend.value) : 'R$ --'}</span>
@@ -2096,7 +2109,7 @@
                                 </div>
 
                                 <!-- Indicador Situação Preço Longo Prazo MM200 -->
-                                <div class="flex items-center gap-2 mb-2 p-2 rounded bg-dark-800/50 border border-dark-700/50">
+                                <div class="flex items-center gap-2 mb-2 p-2 rounded border border-[var(--border)]" style="background:var(--bg-800);">
                                     <div class="w-1.5 h-1.5 rounded-full ${isAboveTrend ? 'bg-rose-400' : 'bg-emerald-400'} shadow-[0_0_8px_${isAboveTrend ? '#fb7185' : '#34d399'}]"></div>
                                     <span class="text-xs text-gray-300" data-tooltip="Média Móvel de 200 dias (MM200). Preço ACIMA = tendência de alta de longo prazo (ativo 'caro' vs histórico). Preço ABAIXO = tendência de baixa de longo prazo.">Situação do preço no Longo prazo (MM200)</span>
                                     <span class="ml-auto text-xs font-bold ${isAboveTrend ? 'text-rose-400' : 'text-emerald-400'}">${isAboveTrend ? '▲ ACIMA' : '▼ ABAIXO'}</span>
@@ -2105,13 +2118,13 @@
                                 <!-- Dados Fundamentalistas (VPA, Preço Justo) -->
                                 ${asset.fundamentals ? `
                                 <div class="grid grid-cols-3 gap-2 mb-3">
-                                     <div class="p-2 rounded-lg bg-dark-800/60 border border-white/5 flex flex-col" data-tooltip="VPA = Valor Patrimonial por Ação.">
-                                        <span class="text-[9px] font-bold uppercase tracking-widest text-gray-500 mb-0.5">VPA</span>
-                                        <span class="text-xs font-mono font-bold text-gray-200">${fmtMoney(asset.fundamentals.vpa)}</span>
+                                     <div class="p-2 rounded-lg border border-[var(--border)] flex flex-col" style="background:var(--bg-800);" data-tooltip="VPA = Valor Patrimonial por Ação.">
+                                        <span class="text-[9px] font-bold uppercase tracking-widest text-[var(--text-muted)] mb-0.5">VPA</span>
+                                        <span class="text-xs font-mono font-bold text-[var(--text-primary)]">${fmtMoney(asset.fundamentals.vpa)}</span>
                                     </div>
-                                    <div class="p-2 rounded-lg bg-dark-800/60 border border-white/5 flex flex-col" data-tooltip="LPA = Lucro por Ação.">
-                                        <span class="text-[9px] font-bold uppercase tracking-widest text-gray-500 mb-0.5">LPA</span>
-                                        <span class="text-xs font-mono font-bold text-gray-200">${fmtMoney(asset.fundamentals.lpa)}</span>
+                                    <div class="p-2 rounded-lg border border-[var(--border)] flex flex-col" style="background:var(--bg-800);" data-tooltip="LPA = Lucro por Ação.">
+                                        <span class="text-[9px] font-bold uppercase tracking-widest text-[var(--text-muted)] mb-0.5">LPA</span>
+                                        <span class="text-xs font-mono font-bold text-[var(--text-primary)]">${fmtMoney(asset.fundamentals.lpa)}</span>
                                     </div>
                                     <div class="p-2 rounded-lg border flex flex-col tt-right ${asset.price < asset.fundamentals.grahamPrice ? 'bg-emerald-500/10 border-emerald-500/30' : 'bg-rose-500/10 border-rose-500/20'}" data-tooltip="Preço Justo de Graham = √(22,5 × VPA × LPA).">
                                         <span class="text-[9px] font-bold uppercase tracking-widest text-gray-500 mb-0.5">P. Justo</span>
@@ -2618,11 +2631,14 @@
                 updateThemeIcon(false);
             }
 
-            // Re-aplica capital salvo na UI
+            // Re-aplica capital salvo na UI com máscara
             const savedCapital = parseFloat(localStorage.getItem('thetalens_capital')) || 0;
             if (savedCapital > 0) {
                 const el = document.getElementById('capital-input');
-                if (el) el.value = savedCapital;
+                if (el) {
+                    globalCapital = savedCapital;
+                    el.value = formatCurrencyBRL(savedCapital * 100);
+                }
             }
         })();
     </script>

@@ -125,6 +125,7 @@
         }
 
         .glass-card:hover {
+            z-index: 50;
             transform: translateY(-2px);
             box-shadow: 0 10px 40px rgba(0, 200, 5, 0.05); /* Sombra que puxa pro verde claro ao sobrevoar */
             border-color: var(--border-strong);
@@ -187,6 +188,25 @@
             flex-shrink: 0;
         }
         .band-toggle-btn.expanded .chevron {
+            transform: rotate(180deg);
+        }
+
+        /* ===== ACCORDION PRINCIPAL (CAIXA DO ATIVO) ===== */
+        .card-content-body {
+            overflow: hidden;
+            max-height: 0;
+            opacity: 0;
+            transition: max-height 0.4s cubic-bezier(0.4,0,0.2,1), opacity 0.3s ease, padding 0.3s ease;
+        }
+        .card-content-body.expanded {
+            max-height: 2500px;
+            opacity: 1;
+        }
+        .main-chevron {
+            transition: transform 0.3s cubic-bezier(0.4,0,0.2,1);
+            color: var(--text-muted);
+        }
+        .accordion-main-toggle.expanded .main-chevron {
             transform: rotate(180deg);
         }
 
@@ -1631,16 +1651,20 @@
 
                 strategyHTML += '</div>';
 
+                // Verifica estado de expansão na memória (último F5)
+                const expandedCards = JSON.parse(localStorage.getItem('thetalens_expanded_cards') || '[]');
+                const isMainExpanded = expandedCards.includes(asset.ticker) ? 'expanded' : '';
+
                 // Montagem do Card Principal
                 const card = `
                     <div class="glass-card rounded-2xl p-5 flex flex-col">
                         <!-- Header do Ativo (Sempre Visível) -->
-                        <div class="flex items-start gap-3 w-full mb-5">
+                        <div class="flex items-start gap-3 w-full mb-2 cursor-pointer accordion-main-toggle ${isMainExpanded}" onclick="toggleMainCard(this, '${asset.ticker}')" role="button" tabindex="0">
                             <!-- Lado esquerdo: ticker + empresa -->
                             <div class="flex-1 text-left">
                                 <div class="flex items-center gap-2.5 flex-wrap">
                                     <h3 class="text-3xl font-black tracking-tighter text-white drop-shadow-[0_0_12px_rgba(0,200,5,0.15)]">${asset.ticker}</h3>
-                                    <button onclick="openChart('${asset.ticker}','${asset.company}')" data-tooltip="Ver Gráfico Analítico" class="flex items-center gap-1.5 text-[10px] font-bold text-brand border border-brand/30 hover:border-brand/60 hover:bg-brand/10 px-2 py-1 rounded-lg transition-all active:scale-95 shadow-sm relative z-10">
+                                    <button onclick="event.stopPropagation(); openChart('${asset.ticker}','${asset.company}')" data-tooltip="Ver Gráfico Analítico" class="flex items-center gap-1.5 text-[10px] font-bold text-brand border border-brand/30 hover:border-brand/60 hover:bg-brand/10 px-2 py-1 rounded-lg transition-all active:scale-95 shadow-sm relative z-10">
                                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
                                         GRÁFICO
                                     </button>
@@ -1654,14 +1678,15 @@
                                     ${changeIcon} ${Math.abs(asset.change).toFixed(2)}%
                                 </div>
                             </div>
-                            <!-- Sinalização rápida -->
-                            <div class="flex flex-col items-end justify-start gap-2 flex-shrink-0 mt-1">
+                            <!-- Sinalização rápida + Chevron principal -->
+                            <div class="flex flex-col items-end justify-between gap-2 flex-shrink-0 mt-1">
                                 ${priceAboveSMA ? `<span class="text-[9px] font-black tracking-widest px-1.5 py-0.5 rounded bg-brand/15 text-brand border border-brand/30">CALL</span>` : priceBelowSMA ? `<span class="text-[9px] font-black tracking-widest px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">PUT</span>` : `<span class="text-[9px] font-black tracking-widest px-1.5 py-0.5 rounded bg-gray-700/40 text-gray-500 border border-white/5">—</span>`}
+                                <svg class="main-chevron w-4 h-4 mt-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/></svg>
                             </div>
                         </div>
 
-                        <!-- Corpo Fixo (Eventos Corporativos + IV Rank + Estratégia) -->
-                        <div class="flex flex-col gap-0">
+                        <!-- Corpo Fixo (Eventos Corporativos + IV Rank + Estratégia) encapsulados no Accordion Maior -->
+                        <div class="card-content-body flex flex-col gap-0 ${isMainExpanded} pt-4 border-t border-white/5">
                                 <!-- Eventos Corporativos + IV Rank -->
                                 <div class="grid grid-cols-2 gap-3 mb-4">
                                     <!-- Balanço -->
@@ -1731,6 +1756,21 @@
                 `;
                 grid.innerHTML += card;
             });
+        }
+
+        function toggleMainCard(btn, ticker) {
+            btn.classList.toggle('expanded');
+            const body = btn.parentElement.querySelector('.card-content-body');
+            body.classList.toggle('expanded');
+            
+            // Persiste estado na memória do F5
+            let expandedCards = JSON.parse(localStorage.getItem('thetalens_expanded_cards') || '[]');
+            if(body.classList.contains('expanded')) {
+                if(!expandedCards.includes(ticker)) expandedCards.push(ticker);
+            } else {
+                expandedCards = expandedCards.filter(t => t !== ticker);
+            }
+            localStorage.setItem('thetalens_expanded_cards', JSON.stringify(expandedCards));
         }
 
         function toggleBand(btn) {

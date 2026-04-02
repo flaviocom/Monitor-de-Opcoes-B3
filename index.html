@@ -158,6 +158,37 @@
         ::-webkit-scrollbar-thumb { background: var(--bg-700); border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: var(--bg-600); }
 
+        /* ===== ACCORDION DOS CARDS ===== */
+        .card-body {
+            overflow: hidden;
+            max-height: 0;
+            opacity: 0;
+            transition: max-height 0.42s cubic-bezier(0.4,0,0.2,1), opacity 0.32s ease;
+        }
+        .card-body.expanded {
+            max-height: 2000px;
+            opacity: 1;
+        }
+        .accordion-toggle-btn {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            background: none;
+            border: none;
+            padding: 0;
+            outline: none;
+        }
+        .accordion-toggle-btn .chevron {
+            transition: transform 0.3s cubic-bezier(0.4,0,0.2,1);
+            color: var(--text-muted);
+            flex-shrink: 0;
+        }
+        .accordion-toggle-btn.expanded .chevron {
+            transform: rotate(180deg);
+        }
+
         /* ===== BOTÃO DE TEMA ===== */
         #theme-toggle {
             display: flex; align-items: center; justify-content: center;
@@ -1594,94 +1625,116 @@
 
                 // Montagem do Card Principal
                 const card = `
-                    <div class="glass-card rounded-2xl p-6 flex flex-col">
-                        <!-- Header do Ativo -->
-                        <div class="flex justify-between items-start mb-5">
-                            <div>
-                                <div class="flex items-center gap-2.5">
-                                    <h3 class="text-3xl font-black tracking-tighter text-white drop-shadow-[0_0_15px_rgba(255,255,255,0.1)]">${asset.ticker}</h3>
-                                    <button onclick="openChart('${asset.ticker}','${asset.company}')" data-tooltip="Ver Gráfico Analítico" class="flex items-center gap-1.5 text-[10px] font-bold text-brand-purple border border-brand-purple/30 hover:border-brand-purple/60 hover:bg-brand-purple/10 px-2 py-1 rounded-lg transition-all active:scale-95 shadow-sm">
-                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
-                                        GRÁFICO
-                                    </button>
+                    <div class="glass-card rounded-2xl p-5 flex flex-col">
+                        <!-- Header do Ativo (sempre visível) -->
+                        <button class="accordion-toggle-btn" onclick="toggleCard(this)">
+                            <div class="flex items-start gap-3 w-full">
+                                <!-- Lado esquerdo: ticker + empresa -->
+                                <div class="flex-1 text-left">
+                                    <div class="flex items-center gap-2.5 flex-wrap">
+                                        <h3 class="text-3xl font-black tracking-tighter text-white drop-shadow-[0_0_12px_rgba(0,200,5,0.15)]">${asset.ticker}</h3>
+                                        <button onclick="event.stopPropagation(); openChart('${asset.ticker}','${asset.company}')" data-tooltip="Ver Gráfico Analítico" class="flex items-center gap-1.5 text-[10px] font-bold text-brand border border-brand/30 hover:border-brand/60 hover:bg-brand/10 px-2 py-1 rounded-lg transition-all active:scale-95 shadow-sm">
+                                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
+                                            GRÁFICO
+                                        </button>
+                                    </div>
+                                    <p class="text-xs text-gray-500 font-medium mt-0.5">${asset.company}</p>
                                 </div>
-                                <p class="text-xs text-gray-500 font-medium mt-1">${asset.company}</p>
+                                <!-- Lado direito: preço + variação -->
+                                <div class="text-right flex-shrink-0 ${initialLoad ? 'opacity-40 blur-sm animate-pulse' : 'opacity-100'} transition-all duration-700">
+                                    <div class="text-2xl font-mono font-black text-white leading-none tracking-tight">${fmtMoney(asset.price)}</div>
+                                    <div class="text-[13px] font-mono font-bold ${changeColor} flex items-center justify-end gap-1 mt-1 opacity-90">
+                                        ${changeIcon} ${Math.abs(asset.change).toFixed(2)}%
+                                    </div>
+                                </div>
+                                <!-- Sinalização rápida + chevron -->
+                                <div class="flex flex-col items-end justify-between gap-2 flex-shrink-0">
+                                    ${priceAboveSMA ? `<span class="text-[9px] font-black tracking-widest px-1.5 py-0.5 rounded bg-brand/15 text-brand border border-brand/30">CALL</span>` : priceBelowSMA ? `<span class="text-[9px] font-black tracking-widest px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">PUT</span>` : `<span class="text-[9px] font-black tracking-widest px-1.5 py-0.5 rounded bg-gray-700/40 text-gray-500 border border-white/5">—</span>`}
+                                    <svg class="chevron w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/></svg>
+                                </div>
                             </div>
-                            <div class="text-right ${initialLoad ? 'opacity-40 blur-sm animate-pulse' : 'opacity-100'} transition-all duration-700">
-                                <div class="text-2xl font-mono font-black text-white leading-none tracking-tight">${fmtMoney(asset.price)}</div>
-                                <div class="text-[13px] font-mono font-bold ${changeColor} flex items-center justify-end gap-1 mt-1 opacity-90">
-                                    ${changeIcon} ${Math.abs(asset.change).toFixed(2)}%
+                        </button>
+
+                        <!-- Linha separadora sutil -->
+                        <div class="border-t border-white/5 mt-4"></div>
+
+                        <!-- Corpo colapsável (Accordion) -->
+                        <div class="card-body">
+                            <div class="pt-4 flex flex-col gap-0">
+                                <!-- Eventos Corporativos + IV Rank -->
+                                <div class="grid grid-cols-2 gap-3 mb-4">
+                                    <!-- Balanço -->
+                                    <div class="p-3 rounded-lg bg-dark-800 border-l-2 border-l-brand border-t border-r border-b border-white/5 flex flex-col justify-center relative overflow-hidden group" data-tooltip="Próximo resultado trimestral/anual da empresa. Divulgações de balanço podem causar forte volatilidade no ativo. Evite vender opções com vencimento APÓS o balanço sem proteção.">
+                                        <div class="absolute -right-4 -top-4 w-12 h-12 bg-brand/5 rounded-full group-hover:scale-150 transition-transform duration-500"></div>
+                                        <span class="text-[10px] font-bold uppercase tracking-wider text-brand/90 mb-1 flex items-center gap-1"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg> Próx. Balanço</span>
+                                        <span class="text-sm font-mono font-medium text-gray-200">${asset.nextEarnings || '--'}</span>
+                                    </div>
+
+                                    <!-- Dividendos (Data-Com) + IV Rank em linha -->
+                                    <div class="flex flex-col gap-2">
+                                        <!-- IV Rank -->
+                                        <div class="px-2 py-1.5 rounded-lg bg-dark-800 border border-white/5 flex items-center gap-2 tt-right">
+                                            <span class="text-[9px] font-bold uppercase tracking-widest text-gray-600" data-tooltip="IV = Volatilidade Implícita\u000aIndica o quanto o mercado precifica a oscilação do ativo.\u000aQuanto maior, mais caro é o prêmio.">IV</span>
+                                            <span class="font-mono text-xs font-bold text-gray-400" data-tooltip="IV de ${asset.iv}%">${asset.iv}%</span>
+                                            <span class="text-[10px] font-bold uppercase ml-auto px-1.5 py-0.5 rounded ${asset.ivRank > 50 ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-rose-500/20 text-rose-400 border border-rose-500/30'}" data-tooltip="IV Rank = ${asset.ivRank}%:\u000aCompara a IV atual com 1 ano.\u000a${asset.ivRank > 50 ? '✅ Rank > 50: PRÊMIOS GORDOS!' : '⚠️ Rank < 50: Prêmios magros, evite vender.'}">Rank ${asset.ivRank}</span>
+                                        </div>
+                                        <!-- Dividendos -->
+                                        <div class="flex-1 px-2 py-1.5 rounded-lg bg-dark-800 border-l-2 border-l-emerald-500 border-t border-r border-b border-white/5 flex flex-col justify-center tt-right" data-tooltip="Data Com: último dia para ter direito ao dividendo. No dia seguinte (Ex-Dividendo), o valor é descontado do preço de abertura. ATENÇÃO: pode afetar opções ATM e ITM!">
+                                            <span class="text-[9px] font-bold uppercase tracking-wider text-emerald-400 mb-0.5 flex items-center gap-1"><svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>${asset.nextDividend ? asset.nextDividend.label : 'DIVIDENDO'}</span>
+                                            <span class="flex items-center gap-2 flex-wrap">
+                                                <span class="text-sm font-mono font-bold text-emerald-400">${asset.nextDividend && asset.nextDividend.value ? fmtMoney(asset.nextDividend.value) : 'R$ --'}</span>
+                                                ${asset.nextDividend && asset.nextDividend.datacom ? `<span class="text-[8px] text-gray-400 uppercase font-bold">Com: ${asset.nextDividend.datacom}</span>` : '<span class="text-[8px] text-gray-600 font-medium italic">Sem previsão</span>'}
+                                            </span>
+                                            ${asset.nextDividend && asset.nextDividend.diasParaDataCom !== undefined ? `
+                                                <span class="text-[8px] font-bold mt-0.5 ${asset.nextDividend.diasParaDataCom > 0 && asset.nextDividend.diasParaDataCom <= 10 ? 'text-rose-400' : asset.nextDividend.diasParaDataCom > 0 ? 'text-amber-400' : 'text-gray-500'}">
+                                                    ${asset.nextDividend.diasParaDataCom > 0 ? `⏱ Em ${asset.nextDividend.diasParaDataCom} dias` : '✓ Data Com encerrada'}
+                                                </span>` : ''}
+                                        </div>
+                                    </div>
                                 </div>
+
+                                <!-- Indicador Situação Preço Longo Prazo MM200 -->
+                                <div class="flex items-center gap-2 mb-2 p-2 rounded bg-dark-800/50 border border-dark-700/50">
+                                    <div class="w-1.5 h-1.5 rounded-full ${isAboveTrend ? 'bg-rose-400' : 'bg-emerald-400'} shadow-[0_0_8px_${isAboveTrend ? '#fb7185' : '#34d399'}]"></div>
+                                    <span class="text-xs text-gray-300" data-tooltip="Média Móvel de 200 dias (MM200). Preço ACIMA = tendência de alta de longo prazo (ativo 'caro' vs histórico). Preço ABAIXO = tendência de baixa de longo prazo.">Situação do preço no Longo prazo (MM200)</span>
+                                    <span class="ml-auto text-xs font-bold ${isAboveTrend ? 'text-rose-400' : 'text-emerald-400'}">${isAboveTrend ? '▲ ACIMA' : '▼ ABAIXO'}</span>
+                                </div>
+
+                                <!-- Dados Fundamentalistas (VPA, Preço Justo) -->
+                                ${asset.fundamentals ? `
+                                <div class="grid grid-cols-3 gap-2 mb-3">
+                                     <div class="p-2 rounded-lg bg-dark-800/60 border border-white/5 flex flex-col" data-tooltip="VPA = Valor Patrimonial por Ação.">
+                                        <span class="text-[9px] font-bold uppercase tracking-widest text-gray-500 mb-0.5">VPA</span>
+                                        <span class="text-xs font-mono font-bold text-gray-200">${fmtMoney(asset.fundamentals.vpa)}</span>
+                                    </div>
+                                    <div class="p-2 rounded-lg bg-dark-800/60 border border-white/5 flex flex-col" data-tooltip="LPA = Lucro por Ação.">
+                                        <span class="text-[9px] font-bold uppercase tracking-widest text-gray-500 mb-0.5">LPA</span>
+                                        <span class="text-xs font-mono font-bold text-gray-200">${fmtMoney(asset.fundamentals.lpa)}</span>
+                                    </div>
+                                    <div class="p-2 rounded-lg border flex flex-col tt-right ${asset.price < asset.fundamentals.grahamPrice ? 'bg-emerald-500/10 border-emerald-500/30' : 'bg-rose-500/10 border-rose-500/20'}" data-tooltip="Preço Justo de Graham = √(22,5 × VPA × LPA).">
+                                        <span class="text-[9px] font-bold uppercase tracking-widest text-gray-500 mb-0.5">P. Justo</span>
+                                        <span class="text-xs font-mono font-bold ${asset.price < asset.fundamentals.grahamPrice ? 'text-emerald-400' : 'text-rose-400'}">${fmtMoney(asset.fundamentals.grahamPrice)}</span>
+                                    </div>
+                                </div>` : ''}
+
+                                <!-- Bandas -->
+                                ${renderBand(asset.bands.daily, true)}
+                                ${renderBand(asset.bands.weekly, false)}
+
+                                <!-- Estratégias Recomendadas -->
+                                ${strategyHTML}
                             </div>
                         </div>
-
-                        <!-- Eventos Corporativos + IV Rank -->
-                        <div class="grid grid-cols-2 gap-3 mb-4">
-                            <!-- Balanço -->
-                            <div class="p-3 rounded-lg bg-dark-800 border-l-2 border-l-brand-purple border-t border-r border-b border-white/5 flex flex-col justify-center relative overflow-hidden group" data-tooltip="Próximo resultado trimestral/anual da empresa. Divulgações de balanço podem causar forte volatilidade no ativo. Evite vender opções com vencimento APÓS o balanço sem proteção.">
-                                <div class="absolute -right-4 -top-4 w-12 h-12 bg-brand-purple/5 rounded-full group-hover:scale-150 transition-transform duration-500"></div>
-                                <span class="text-[10px] font-bold uppercase tracking-wider text-brand-purple/90 mb-1 flex items-center gap-1"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg> Próx. Balanço</span>
-                                <span class="text-sm font-mono font-medium text-gray-200">${asset.nextEarnings || '--'}</span>
-                            </div>
-                            
-                            <!-- Dividendos (Data-Com) + IV Rank em linha -->
-                            <div class="flex flex-col gap-2">
-                                <!-- IV Rank -->
-                                <div class="px-2 py-1.5 rounded-lg bg-dark-800 border border-white/5 flex items-center gap-2 tt-right">
-                                    <span class="text-[9px] font-bold uppercase tracking-widest text-gray-600" data-tooltip="IV = Volatilidade Implícita\u000aIndica o quanto o mercado precifica a oscilação do ativo.\u000aQuanto maior, mais caro é o prêmio.">IV</span>
-                                    <span class="font-mono text-xs font-bold text-gray-400" data-tooltip="IV de ${asset.iv}%">${asset.iv}%</span>
-                                    <span class="text-[10px] font-bold uppercase ml-auto px-1.5 py-0.5 rounded ${asset.ivRank > 50 ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-rose-500/20 text-rose-400 border border-rose-500/30'}" data-tooltip="IV Rank = ${asset.ivRank}%:\u000aCompara a IV atual com 1 ano.\u000a${asset.ivRank > 50 ? '✅ Rank > 50: PRÊMIOS GORDOS!' : '⚠️ Rank < 50: Prêmios magros, evite vender.'}">Rank ${asset.ivRank}</span>
-                                </div>
-                                <!-- Dividendos -->
-                                <div class="flex-1 px-2 py-1.5 rounded-lg bg-dark-800 border-l-2 border-l-emerald-500 border-t border-r border-b border-white/5 flex flex-col justify-center tt-right" data-tooltip="Data Com: último dia para ter direito ao dividendo. No dia seguinte (Ex-Dividendo), o valor é descontado do preço de abertura. ATENÇÃO: pode afetar opções ATM e ITM!">
-                                    <span class="text-[9px] font-bold uppercase tracking-wider text-emerald-400 mb-0.5 flex items-center gap-1"><svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>${asset.nextDividend ? asset.nextDividend.label : 'DIVIDENDO'}</span>
-                                    <span class="flex items-center gap-2 flex-wrap">
-                                        <span class="text-sm font-mono font-bold text-emerald-400">${asset.nextDividend && asset.nextDividend.value ? fmtMoney(asset.nextDividend.value) : 'R$ --'}</span>
-                                        ${asset.nextDividend && asset.nextDividend.datacom ? `<span class="text-[8px] text-gray-400 uppercase font-bold">Com: ${asset.nextDividend.datacom}</span>` : '<span class="text-[8px] text-gray-600 font-medium italic">Sem previsão</span>'}
-                                    </span>
-                                    ${asset.nextDividend && asset.nextDividend.diasParaDataCom !== undefined ? `
-                                        <span class="text-[8px] font-bold mt-0.5 ${asset.nextDividend.diasParaDataCom > 0 && asset.nextDividend.diasParaDataCom <= 10 ? 'text-rose-400' : asset.nextDividend.diasParaDataCom > 0 ? 'text-amber-400' : 'text-gray-500'}">
-                                            ${asset.nextDividend.diasParaDataCom > 0 ? `⏱ Em ${asset.nextDividend.diasParaDataCom} dias` : '✓ Data Com encerrada'}
-                                        </span>` : ''}
-                                </div>
-                            </div>
-                        </div>
-
-
-                        <!-- Indicador Situação Preço Longo Prazo MM200 -->
-                        <div class="flex items-center gap-2 mb-2 p-2 rounded bg-dark-800/50 border border-dark-700/50">
-                            <div class="w-1.5 h-1.5 rounded-full ${isAboveTrend ? 'bg-rose-400' : 'bg-emerald-400'} shadow-[0_0_8px_${isAboveTrend ? '#fb7185' : '#34d399'}]"></div>
-                            <span class="text-xs text-gray-300" data-tooltip="Média Móvel de 200 dias (MM200). Preço ACIMA = tendência de alta de longo prazo (ativo 'caro' vs histórico). Preço ABAIXO = tendência de baixa de longo prazo.">Situação do preço no Longo prazo (MM200)</span>
-                            <span class="ml-auto text-xs font-bold ${isAboveTrend ? 'text-rose-400' : 'text-emerald-400'}">${isAboveTrend ? '▲ ACIMA' : '▼ ABAIXO'}</span>
-                        </div>
-
-                        <!-- Dados Fundamentalistas (VPA, Preço Justo) -->
-                        ${asset.fundamentals ? `
-                        <div class="grid grid-cols-3 gap-2 mb-3">
-                             <div class="p-2 rounded-lg bg-dark-800/60 border border-white/5 flex flex-col" data-tooltip="VPA = Valor Patrimonial por Ação. Representa quanto vale contabilmente cada ação. Se preço < VPA, ativo pode estar sendo negociado abaixo do patrimônio.">
-                                <span class="text-[9px] font-bold uppercase tracking-widest text-gray-500 mb-0.5">VPA</span>
-                                <span class="text-xs font-mono font-bold text-gray-200">${fmtMoney(asset.fundamentals.vpa)}</span>
-                            </div>
-                            <div class="p-2 rounded-lg bg-dark-800/60 border border-white/5 flex flex-col" data-tooltip="LPA = Lucro por Ação. Indica quanto de lucro cada ação gerou nos últimos 12 meses.">
-                                <span class="text-[9px] font-bold uppercase tracking-widest text-gray-500 mb-0.5">LPA</span>
-                                <span class="text-xs font-mono font-bold text-gray-200">${fmtMoney(asset.fundamentals.lpa)}</span>
-                            </div>
-                            <div class="p-2 rounded-lg border flex flex-col tt-right ${asset.price < asset.fundamentals.grahamPrice ? 'bg-emerald-500/10 border-emerald-500/30' : 'bg-rose-500/10 border-rose-500/20'}" data-tooltip="Preço Justo de Graham = √(22,5 × VPA × LPA). Abaixo deste valor pode indicar subvalorização. Acima pode indicar sobrevalorização.">
-                                <span class="text-[9px] font-bold uppercase tracking-widest text-gray-500 mb-0.5">P. Justo</span>
-                                <span class="text-xs font-mono font-bold ${asset.price < asset.fundamentals.grahamPrice ? 'text-emerald-400' : 'text-rose-400'}">${fmtMoney(asset.fundamentals.grahamPrice)}</span>
-                            </div>
-                        </div>` : ''}
-
-                        <!-- Bandas -->
-                        ${renderBand(asset.bands.daily, true)}
-                        ${renderBand(asset.bands.weekly, false)}
-                        
-                        <!-- Estratégias Recomendadas -->
-                        ${strategyHTML}
                     </div>
                 `;
                 grid.innerHTML += card;
             });
+        }
+
+        function toggleCard(btn) {
+            btn.classList.toggle('expanded');
+            const body = btn.closest('.glass-card').querySelector('.card-body');
+            body.classList.toggle('expanded');
         }
 
         // =======================================================

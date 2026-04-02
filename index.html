@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="pt-BR" class="dark">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -52,32 +52,86 @@
     </script>
 
     <style>
-        /* CSS Customizado para Glassmorphism e Ergonomia (UI/UX PRO MAX) */
+        /* ===== DESIGN TOKENS — SISTEMA DE TEMAS DUAL ===== */
+        :root {
+            /* TEMA ESCURO: Verde Profundo & Marfim (Premium Financeiro) */
+            --bg-900: #060F09;
+            --bg-800: #0F2A1D;
+            --bg-700: #1A3D28;
+            --bg-600: #2A5C3F;
+            --accent:  #C2A878;
+            --accent-rgb: 194, 168, 120;
+            --text-primary: #F5F1E8;
+            --text-secondary: #8BA090;
+            --text-muted: #4A6055;
+            --card-bg: rgba(15, 42, 29, 0.72);
+            --border: rgba(194, 168, 120, 0.12);
+            --border-strong: rgba(194, 168, 120, 0.28);
+            --gain: #2ECC71;
+            --loss: #E74C3C;
+            --brand: #3D9E71;
+            --nav-bg: rgba(6, 15, 9, 0.97);
+            --capital-bg: rgba(8, 18, 12, 0.93);
+            --modal-bg: rgba(6, 15, 9, 0.97);
+            --warning-bg: rgba(231, 76, 60, 0.08);
+            --warning-border: rgba(231, 76, 60, 0.25);
+        }
+
+        html.light {
+            /* TEMA CLARO: Marrom + Verde Musgo (Old Money) */
+            --bg-900: #F5F1E8;
+            --bg-800: #EDE8DC;
+            --bg-700: #D4C9B0;
+            --bg-600: #C5B89A;
+            --accent: #5C7A4E;
+            --accent-rgb: 92, 122, 78;
+            --text-primary: #2C1A0E;
+            --text-secondary: #6B5744;
+            --text-muted: #9E8B70;
+            --card-bg: rgba(255, 255, 255, 0.82);
+            --border: rgba(92, 122, 78, 0.18);
+            --border-strong: rgba(92, 122, 78, 0.38);
+            --gain: #27AE60;
+            --loss: #C0392B;
+            --brand: #5C7A4E;
+            --nav-bg: rgba(45, 28, 18, 0.97); /* marrom escuro premium */
+            --capital-bg: rgba(237, 232, 220, 0.97);
+            --modal-bg: rgba(245, 241, 232, 0.98);
+            --warning-bg: rgba(192, 57, 43, 0.06);
+            --warning-border: rgba(192, 57, 43, 0.22);
+        }
+
+        /* ===== BASE ===== */
         body {
-            background-color: theme('colors.dark.900');
-            background-image: radial-gradient(circle at top right, rgba(59, 130, 246, 0.08), transparent 40%),
-                              radial-gradient(circle at bottom left, rgba(139, 92, 246, 0.05), transparent 40%);
-            color: #f3f4f6;
+            background-color: var(--bg-900);
+            background-image:
+                radial-gradient(circle at top right, rgba(var(--accent-rgb), 0.07), transparent 40%),
+                radial-gradient(circle at bottom left, rgba(var(--accent-rgb), 0.04), transparent 40%);
+            color: var(--text-primary);
             min-height: 100vh;
+            transition: background-color 0.4s ease, color 0.4s ease;
         }
 
         .glass-card {
-            background: rgba(17, 24, 39, 0.65);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+            background: var(--card-bg);
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+            border: 1px solid var(--border);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.08);
             transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
         }
 
         .glass-card:hover {
             transform: translateY(-2px);
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
-            border-color: rgba(59, 130, 246, 0.2);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.12);
+            border-color: var(--border-strong);
+        }
+        html.light .glass-card {
+            box-shadow: 0 2px 16px rgba(0,0,0,0.06), 0 1px 4px rgba(0,0,0,0.04);
         }
 
         .badge-pro {
-            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            background: linear-gradient(135deg, var(--accent) 0%, rgba(var(--accent-rgb), 0.7) 100%);
             -webkit-background-clip: text;
             background-clip: text;
             -webkit-text-fill-color: transparent;
@@ -85,24 +139,70 @@
         }
 
         .progress-gradient {
-            background: linear-gradient(90deg, #ef4444, #f59e0b, #10b981);
+            background: linear-gradient(90deg, var(--gain), var(--accent), var(--loss));
         }
 
         /* Scrollbar customizada */
         ::-webkit-scrollbar { width: 8px; height: 8px; }
-        ::-webkit-scrollbar-track { background: theme('colors.dark.900'); }
-        ::-webkit-scrollbar-thumb { background: theme('colors.dark.700'); border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: theme('colors.dark.600'); }
+        ::-webkit-scrollbar-track { background: var(--bg-900); }
+        ::-webkit-scrollbar-thumb { background: var(--bg-700); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--bg-600); }
+
+        /* ===== BOTÃO DE TEMA ===== */
+        #theme-toggle {
+            display: flex; align-items: center; justify-content: center;
+            width: 30px; height: 30px; border-radius: 8px;
+            border: 1px solid var(--border-strong);
+            background: rgba(var(--accent-rgb), 0.08);
+            color: var(--accent); cursor: pointer; flex-shrink: 0;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            margin-left: 6px;
+        }
+        #theme-toggle:hover { background: rgba(var(--accent-rgb), 0.2); transform: scale(1.08); }
+        #theme-toggle:active { transform: scale(0.92); }
+
+        /* ===== OVERRIDES LIGHT THEME ===== */
+        html.light .text-white { color: var(--text-primary) !important; }
+        html.light .text-gray-200 { color: #3A2415 !important; }
+        html.light .text-gray-300 { color: #5A3D26 !important; }
+        html.light .text-gray-400 { color: #7A5A40 !important; }
+        html.light .text-gray-500 { color: #9E8065 !important; }
+        html.light .text-gray-600 { color: #BBA080 !important; }
+        html.light .bg-dark-800 { background-color: rgba(0,0,0,0.04) !important; }
+        html.light .bg-dark-800\/60 { background-color: rgba(0,0,0,0.04) !important; }
+        html.light .bg-dark-800\/80 { background-color: rgba(255,255,255,0.65) !important; }
+        html.light .bg-dark-800\/40 { background-color: rgba(0,0,0,0.03) !important; }
+        html.light .bg-dark-900\/70 { background-color: rgba(0,0,0,0.04) !important; }
+        html.light .bg-dark-700 { background-color: rgba(0,0,0,0.08) !important; }
+        html.light .border-white\/5 { border-color: rgba(0,0,0,0.08) !important; }
+        html.light .border-dark-700\/50 { border-color: rgba(0,0,0,0.10) !important; }
+        html.light .border-dark-600 { border-color: rgba(0,0,0,0.13) !important; }
+        html.light .border-dark-500 { border-color: rgba(0,0,0,0.15) !important; }
+        html.light #nav-controls { background: rgba(61,43,31,0.12) !important; border-color: rgba(92,122,78,0.35) !important; }
+        html.light #nav-controls .text-emerald-400 { color: #27AE60 !important; }
+        html.light #nav-controls .text-brand-purple { color: #5C7A4E !important; }
+        html.light #nav-controls span#market-status { color: #8B7A6A !important; }
+        html.light .text-brand-purple { color: var(--accent) !important; }
+        html.light .border-brand-purple\/30 { border-color: rgba(92,122,78,0.3) !important; }
+        html.light .bg-dark-800\/50 { background-color: rgba(0,0,0,0.04) !important; }
+        html.light .bg-dark-700\/50 { background-color: rgba(0,0,0,0.06) !important; }
+        html.light .text-brand { color: #3D7A5C !important; }
+        html.light .border-brand\/20 { border-color: rgba(61,122,92,0.25) !important; }
+        html.light .bg-brand\/5 { background-color: rgba(61,122,92,0.06) !important; }
+        html.light .bg-brand\/10 { background-color: rgba(61,122,92,0.10) !important; }
+        html.light .bg-brand\/25 { background-color: rgba(61,122,92,0.18) !important; }
+        html.light .text-brand-gold { color: #8B6914 !important; }
+        html.light .border-brand-gold\/30 { border-color: rgba(139,105,20,0.3) !important; }
         
         .number-fmt { font-family: 'JetBrains Mono', monospace; font-variant-numeric: tabular-nums; }
 
         /* ===== PAINEL DE CAPITAL (Position Sizing) ===== */
         #capital-panel {
-            background: rgba(10, 14, 25, 0.92);
+            background: var(--capital-bg);
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
-            border-bottom: 1px solid rgba(245, 158, 11, 0.18);
-            border-top: 1px solid rgba(245, 158, 11, 0.08);
+            border-bottom: 1px solid var(--border-strong);
+            border-top: 1px solid var(--border);
             padding: 10px 24px;
             display: flex;
             align-items: center;
@@ -110,12 +210,13 @@
             position: sticky;
             top: 73px;
             z-index: 40;
+            transition: background 0.4s ease;
         }
         #capital-input {
-            background: rgba(3, 7, 18, 0.8);
-            border: 1px solid rgba(245, 158, 11, 0.25);
+            background: rgba(var(--accent-rgb), 0.07);
+            border: 1px solid var(--border-strong);
             border-radius: 10px;
-            color: #fbbf24;
+            color: var(--accent);
             font-family: 'JetBrains Mono', monospace;
             font-size: 14px;
             font-weight: 700;
@@ -125,209 +226,189 @@
             transition: border-color 0.3s cubic-bezier(0.4,0,0.2,1), box-shadow 0.3s cubic-bezier(0.4,0,0.2,1);
         }
         #capital-input:focus {
-            border-color: rgba(245, 158, 11, 0.7);
-            box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.12), 0 0 20px rgba(245, 158, 11, 0.06);
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(var(--accent-rgb), 0.12);
         }
-        #capital-input::placeholder { color: #6b7280; font-weight: 400; }
+        #capital-input::placeholder { color: var(--text-muted); font-weight: 400; }
 
         /* ===== BOTÃO COPIAR TICKER ===== */
         .copy-btn {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            width: 20px;
-            height: 20px;
-            border-radius: 5px;
-            border: 1px solid rgba(255,255,255,0.1);
-            background: rgba(255,255,255,0.04);
-            color: #6b7280;
-            cursor: pointer;
-            flex-shrink: 0;
-            transition: all 0.2s cubic-bezier(0.4,0,0.2,1);
-            position: relative;
+            display: inline-flex; align-items: center; justify-content: center;
+            width: 20px; height: 20px; border-radius: 5px;
+            border: 1px solid var(--border);
+            background: rgba(var(--accent-rgb), 0.05);
+            color: var(--text-muted);
+            cursor: pointer; flex-shrink: 0;
+            transition: all 0.2s cubic-bezier(0.4,0,0.2,1); position: relative;
         }
         .copy-btn:hover {
-            background: rgba(139, 92, 246, 0.18);
-            border-color: rgba(139, 92, 246, 0.5);
-            color: #a78bfa;
+            background: rgba(var(--accent-rgb), 0.18);
+            border-color: var(--border-strong);
+            color: var(--accent);
             transform: scale(1.15);
         }
         .copy-btn:active { transform: scale(0.92); }
         .copy-btn.copied {
-            background: rgba(16, 185, 129, 0.15);
-            border-color: rgba(16, 185, 129, 0.4);
-            color: #34d399;
+            background: rgba(46, 204, 113, 0.15);
+            border-color: rgba(46, 204, 113, 0.4);
+            color: var(--gain);
         }
 
-        /* ===== TOOLTIP CSS ELEGANTE — PREMIUM & RESPONSIVO ==== */
-        [data-tooltip] {
-            position: relative;
-            cursor: help;
-        }
+        /* ===== TOOLTIP ===== */
+        [data-tooltip] { position: relative; cursor: help; }
         [data-tooltip]::before {
-            content: '';
-            position: absolute;
-            bottom: calc(100% + 2px);
-            left: 50%;
-            transform: translateX(-50%);
+            content: ''; position: absolute;
+            bottom: calc(100% + 2px); left: 50%; transform: translateX(-50%);
             border: 6px solid transparent;
-            border-top-color: rgba(59, 130, 246, 0.6);
-            pointer-events: none;
-            opacity: 0;
-            transition: opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-            z-index: 1101;
+            border-top-color: rgba(var(--accent-rgb), 0.6);
+            pointer-events: none; opacity: 0;
+            transition: opacity 0.2s ease; z-index: 1101;
         }
         [data-tooltip]::after {
             content: attr(data-tooltip);
-            position: absolute;
-            bottom: calc(100% + 12px);
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(10, 15, 30, 0.98);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid rgba(59, 130, 246, 0.45);
-            border-radius: 12px;
-            padding: 12px 16px;
-            font-size: 11.5px;
-            color: #f1f5f9;
-            white-space: pre-wrap;
-            width: max-content;
-            max-width: min(300px, calc(100vw - 40px));
-            line-height: 1.6;
-            pointer-events: none;
-            opacity: 0;
-            transition: opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1), transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-            z-index: 1100;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.65), 0 0 0 1px rgba(255,255,255,0.05) inset;
+            position: absolute; bottom: calc(100% + 12px); left: 50%; transform: translateX(-50%);
+            background: var(--nav-bg);
+            backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--border-strong);
+            border-radius: 12px; padding: 12px 16px; font-size: 11.5px;
+            color: #f1f5f9; white-space: pre-wrap;
+            width: max-content; max-width: min(300px, calc(100vw - 40px));
+            line-height: 1.6; pointer-events: none; opacity: 0;
+            transition: opacity 0.2s ease; z-index: 1100;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
             font-family: 'Inter', sans-serif;
-            text-shadow: 0 1px 2px rgba(0,0,0,0.5);
         }
-        /* Ajustes automáticos para evitar corte lateral */
         [data-tooltip]:hover::after, [data-tooltip]:hover::before { opacity: 1; }
-        
-        /* Modificadores de Alinhamento Manual se necessário */
         .tt-left::after { left: 0; transform: none; }
         .tt-left::before { left: 10px; transform: none; }
         .tt-right::after { left: auto; right: 0; transform: none; }
         .tt-right::before { left: auto; right: 10px; transform: none; }
 
+        /* ===== BARRA BB CENTRALIZADA ===== */
+        .bb-bar-wrap {
+            width: 100%; height: 12px;
+            background: var(--bg-700);
+            border-radius: 999px; overflow: hidden; position: relative;
+        }
+        .bb-fill {
+            position: absolute; top: 0; bottom: 0;
+            opacity: 0.78; transition: all 0.7s ease;
+        }
+        .bb-fill-pos { left: 50%; background: var(--loss); border-radius: 0 999px 999px 0; }
+        .bb-fill-neg { right: 50%; background: var(--gain); border-radius: 999px 0 0 999px; }
+        .bb-center-line {
+            position: absolute; top: 0; bottom: 0; left: 50%;
+            width: 2px; margin-left: -1px;
+            background: var(--text-secondary); opacity: 0.45; z-index: 2;
+        }
+        .bb-price-marker {
+            position: absolute; top: 0; bottom: 0; width: 3px;
+            background: white; z-index: 3;
+            border-radius: 1px; transition: left 0.5s ease;
+            box-shadow: 0 0 6px white;
+        }
+        html.light .bb-price-marker { background: #2C1A0E; box-shadow: 0 0 6px rgba(44,26,14,0.5); }
+
         /* ===== MODAL DO GRÁFICO ===== */
         #chart-modal {
-            display: none;
-            position: fixed;
-            inset: 0;
-            z-index: 999;
+            display: none; position: fixed; inset: 0; z-index: 999;
             background: rgba(3, 7, 18, 0.85);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            align-items: center;
-            justify-content: center;
-            padding: 1rem;
+            backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+            align-items: center; justify-content: center; padding: 1rem;
         }
         #chart-modal.open { display: flex; }
         #chart-modal-box {
-            background: rgba(17, 24, 39, 0.95);
-            border: 1px solid rgba(59, 130, 246, 0.25);
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border-strong);
             border-radius: 1rem;
-            box-shadow: 0 0 60px rgba(59, 130, 246, 0.12), 0 30px 80px rgba(0,0,0,0.6);
-            width: 100%;
-            max-width: 900px;
-            overflow: hidden;
+            box-shadow: 0 0 60px rgba(var(--accent-rgb), 0.1), 0 30px 80px rgba(0,0,0,0.5);
+            width: 100%; max-width: 900px; overflow: hidden;
         }
-        #chart-container {
-            width: 100%;
-            height: 340px;
-            background: transparent;
-        }
-        #volume-container {
-            width: 100%;
-            height: 90px;
-            background: transparent;
-        }
+        html.light #chart-modal-box { background: #F5F1E8; }
+        #chart-container { width: 100%; height: 340px; background: transparent; }
+        #volume-container { width: 100%; height: 90px; background: transparent; }
         .period-btn {
-            padding: 3px 10px;
-            border-radius: 6px;
-            font-size: 11px;
-            font-weight: 600;
-            font-family: 'JetBrains Mono', monospace;
-            cursor: pointer;
-            border: 1px solid rgba(255,255,255,0.1);
-            background: transparent;
-            color: #9ca3af;
+            padding: 3px 10px; border-radius: 6px; font-size: 11px; font-weight: 600;
+            font-family: 'JetBrains Mono', monospace; cursor: pointer;
+            border: 1px solid var(--border);
+            background: transparent; color: var(--text-secondary);
             transition: all 0.15s ease;
         }
         .period-btn:hover, .period-btn.active {
-            background: rgba(59, 130, 246, 0.2);
-            border-color: rgba(59, 130, 246, 0.5);
-            color: #60a5fa;
+            background: rgba(var(--accent-rgb), 0.15);
+            border-color: var(--border-strong);
+            color: var(--accent);
+        }
+
+        /* ===== NAVBAR MOBILE FIX ===== */
+        @media (max-width: 600px) {
+            #navbar-inner { flex-wrap: wrap; gap: 6px 0; align-items: center; }
+            #nav-controls-wrap { width: 100%; display: flex; justify-content: flex-end; align-items: center; }
+            #nav-badge-group { flex-shrink: 0; }
         }
 
         /* ===== CHART MODAL MOBILE ===== */
         @media (max-width: 640px) {
-            #chart-modal-header-top {
-                flex-wrap: wrap;
-                gap: 8px;
-            }
-            #chart-modal-header-top .modal-info-group {
-                min-width: 0;
-                flex: 1;
-            }
-            #period-buttons {
-                order: 3;
-                width: 100%;
-            }
-            #period-buttons button {
-                flex: 1;
-            }
-            #chart-modal-box {
-                margin: 8px;
-                max-height: calc(100vh - 16px);
-                overflow-y: auto;
-            }
+            #chart-modal-header-top { flex-wrap: wrap; gap: 8px; }
+            #chart-modal-header-top .modal-info-group { min-width: 0; flex: 1; }
+            #period-buttons { order: 3; width: 100%; }
+            #period-buttons button { flex: 1; }
+            #chart-modal-box { margin: 8px; max-height: calc(100vh - 16px); overflow-y: auto; }
         }
 
-        /* ===== NAVBAR MOBILE ULTRA-COMPACT ===== */
         @media (max-width: 480px) {
             #market-label { display: none; }
-            #nav-controls { gap: 4px; padding: 4px 6px; }
+            #nav-controls { gap: 4px; padding: 3px 6px; }
             #nav-controls span, #nav-controls button { font-size: 9px; }
         }
     </style>
 </head>
-<body class="bg-[#030712] text-gray-200 antialiased selection:bg-brand selection:text-white min-h-screen">
+<body class="antialiased min-h-screen">
 
     <!-- Top Navigation -->
-    <nav class="sticky top-0 z-50 glass-card border-b border-dark-700/50 px-4 py-3 md:px-6 md:py-4">
+    <nav class="site-nav sticky top-0 z-50 px-4 py-3 md:px-6 md:py-3" style="background:var(--nav-bg);border-bottom:1px solid var(--border-strong);">
         <div class="max-w-7xl mx-auto">
-            <!-- Linha principal: Logo + Controles -->
-            <div class="flex justify-between items-center">
-                <div class="flex items-center gap-3">
-                    <img src="logo.png" alt="Logotipo Plataforma" class="w-14 h-14 object-contain rounded-xl shadow-lg shadow-brand/20 border border-dark-700/50" />
+            <div id="navbar-inner" class="flex justify-between items-center">
+
+                <!-- Logo + Título -->
+                <div id="nav-badge-group" class="flex items-center gap-3">
+                    <img src="logo.png" alt="ThetaLens" class="w-12 h-12 md:w-14 md:h-14 object-contain rounded-xl border" style="border-color:var(--border-strong);" />
                     <div>
                         <h1 class="text-xl font-bold tracking-tight text-white flex items-center gap-2">
-                            <span id="platform-name">ThetaLens</span> <span class="badge-pro text-sm uppercase tracking-widest border border-brand-gold/30 px-2 py-0.5 rounded ml-1">PRO</span>
+                            <span id="platform-name">ThetaLens</span>
+                            <span class="badge-pro text-sm uppercase tracking-widest px-2 py-0.5 rounded border" style="border-color:rgba(var(--accent-rgb),0.35);">PRO</span>
                         </h1>
-                        <p class="text-xs text-gray-400">Terminal de Inteligência Quantitativa</p>
+                        <p class="nav-subtitle text-xs text-gray-400">Terminal de Inteligência Quantitativa</p>
                     </div>
                 </div>
-                
-                <div id="nav-controls" class="flex items-center gap-2 px-2 py-1.5 rounded-md bg-dark-800/80 border border-brand-purple/30 shadow-inner text-[10px] md:text-[11px]">
-                    <button id="radar-toggle" onclick="radarActive=!radarActive;this.classList.toggle('text-rose-400');this.classList.toggle('text-emerald-400');if(radarActive)Notification.requestPermission();" class="font-bold text-emerald-400 tracking-widest uppercase flex items-center gap-1 cursor-pointer hover:bg-white/5 px-1.5 py-0.5 rounded transition" title="Ativar/desativar alertas push quando o preço tocar as Bandas de Bollinger">
-                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
-                        RADAR
+
+                <!-- Controles + Botão Tema -->
+                <div id="nav-controls-wrap" class="flex items-center gap-2">
+                    <div id="nav-controls" class="flex items-center gap-2 px-2 py-1.5 rounded-md border shadow-inner text-[10px] md:text-[11px]" style="background:rgba(var(--accent-rgb),0.06);border-color:var(--border-strong);">
+                        <button id="radar-toggle" onclick="radarActive=!radarActive;this.classList.toggle('text-rose-400');this.classList.toggle('text-emerald-400');if(radarActive)Notification.requestPermission();" class="font-bold text-emerald-400 tracking-widest uppercase flex items-center gap-1 cursor-pointer hover:bg-white/5 px-1.5 py-0.5 rounded transition" title="Ativar/desativar alertas push">
+                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
+                            RADAR
+                        </button>
+                        <div class="border-l border-dark-700/50 h-4 mx-0.5"></div>
+                        <span class="font-bold text-brand-purple tracking-widest uppercase flex items-center gap-1" title="Dias para o Vencimento (3ª Sexta-feira do mês)">
+                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            DTE:<span id="dte-counter" class="text-white font-mono ml-0.5">--</span>
+                        </span>
+                        <div class="border-l border-dark-700/50 h-4 mx-0.5"></div>
+                        <span id="market-status" class="font-bold text-gray-500 tracking-widest uppercase flex items-center gap-1">
+                            <span id="market-dot" class="w-2 h-2 rounded-full bg-gray-600 inline-block"></span>
+                            <span id="market-label">---</span>
+                        </span>
+                    </div>
+
+                    <!-- Botão Alternar Tema Sol/Lua -->
+                    <button id="theme-toggle" onclick="toggleTheme()" title="Alternar tema escuro/claro" aria-label="Alternar tema">
+                        <svg id="theme-icon-moon" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>
+                        <svg id="theme-icon-sun" class="w-4 h-4 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
                     </button>
-                    <div class="border-l border-dark-700/50 h-4 mx-0.5"></div>
-                    <span class="font-bold text-brand-purple tracking-widest uppercase flex items-center gap-1" title="Dias para o Terraço (DTE): dias úteis até o vencimento das opções mensais da B3 (3ª sexta-feira do mês)">
-                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                        DTE:<span id="dte-counter" class="text-white font-mono ml-0.5">--</span>
-                    </span>
-                    <div class="border-l border-dark-700/50 h-4 mx-0.5"></div>
-                    <span id="market-status" class="font-bold text-gray-500 tracking-widest uppercase flex items-center gap-1">
-                        <span id="market-dot" class="w-2 h-2 rounded-full bg-gray-600 inline-block"></span>
-                        <span id="market-label">---</span>
-                    </span>
                 </div>
+
             </div>
         </div>
     </nav>
@@ -1103,56 +1184,86 @@
                 const changeColor = asset.change >= 0 ? 'text-emerald-400' : 'text-rose-400';
                 const changeIcon = asset.change >= 0 ? '↑' : '↓';
                 
-                // Helper para renderizar a barra de progresso (Banda de Bollinger REAL)
+                // Helper para renderizar a barra BB CENTRALIZADA na SMA20 (-100 / 0 / +100)
                 const renderBand = (band, isDaily) => {
-                    const safeRange = (band.upper - band.lower) > 0 ? (band.upper - band.lower) : 1;
-                    const pos = Math.max(0, Math.min(100, ((asset.price - band.lower) / safeRange) * 100));
-                    const fillColor = pos <= 25 ? 'bg-emerald-400' : pos >= 75 ? 'bg-rose-500' : 'bg-brand/80';
-                    const markerGlow = pos <= 25 ? 'shadow-[0_0_10px_#34d399]' : pos >= 75 ? 'shadow-[0_0_10px_#f43f5e]' : 'shadow-[0_0_8px_white]';
-                    const posColor = pos <= 25 ? 'text-emerald-400' : pos >= 75 ? 'text-rose-400' : 'text-sky-400';
-                    const zoneLabel = pos <= 25 ? '\u2193 Sobrevendida' : pos >= 75 ? '\u2191 Sobrecomprada' : '\u2194 Neutra';
-
-                    // SMA20 (a linha verde do ProfitPro) — apenas na banda diária
+                    // Centro = SMA20 (diária) ou midpoint (semanal)
                     const sma20 = isDaily ? band.sma20 : null;
-                    const smaPos = sma20 ? Math.max(0, Math.min(100, ((sma20 - band.lower) / safeRange) * 100)) : null;
+                    const center = sma20 || ((band.upper + band.lower) / 2);
+                    const safeUp   = (band.upper - center) > 0 ? (band.upper - center) : 1;
+                    const safeDn   = (center - band.lower) > 0 ? (center - band.lower) : 1;
 
-                    // Tooltip educativo (apenas na banda diária)
+                    // pos: −100 = banda inf, 0 = SMA20, +100 = banda sup
+                    let pos;
+                    if (asset.price >= center) {
+                        pos = Math.min(100,  ((asset.price - center) / safeUp)  * 100);
+                    } else {
+                        pos = Math.max(-100, ((asset.price - center) / safeDn) * 100);
+                    }
+
+                    const posColor  = pos >= 70 ? 'text-rose-400'    : pos <= -70 ? 'text-emerald-400' : 'text-sky-400';
+                    const zoneLabel = pos >= 70 ? '\u2191 Sobrecomprada' : pos <= -70 ? '\u2193 Sobrevendida'  : '\u2194 Neutra';
+                    const posText   = (pos >= 0 ? '+' : '') + pos.toFixed(0);
+
+                    // Posição visual do marcador: 0% = esquerda, 100% = direita
+                    // pos = -100 → 0%; pos = 0 → 50%; pos = +100 → 100%
+                    const markerVisual = 50 + (pos / 2);
+
+                    // Fill: de 50% até o marcador
+                    const fillWidth = Math.abs(pos) / 2; // 0% a 50%
+                    const isPos = pos >= 0;
+                    const fillStyle = isPos
+                        ? `left:50%;width:${fillWidth}%;background:var(--loss);border-radius:0 999px 999px 0;`
+                        : `right:50%;width:${fillWidth}%;background:var(--gain);border-radius:999px 0 0 999px;`;
+                    const fillOpacity = Math.abs(pos) < 15 ? 0.45 : 0.78;
+
+                    // Tooltip informativo
                     const tooltipBlock = isDaily ? `
-                        <div class="mt-2 p-2.5 rounded-lg bg-dark-800/70 border border-dark-600/50 text-[11px] text-gray-400 leading-relaxed">
-                            <span class="font-bold text-gray-300 block mb-1 flex items-center gap-1">
-                                <svg class="w-3 h-3 text-brand" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                                Bollinger Bands (20, 2\u03c3) — idêntico ao ProfitPro
+                        <div class="mt-2 p-2.5 rounded-lg border text-[11px] leading-relaxed" style="background:rgba(var(--accent-rgb),0.06);border-color:var(--border);">
+                            <span class="font-bold mb-1 flex items-center gap-1" style="color:var(--text-primary);">
+                                <svg class="w-3 h-3" style="color:var(--accent)" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                BB (20, 2\u03c3) — Centro = SMA20 (\u22120 no ProfitPro)
                             </span>
-                            <span class="text-gray-500">Calculado com os \u00faltimos 20 fechamentos reais. Linha azul = SMA20 (linha verde do ProfitPro).</span>
+                            <span style="color:var(--text-muted);">Escala simétrica: −100 = Banda Inferior · 0 = SMA20 · +100 = Banda Superior</span>
                         </div>` : '';
+
+                    const smaDisplay = isDaily && sma20
+                        ? `<span class="font-bold" style="color:var(--accent);">SMA20 ${fmtMoney(sma20)}</span>`
+                        : `<span></span>`;
 
                     return `
                         <div class="mt-4">
                             <div class="flex justify-between items-center mb-1.5">
                                 <div class="flex items-center gap-1.5">
-                                    <span class="text-xs font-semibold uppercase tracking-wider text-gray-400">${band.label}</span>
-                                    <span class="text-[9px] font-bold text-brand/70 border border-brand/20 rounded px-1 py-0.5">BB 20,2\u03c3</span>
+                                    <span class="text-xs font-semibold uppercase tracking-wider" style="color:var(--text-secondary);">${band.label}</span>
+                                    <span class="text-[9px] font-bold border rounded px-1 py-0.5" style="color:var(--accent);border-color:var(--border);">BB 20,2\u03c3</span>
                                 </div>
                                 <div class="flex items-center gap-2">
-                                    <span class="text-[9px] font-bold ${posColor} border border-current/30 rounded px-1 py-0.5">${zoneLabel}</span>
-                                    <span class="text-[11px] font-mono text-gray-400 tt-right" data-tooltip="IV (Volatilidade Implícita): estimativa do mercado sobre a oscilação futura do ativo. Quanto maior, mais caro o prêmio da opção.\nIV Rank: compara a IV atual com o histórico de 252 pregões. Rank > 50 = prêmios GORDOS, ótimo para vender. Rank < 30 = prêmios MAGROS, evite vender.">IV ${asset.iv}% <span class="text-[10px] ml-1 px-1 py-0.5 rounded ${asset.ivRank > 50 ? 'bg-emerald-500/20 text-emerald-400' : 'bg-rose-500/20 text-rose-400'}">Rk${asset.ivRank}</span></span>
+                                    <span class="text-[9px] font-bold border border-current/30 rounded px-1 py-0.5 ${posColor}">${zoneLabel}</span>
+                                    <span class="text-[11px] font-mono tt-right" style="color:var(--text-secondary);" data-tooltip="IV (Volatilidade Implícita): estimativa do mercado sobre a oscilação futura do ativo.\nIV Rank > 50 = prêmios GORDOS, ótimo para vender. Rank < 30 = prêmios MAGROS, evite vender.">IV ${asset.iv}% <span class="text-[10px] ml-1 px-1 py-0.5 rounded ${asset.ivRank > 50 ? 'bg-emerald-500/20 text-emerald-400' : 'bg-rose-500/20 text-rose-400'}">Rk${asset.ivRank}</span></span>
                                 </div>
                             </div>
-                            <!-- Escala de preços real (como escala lateral do ProfitPro) -->
-                            <div class="flex justify-between items-center text-[11px] font-mono mb-1">
-                                <span class="text-emerald-400/90 font-bold">\u25bc ${fmtMoney(band.lower)}</span>
-                                ${sma20 ? `<span class="text-sky-400 font-medium">SMA20: ${fmtMoney(sma20)}</span>` : '<span></span>'}
-                                <span class="text-rose-400/90 font-bold">${fmtMoney(band.upper)} \u25b2</span>
+
+                            <!-- Escala de Preços Real -->
+                            <div class="flex justify-between items-center text-[11px] font-mono mb-1.5">
+                                <span class="font-bold" style="color:var(--gain);">▼ ${fmtMoney(band.lower)}</span>
+                                ${smaDisplay}
+                                <span class="font-bold" style="color:var(--loss);">${fmtMoney(band.upper)} ▲</span>
                             </div>
-                            <!-- Barra de posição com marcador SMA20 -->
-                            <div class="w-full h-3 bg-dark-700 rounded-full overflow-hidden relative">
-                                <div class="absolute top-0 left-0 h-full ${fillColor} opacity-70 transition-all duration-700" style="width: ${pos}%;"></div>
-                                ${smaPos !== null ? `<div class="absolute top-0 h-full w-0.5 bg-sky-400/60 z-10" style="left: ${smaPos}%;"></div>` : ''}
-                                <div class="absolute top-0 h-full w-1 bg-white ${markerGlow} z-20 transition-all duration-500 ease-out" style="left: calc(${pos}% - 2px);"></div>
+
+                            <!-- Barra BB Bidirecional Centralizada -->
+                            <div class="bb-bar-wrap">
+                                <div class="bb-fill" style="${fillStyle}opacity:${fillOpacity};"></div>
+                                <div class="bb-center-line"></div>
+                                <div class="bb-price-marker" style="left:calc(${markerVisual}% - 1.5px);"></div>
                             </div>
-                            <div class="flex justify-center mt-1">
-                                <span class="text-[12px] font-mono font-bold ${posColor}">${pos.toFixed(0)}% da banda</span>
+
+                            <!-- Escala Simbólica −100 / valor / +100 -->
+                            <div class="flex justify-between text-[9px] font-mono mt-1" style="color:var(--text-muted);">
+                                <span>−100</span>
+                                <span class="font-bold text-[11px] ${posColor}">${posText}</span>
+                                <span>+100</span>
                             </div>
+
                             ${tooltipBlock}
                         </div>
                     `;
@@ -1801,6 +1912,33 @@
 
         // Fecha com ESC
         document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeChart(); });
+
+        // ======================================================
+        // SISTEMA DE TEMAS — Dark (Verde Profundo) / Light (Old Money)
+        // ======================================================
+        function toggleTheme() {
+            const isLight = document.documentElement.classList.toggle('light');
+            localStorage.setItem('thetalens_theme', isLight ? 'light' : 'dark');
+            updateThemeIcon(isLight);
+            // Re-renderiza para aplicar cores dinâmicas no JS (ex: fmtMoney colors)
+            renderAssets();
+        }
+
+        function updateThemeIcon(isLight) {
+            const moon = document.getElementById('theme-icon-moon');
+            const sun  = document.getElementById('theme-icon-sun');
+            if (moon) moon.classList.toggle('hidden', isLight);
+            if (sun)  sun.classList.toggle('hidden', !isLight);
+        }
+
+        // Aplica tema persistido imediatamente (antes da renderização)
+        (function initTheme() {
+            const saved = localStorage.getItem('thetalens_theme') || 'dark';
+            if (saved === 'light') {
+                document.documentElement.classList.add('light');
+                updateThemeIcon(true);
+            }
+        })();
     </script>
 </body>
 </html>

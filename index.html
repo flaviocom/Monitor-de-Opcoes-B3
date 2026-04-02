@@ -82,6 +82,33 @@
             --warning-border: rgba(240, 82, 82, 0.22);
         }
 
+        html.light {
+            /* TEMA CLARO: Zeex Sand (Muted Warm) */
+            --bg-900: #F2EEE6;
+            --bg-800: #E8E3D8;
+            --bg-700: #D8D0C0;
+            --bg-600: #C4BAA6;
+            --accent: #8B6E1A;
+            --accent-rgb: 139, 110, 26;
+            --text-primary: #1E1A12;
+            --text-secondary: #5A5040;
+            --text-muted: #8A7D65;
+            --card-bg: rgba(255, 252, 245, 0.90);
+            --border: rgba(139, 110, 26, 0.15);
+            --border-strong: rgba(139, 110, 26, 0.32);
+            --gain: #1A8A58;
+            --loss: #C0392B;
+            --brand: #8B6E1A;
+            --nav-bg: rgba(255, 252, 245, 0.98);
+            --sidebar-bg: #E8E3D8;
+            --sidebar-item-hover: rgba(139, 110, 26, 0.08);
+            --sidebar-item-active: rgba(139, 110, 26, 0.15);
+            --capital-bg: rgba(242, 238, 230, 0.96);
+            --modal-bg: rgba(242, 238, 230, 0.99);
+            --warning-bg: rgba(192, 57, 43, 0.06);
+            --warning-border: rgba(192, 57, 43, 0.22);
+        }
+
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         :root {
           font-family: 'Inter', sans-serif;
@@ -756,6 +783,13 @@
                     <span style="font-size:11px;color:var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em;">Vencimento</span>
                     <span id="dte-counter" class="nav-item-badge" style="font-size:10px; background: rgba(var(--accent-rgb), 0.15); color: var(--accent);">--</span>
                 </div>
+
+                <!-- Tema -->
+                <button class="nav-item" onclick="toggleTheme()" style="width:100%;border:none;cursor:pointer;background:none;" title="Alternar tema">
+                    <svg id="theme-icon-moon" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width:16px;height:16px;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>
+                    <svg id="theme-icon-sun" class="hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width:16px;height:16px;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+                    <span style="font-size:12px;">Alternar Tema</span>
+                </button>
             </div>
         </aside>
 
@@ -2556,26 +2590,33 @@
         document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeChart(); });
 
         // ======================================================
-        // SOMENTE DARK MODE — Zeex Gold & Charcoal
+        // SISTEMA DE TEMAS — Dark (Zeex Gold) / Light (Zeex Sand)
         // ======================================================
         function toggleTheme() {
-            // Interface exclusivamente dark — sem alternância de tema
-            // Mantido para compatibilidade com botão na sidebar (sem operação)
+            const isLight = document.documentElement.classList.toggle('light');
+            localStorage.setItem('thetalens_theme', isLight ? 'light' : 'dark');
+            updateThemeIcon(isLight);
+            // Re-renderiza para aplicar cores dinâmicas no JS (ex: fmtMoney colors)
+            renderAssets();
+            renderOperations();
         }
 
-        function updateThemeIcon() {
-            // Dark permanente — ícone de tema oculto
+        function updateThemeIcon(isLight) {
             const moon = document.getElementById('theme-icon-moon');
             const sun  = document.getElementById('theme-icon-sun');
-            if (moon) moon.classList.remove('hidden');
-            if (sun)  sun.classList.add('hidden');
+            if (moon) moon.classList.toggle('hidden', isLight);
+            if (sun)  sun.classList.toggle('hidden', !isLight);
         }
 
-        // Aplica Capital inicial salvo
+        // Aplica Tema e Capital inicial
         (function initTheme() {
-            // Garante dark mode (remove qualquer classe 'light' persistida)
-            document.documentElement.classList.remove('light');
-            localStorage.setItem('thetalens_theme', 'dark');
+            const saved = localStorage.getItem('thetalens_theme') || 'dark';
+            if (saved === 'light') {
+                document.documentElement.classList.add('light');
+                updateThemeIcon(true);
+            } else {
+                updateThemeIcon(false);
+            }
 
             // Re-aplica capital salvo na UI
             const savedCapital = parseFloat(localStorage.getItem('thetalens_capital')) || 0;

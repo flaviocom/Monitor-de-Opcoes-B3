@@ -193,6 +193,24 @@
         html.light .bg-brand\/25 { background-color: rgba(61,122,92,0.18) !important; }
         html.light .text-brand-gold { color: #8B6914 !important; }
         html.light .border-brand-gold\/30 { border-color: rgba(139,105,20,0.3) !important; }
+
+        /* ===== NAVBAR: mantém texto claro em ambos os temas (header sempre escuro) ===== */
+        nav.site-nav h1,
+        nav.site-nav #platform-name,
+        nav.site-nav .badge-pro { color: #F5F1E8 !important; -webkit-text-fill-color: unset; }
+        nav.site-nav .badge-pro {
+            -webkit-text-fill-color: transparent;
+            background: linear-gradient(135deg, var(--accent) 0%, rgba(var(--accent-rgb), 0.7) 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+        }
+        nav.site-nav .nav-subtitle { color: rgba(200, 190, 175, 0.7) !important; }
+        html.light nav.site-nav .text-white { color: #F5F1E8 !important; }
+        html.light nav.site-nav .text-gray-400 { color: rgba(200, 190, 175, 0.7) !important; }
+        html.light nav.site-nav .text-emerald-400 { color: #48D68A !important; }
+        html.light nav.site-nav .text-brand-purple { color: #C2A878 !important; }
+        html.light nav.site-nav .text-gray-500 { color: #A8A098 !important; }
+        html.light nav.site-nav #dte-counter { color: #F5F1E8 !important; }
         
         .number-fmt { font-family: 'JetBrains Mono', monospace; font-variant-numeric: tabular-nums; }
 
@@ -254,8 +272,9 @@
             color: var(--gain);
         }
 
-        /* ===== TOOLTIP ===== */
+        /* ===== TOOLTIP — Previne ativação dupla em badges dentro de spans ===== */
         [data-tooltip] { position: relative; cursor: help; }
+        [data-tooltip] * { pointer-events: none; } /* badges internos não disparam hover próprio */
         [data-tooltip]::before {
             content: ''; position: absolute;
             bottom: calc(100% + 2px); left: 50%; transform: translateX(-50%);
@@ -600,21 +619,21 @@
             },
             {
                 ticker: 'BITH11',
-                company: 'Hashdex Bitcoin',
+                company: 'Hashdex Bitcoin ETF',
                 nextEarnings: '--',
                 nextDividend: null,
-                price: 135.40,
-                change: 2.15,
-                iv: 65.4,
-                ivRank: 92,
-                sma200: 105.50,
+                price: 89.25,
+                change: 1.35,
+                iv: 58.3,
+                ivRank: 88,
+                sma200: 78.40,
                 fundamentals: null,
                 bands: {
-                    daily: { upper: 145.20, lower: 125.10, label: 'Curto Prazo (Diário)' },
-                    weekly: { upper: 155.00, lower: 110.50, label: 'Longo Prazo (Semanal)' }
+                    daily: { upper: 95.80, lower: 82.10, label: 'Curto Prazo (Diário)' },
+                    weekly: { upper: 102.50, lower: 72.00, label: 'Longo Prazo (Semanal)' }
                 },
-                call: { code: 'BITHF145', strike: 145.00, premium: 4.20, delta: -0.30, theta: -0.05, gamma: -0.02, volume: 'Est.' },
-                put:  { code: 'BITHR120', strike: 120.00, premium: 3.80, delta: -0.30, theta: -0.06, gamma: -0.02, volume: 'Est.' }
+                call: { code: 'BITHF096', strike: 96.00, premium: 2.85, delta: -0.30, theta: -0.05, gamma: -0.02, volume: 'Est.' },
+                put:  { code: 'BITHR082', strike: 82.00, premium: 2.40, delta: -0.30, theta: -0.06, gamma: -0.02, volume: 'Est.' }
             }
         ];
 
@@ -1123,8 +1142,16 @@
                                 if (eventData.nextEarnings && eventData.nextEarnings !== '--') {
                                     asset.nextEarnings = eventData.nextEarnings;
                                 }
-                                if (eventData.nextDividend && eventData.nextDividend.value && eventData.nextDividend.value > 0) {
-                                    asset.nextDividend = eventData.nextDividend;
+                                // Guard: só aceita dividendo do backend se value for significativo (> R$0,05)
+                                // e a datacom não for mais de 365 dias no futuro (evita dados errados)
+                                if (eventData.nextDividend && eventData.nextDividend.value > 0.05) {
+                                    const dc = eventData.nextDividend.diasParaDataCom;
+                                    const isReasonable = !dc || (dc >= -90 && dc <= 365);
+                                    if (isReasonable) {
+                                        asset.nextDividend = eventData.nextDividend;
+                                    } else {
+                                        console.warn(`[ThetaLens] Dividendo de ${asset.ticker} ignorado: diasParaDataCom=${dc} (fora do range razoável). Valor: R$${eventData.nextDividend.value}`);
+                                    }
                                 }
                             }
                         } catch (e) { /* Servidor node off, let it fail silently */ }
@@ -1148,9 +1175,15 @@
                                         dy: fundData.dy || (asset.fundamentals ? asset.fundamentals.dy : '--'),
                                         pvp: fundData.pvp || (asset.fundamentals ? asset.fundamentals.pvp : '--'),
                                     };
-                                    // Sobrescreve nextDividend se o backend trouxer DataCom válida
-                                    if (fundData.nextDividend && fundData.nextDividend.datacom) {
-                                        asset.nextDividend = fundData.nextDividend;
+                                    // Sobrescreve nextDividend do fundamentals só se value > R$0,05 e data é razoável
+                                    if (fundData.nextDividend && fundData.nextDividend.datacom && fundData.nextDividend.value > 0.05) {
+                                        const dc = fundData.nextDividend.diasParaDataCom;
+                                        const isReasonable = !dc || (dc >= -90 && dc <= 365);
+                                        if (isReasonable) {
+                                            asset.nextDividend = fundData.nextDividend;
+                                        } else {
+                                            console.warn(`[ThetaLens] Fund.Dividend ${asset.ticker} ignorado: diasParaDataCom=${dc}`);
+                                        }
                                     }
                                 }
                             }
